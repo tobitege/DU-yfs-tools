@@ -1,0 +1,35 @@
+{
+	"languageMode": "strict",
+	"lint": {"*": true, "LocalUnused": false},
+	"lintErrors": true,
+	"globals": [
+		"DEBUG",
+		"system",
+		"unit",
+		"SU"
+	],
+    "diagnostics.globals": [
+        "system",
+        "json",
+        "utils",
+        "vec3",
+        "unit",
+        "core",
+        "library",
+        "construct",
+        "constants"
+    ],
+    "completion.autoRequire": false,
+    "workspace": {
+        "library": [
+          "./lua",
+          "./util",
+          "./util/wpointer",
+          "./util/du-mocks",
+          "D:/github/yfs-tools/util/du-mocks",
+          "D:/github/yfs-tools/util/du-mocks/dumocks",
+          "D:/github/yfs-tools/util/du-mocks/game_data_lua"
+        ]
+    },
+    "runtime.version": "Lua 5.2"
+}

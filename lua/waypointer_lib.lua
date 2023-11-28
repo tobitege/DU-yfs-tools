@@ -1,0 +1,5 @@
+require('wpointer0')
+require('wpointer1')
+require('wpointer2')
+require('wpointer3')
+require('wpointer4')

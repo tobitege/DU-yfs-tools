@@ -1,0 +1,10 @@
+{
+    "Lua.diagnostics.globals": [
+        "system"
+    ],
+    "Lua.diagnostics.disable": [
+        "undefined-global",
+        "undefined-doc-param",
+        "redundant-parameter"
+    ]
+}

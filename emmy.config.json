@@ -1,0 +1,16 @@
+{
+  "source": [
+    {
+      "dir": "./lua",
+      "exclude": []
+    },
+    {
+      "dir": "./util",
+      "exclude": []
+    },
+    {
+        "dir": "./util/du-mocks/dumocks",
+        "exclude": []
+    }
+  ]
+}

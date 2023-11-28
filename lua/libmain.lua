@@ -1,0 +1,20 @@
+-- require used classes and instantiate important ones
+SU = require('SU') -- string utils
+Out = require('out') -- output utils
+P = Out.PrintLines
+E = Out.Error
+
+require('Dtbk') -- databank
+
+require('libutils') -- helper functions
+Cmd = require('commands') -- all YFS Tools commands
+Help = require('help') -- help utils
+
+require('warpcost') -- warp calculator function
+
+require('wpoint') -- waypoint class
+WM = require('wpointmgr').new("MAIN") -- instantiate MAIN waypoint manager
+
+---@if with_waypointer true
+--require('waypointer_lib')
+---@end

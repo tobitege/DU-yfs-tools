@@ -1,0 +1,51 @@
+{
+  "cli": {
+    "fmtVersion": 3
+  },
+  "name": "YFS-Tools",
+  "description": "YFS support tools (unofficial)",
+  "sourcePath": "lua",
+  "outputPath": "out",
+  "libs": [],
+  "builds": {
+    "yfs-tools": {
+        "name": "yfs-tools",
+        "type": "control",
+        "slots": { }
+    }
+  },
+  "targets": {
+    "development": {
+      "name": "development",
+      "minify": false,
+      "handleErrors": false
+    },
+    "development-wp": {
+      "name": "development-wp",
+      "minify": false,
+      "handleErrors": false,
+      "variables": {
+        "with_waypointer": true
+      }
+    },
+    "release": {
+      "name": "release",
+      "minify": true,
+      "handleErrors": false
+    },
+    "release-wp": {
+      "name": "release-wp",
+      "minify": true,
+      "handleErrors": false,
+      "variables": {
+        "with_waypointer": true
+      }
+    }
+  },
+  "internalPaths": [
+    "autoconf/",
+    "cpml/",
+    "pl/",
+    "utils/event"
+  ]
+}

@@ -1,0 +1,20 @@
+[
+    {
+        "type": "Directory",
+        "name": "c:\\DualUniverse\\Game\\data\\lua",
+        "parent_id": null,
+        "fsPath": "c:\\DualUniverse\\Game\\data\\lua",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "0QYhBlgmJDoWIqXd"
+    },
+    {
+        "type": "Directory",
+        "name": "d:\\github\\yfs-tools",
+        "parent_id": null,
+        "fsPath": "d:\\github\\yfs-tools",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "N5z3rdFRGuqwQf2B"
+    }
+]
