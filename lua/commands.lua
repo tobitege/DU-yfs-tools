@@ -739,6 +739,27 @@ function cmd.YfsSaveNamedCmd(text)
     cmd.WpSaveNamedCmd(text, true)
 end
 
+function cmd.PosDataCmd()
+    --P("GetCameraCmd() called")
+    P("getCameraHorizontalFov: "..system.getCameraHorizontalFov())
+    P("getCameraVerticalFov: "..system.getCameraVerticalFov())
+
+    P("getCameraPos: "..PM.Vec3String(system.getCameraPos()))
+    P("getCameraForward: "..PM.Vec3String(system.getCameraForward()))
+    P("getCameraRight: "..PM.Vec3String(system.getCameraRight()))
+    P("getCameraUp: "..PM.Vec3String(system.getCameraUp()))
+
+    P("getCameraWorldPos: "..PM.Vec3String(system.getCameraWorldPos()))
+    P("getCameraWorldForward: "..PM.Vec3String(system.getCameraWorldForward()))
+    P("getCameraWorldRight: "..PM.Vec3String(system.getCameraWorldRight()))
+    P("getCameraWorldUp: "..PM.Vec3String(system.getCameraWorldUp()))
+
+    P("construct.getWorldPosition: "..PM.Vec3String(construct.getWorldPosition(construct.getId())))
+    P("construct.getOrientationForward: "..PM.Vec3String(construct.getOrientationForward()))
+    P("construct.getOrientationRight: "..PM.Vec3String(construct.getOrientationRight()))
+    P("construct.getOrientationUp: "..PM.Vec3String(construct.getOrientationUp()))
+end
+
 function cmd.DumpPointsCmd()
     if true then
         P("~=~=~=~=~=~=~= DUMP START ~=~=~=~=~=~=")

@@ -1,5 +1,4 @@
 -- add some data for testing waypoints and routes
--- requires Cmd, Out and library_s01
 if not INGAME then
     local wplist = {}
     wplist["G 3"] = {pos="::pos{0,4,41.4442,-41.0777,735.1812}", opt={} }

@@ -3,7 +3,7 @@ function LinkedList(name, prefix)
     local internalDataTable = {}
     local internalTableSize = 0
     local removeKey,addKey,indexKey,refKey = prefix .. 'Remove',prefix .. 'Add',prefix..'index',prefix..'ref'
-
+    
     functions[removeKey] = function (node)
         local tblSize,internalDataTable = internalTableSize,internalDataTable
         if tblSize > 1 then
@@ -33,6 +33,7 @@ function LinkedList(name, prefix)
             end
         end
         local tblSize = internalTableSize + 1
+        
         internalDataTable[tblSize] = node
         node[indexKey] = tblSize
         node[refKey] = functions
@@ -107,7 +108,7 @@ function RotatePoint(ax,ay,az,aw,oX,oY,oZ,wX,wY,wZ)
     oY - ax*t1 - aw*t2 + az*t3 + wY,
     oZ + aw*t1 - ax*t2 - ay*t3 + wZ
 end
-function GetRotationManager(out_rotation, wXYZ, name)
+function getRotationManager(out_rotation, wXYZ, name)
     --====================--
     --Local Math Functions--
     --====================--
@@ -143,7 +144,7 @@ function GetRotationManager(out_rotation, wXYZ, name)
     --=Cache=--
     --=======--
     local cache = {0,0,0,1,0,0,0,0,0,0}
-
+    
     --============================--
     --Primary Processing Functions--
     --============================--
@@ -167,13 +168,13 @@ function GetRotationManager(out_rotation, wXYZ, name)
         else
             wx,wy,wz,ww = ix,iy,iz,iw
         end
-
+        
         out_rotation[1],out_rotation[2],out_rotation[3],out_rotation[4] = wx,wy,wz,ww
         if needNormal then
             nx,ny,nz = 2*(wx*wy+wz*ww),1-2*(wx*wx+wz*wz),2*(wy*wz-wx*ww)
         end
         local subRots,subRotsSize = subRotations.subGetData()
-
+       
         for i=1, subRotsSize do
             subRots[i].update(wx,wy,wz,ww,pX,pY,pZ,wXYZ[1],wXYZ[2],wXYZ[3])
         end
@@ -254,7 +255,7 @@ function GetRotationManager(out_rotation, wXYZ, name)
                 subRotQueue[i]()
             end
             subRotQueue = {}
-        elseif superManager then
+        else
             superManager.checkUpdate()
         end
         return neededUpdate
@@ -291,30 +292,26 @@ function GetRotationManager(out_rotation, wXYZ, name)
             else
                 if type(rotX) == 'table' then
                     if #rotX == 3 then
-                        ---@diagnostic disable-next-line: cast-local-type
                         tix,tiy,tiz,tiw = rotX[1],rotX[2],rotX[3],nil
                         local result = rotate()
                         if specialCall then specialCall() end
-                        goto valid
+                        goto valid  
                     end
                 end
----@diagnostic disable-next-line: param-type-mismatch
-                system.print('Invalid format. Must be three angles, or right, forward and up vectors, or a quaternion. Use radians if angles.')
+                print('Invalid format. Must be three angles, or right, forward and up vectors, or a quaternion. Use radians if angles.')
                 ::valid::
                 return false
             end
+
         end
 
-        ---@diagnostic disable-next-line: cast-local-type
         function inFuncArr.rotateX(rotX) tix = rotX; tiw = nil; rotate(); if specialCall then specialCall() end end
-        ---@diagnostic disable-next-line: cast-local-type
         function inFuncArr.rotateY(rotY) tiy = rotY; tiw = nil; rotate(); if specialCall then specialCall() end end
-        ---@diagnostic disable-next-line: cast-local-type
         function inFuncArr.rotateZ(rotZ) tiz = rotZ; tiw = nil; rotate(); if specialCall then specialCall() end end
 
         function inFuncArr.setDoRotateOri(rot) doRotateOri = rot; outBubble() end
         function inFuncArr.setDoRotatePos(rot) doRotatePos = rot; outBubble() end
-
+        
         function inFuncArr.setPositionIsRelative(isRelative) positionIsRelative = isRelative; outBubble() end
         function inFuncArr.getRotation() return ix, iy, iz, iw end
     end

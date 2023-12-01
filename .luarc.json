@@ -31,5 +31,5 @@
           "D:/github/yfs-tools/util/du-mocks/game_data_lua"
         ]
     },
-    "runtime.version": "Lua 5.2"
+    "runtime.version": "Lua 5.4"
 }

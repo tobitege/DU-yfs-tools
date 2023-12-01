@@ -10,12 +10,13 @@ function inputTextFunc.Run(t)
     local cmdList = {}
     cmdList['arch-save-named'] = 1
     cmdList['conversionTest'] = 1
+    cmdList['posData'] = 1
     cmdList['help'] = 'Help'
     cmdList['planetInfo'] = 1
     cmdList['printAltitude'] = 1
     cmdList['printPos'] = 1
-    cmdList['warpCost'] = 1
     cmdList['printWorldPos'] = 1
+    cmdList['warpCost'] = 1
     cmdList['wp-altitude-ceiling'] = 1
     cmdList['wp-export'] = 1
     cmdList['yfs-add-altitude-wp'] = 1
@@ -31,8 +32,8 @@ function inputTextFunc.Run(t)
     cmdList['DumpPoints'] = 1
     cmdList['routes'] = 1
     if DEBUG then
-        cmdList['YfsTestData'] = 'YfsTestDataCmd'
-        cmdList['x'] = 'XCmd'
+        cmdList['YfsTestData'] = 1
+        cmdList['x'] = 1
     end
 
     for k, func in pairs(cmdList) do
@@ -45,12 +46,14 @@ function inputTextFunc.Run(t)
             -- map command to function name, which must end with "Cmd"!
             local fn = SU.SplitAndCapitalize(k,'-').."Cmd"
             -- default use global Cmd class, unless a value is specified other than 1
-            local className = SU.If(type(func) == "string", func, "Cmd")
+            local cmdName = SU.If(type(func) == "string", func, "Cmd")
             P("Executing /"..k..SU.If(params ~= "", " with: "..params))
-            if not _G[className] then
-                return E("[FATAL ERROR] Class "..className.." not assigned!")
+            if not _G[cmdName] then
+                return E("[FATAL ERROR] "..cmdName.." not found!")
             end
-            return _G[className][fn](params)
+            if _G[cmdName][fn] then
+                return _G[cmdName][fn](params)
+            end
         end
     end
     P("~~~~~~~~~~~~~~~~~~~~~")

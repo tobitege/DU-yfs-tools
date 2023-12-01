@@ -1,7 +1,10 @@
 package.path = "lua/?.lua;util/wpointer/?.lua;"..package.path
 require('globals')
 
----@if with_waypointer
+-- trick to make it right in debugger ;)
+---@if with_waypointer false
+WAYPOINTER_ENABLED = false
+---@else
 WAYPOINTER_ENABLED = true
 ---@end
 ---@if debug
@@ -9,17 +12,6 @@ DEBUG = true
 ---@end
 require('libmain')
 
----@if STRICT true
--- local strictness = require("strictness")
--- local t = strictness.strict()
--- Out.DeepPrint(strictness)
--- Out.DeepPrint(t)
----@end
-
---local XPCall = {}
---XPCall.__index = XPCall
---XPCall.Call = function(entryName, f, ...)
---end
 if INGAME then
     local Traceback = traceback
 else
@@ -37,7 +29,7 @@ if not status then
     return
 end
 
-local inp = require('sys_OnInputText')
+local inp = require('sys_onInputText')
 if inp ~= nil then
     system:onEvent('onInputText', function (self, text) inp.Run(text) end)
 end
@@ -45,6 +37,7 @@ end
 -- *****************************************
 ---@if with_waypointer true
 -- Only for waypointer mod
+local onT
 if WAYPOINTER_ENABLED then
     require('waypointer_lib')
     local asWP = require('sys_onActionStartWp')
@@ -52,7 +45,7 @@ if WAYPOINTER_ENABLED then
         system:onEvent('onActionStart', function (self, option) asWP.Run(option) end)
     end
 
-    local onT = require('unit_onTimer(update)')
+    onT = require('unit_onTimer(update)')
     if onT ~= nil then
         unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
     end
@@ -70,7 +63,7 @@ end
 -- *****************************************
 
 if INGAME then
-    if DEBUG then
+    if DEBUGx then
         status, err, _ = xpcall(function() PM.ConversionTest() end, Traceback)
         if not status then
             if err then P("Error in call:\n" .. err) end
@@ -81,13 +74,19 @@ if INGAME then
         unit.hideWidget()
     end
     P("Type /help for available commands.")
+    if #Config.screens > 0 then
+        P(Config.screens[1].getScreenWidth().."/"..Config.screens[1].getScreenHeight())
+    end
+---@if debug
 else
     -- outside of DU, e.g. in VSCode debugging, emulate a simple LUA chat prompt
     -- and send all user input to our OnInputText event
     repeat
-        io.write('>> ')
+        if onT then onT.Run("update") end
+        io.write("["..system.getArkTime()..'] > ')
         local chat = io.read()
-        P("[Input] "..chat)
+        P("[IN] "..chat)
         if inp and inp.Run then inp.Run(chat) end
-    until not inp or not chat or chat:len() == 0
+    until not inp or (chat and chat == "q")
+---@end
 end

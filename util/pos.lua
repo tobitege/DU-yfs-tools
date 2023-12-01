@@ -140,6 +140,16 @@ function o.New(pCore, pConstruct, pWM)
                sformat("%.4f", (v3.z or 0)) .. '}'
     end
 
+    ---@comment Formats a vec3 world-pos table to a ::pos{} string (planet id 0!)
+    ---@return string
+    function o.Vec3String(v3)
+        if type(v3) ~= "table" then return "" end
+        v3 = vec3(v3)
+        return sformat("%.4f", (v3.x or 0)) .. ', ' ..
+               sformat("%.4f", (v3.y or 0)) .. ', ' ..
+               sformat("%.4f", (v3.z or 0))
+    end
+
     ---@param posStr string ::pos{} string for change
     ---@param newAltitude number? new altitude value
     ---@return string
@@ -175,7 +185,7 @@ function o.New(pCore, pConstruct, pWM)
         end
         if corePresent() then
             ---@diagnostic disable-next-line: missing-parameter
-            return vec3(core.getConstructWorldPos(construct.getId()))
+            return vec3(core.getWorldPosition())
         end
         return nil
     end

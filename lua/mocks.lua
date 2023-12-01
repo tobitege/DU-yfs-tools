@@ -11,22 +11,16 @@ package.path = package.path .. ";./util/du-mocks/"..FSUFFIX
 package.path = package.path .. ";./util/du-mocks/dumocks/"..FSUFFIX
 package.path = package.path .. ";./util/du-mocks/game-data-lua" --..FSUFFIX
 
--- Loop
---https://github.com/renatomaia/loop
---https://renatomaia.github.io/loop/manual/basics.html
---package.path = package.path .. ";util/loop/"..FSUFFIX
---oo = require "loop.base"
-
--- DuMocks
-system = require("System")
+-- DuMocks (from https://github.com/1337joe/du-mocks)
+system = require("System"):mockGetClosure()
 core = require("CoreUnit")
-construct = require("Construct")
+construct = require("Construct"):mockGetClosure()
 library = require("Library")
 constants = { deg2rad = 1 }
 DUConstruct = construct
 DUSystem = system
 
--- DU game file
+-- DU game files
 json  = require("json")
 utils = require("utils")
 vec3  = require("vec3")

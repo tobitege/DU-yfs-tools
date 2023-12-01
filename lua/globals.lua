@@ -7,17 +7,18 @@ YFS_NAMED_POINTS = "NamedPoints"
 YFS_ROUTES = "NamedRoutes"
 ARCH_SAVED_LOCATIONS = "SavedLocations"
 DEBUG = false
-Clicked = false -- for waypointer
-WAYPOINTER_ENABLED = false
-
+WAYPOINTER_ENABLED = true
+ScriptStartTime = 0
 INGAME = system ~= nil
 
 if not INGAME then
----@if DEBUG true
+---@if Willi "Wonka"
     require("mocks")
 ---@end
 else
+    ScriptStartTime = system.getArkTime()
     print = system.print
 end
 
+clicked = false -- for waypointer
 WaypointInfo = require('atlas')

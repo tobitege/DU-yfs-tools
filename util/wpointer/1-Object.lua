@@ -1,17 +1,17 @@
-PositionTypes = {
+positionTypes = {
     globalP=false,
     localP=true
 }
-OrientationTypes = {
+orientationTypes = {
     globalO=false,
     localO=true 
 }
 local print = DUSystem.print
 function ObjectGroup(objects, transX, transY)
-    objects = objects or {}
+    local objects=objects or {}
     local self={style='',gStyle='',class='default', objects=objects,transX=transX,transY=transY,enabled=true,glow=false,gRad=10,scale = false,isZSorting=true}
     function self.addObject(object, id)
-        id=id or #objects+1
+        local id=id or #objects+1
         objects[id]=object
         return id
     end
@@ -28,9 +28,9 @@ function ObjectGroup(objects, transX, transY)
     function self.setGlow(enable,radius,scale) self.glow = enable; self.gRad = radius or self.gRad; self.scale = scale or false end 
     return self
 end
-ConstructReferential = GetRotationManager({0,0,0,1},{0,0,0}, 'Construct')
+ConstructReferential = getRotationManager({0,0,0,1},{0,0,0}, 'Construct')
 ConstructReferential.assignFunctions(ConstructReferential)
-ConstructOriReferential = GetRotationManager({0,0,0,1},{0,0,0}, 'ConstructOri')
+ConstructOriReferential = getRotationManager({0,0,0,1},{0,0,0}, 'ConstructOri')
 ConstructOriReferential.assignFunctions(ConstructOriReferential)
 function Object(posType, oriType)
 
@@ -39,8 +39,8 @@ function Object(posType, oriType)
     local orientationType=orientationType
     local ori = {0,0,0,1}
     local position = {0,0,0}
-    local objRotationHandler = GetRotationManager(ori,position, 'Object Rotation Handler')
-
+    local objRotationHandler = getRotationManager(ori,position, 'Object Rotation Handler')
+    
     local self = {
         true, -- 1
         multiGroup, -- 2
@@ -59,12 +59,12 @@ function Object(posType, oriType)
 
     local loadUIModule = LoadUIModule
     if loadUIModule == nil then
-        --print('No UI Module installed.')
+        print('No UI Module installed.')
         loadUIModule = function() end
     end
     local loadPureModule = LoadPureModule
     if loadPureModule == nil then
-        --print('No Pure Module installed.')
+        print('No Pure Module installed.')
         loadPureModule = function() end
     end
 
@@ -90,11 +90,12 @@ function Object(posType, oriType)
         self[8] = positionType
         choose()
     end
-    function self.GetRotationManager()
+    
+    function self.getRotationManager()
         return objRotationHandler
     end
     function self.addSubObject(object)
-        return objRotationHandler.addSubRotation(object.GetRotationManager())
+        return objRotationHandler.addSubRotation(object.getRotationManager())
     end
     function self.removeSubObject(id)
         objRotationHandler.removeSubRotation(id)

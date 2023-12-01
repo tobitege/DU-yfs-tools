@@ -2,12 +2,12 @@
 -- tobitege: customisation to read YFS route waypoints
 -- as well as ArchHud locations and add these for display
 
-local lowLatencyMode = false --export: Enables low latency for screen render, which can sometimes bug out if a frame gets skipped. A restart is required then.
-local smooth = false --export: Enables full FPS rendering, which increases the perceived performance for an actual performance impact
+local lowLatencyMode = true --export: Enables low latency for screen render, which can sometimes bug out if a frame gets skipped. A restart is required then.
+local smooth = true --export: Enables full FPS rendering, which increases the perceived performance for an actual performance impact
 local highPerformanceMode = false --export: Disables glow effect which can in some cases improve FPS significantly
 local glowRadius = 3 --export: Sets the pixel size of the glow effect
 local displayWarpCells = false --export: Enable display of warp cells amount
-local displaySolarWP = false --export: Enable display of solar objects (planets, moons)
+local displaySolarWP = true --export: Enable display of solar objects (planets, moons)
 local displayCustomWP = true --export: Enable display of custom waypoints (routes)
 local archHudWaypointSize = 0.5 --export: The size in meters of a custom waypoint (0.1 - 10)
 local archHudWPRender = 3 --export: The number of kilometers above which distance custom waypoints are not rendered
@@ -42,7 +42,7 @@ local localeIndex = {
     ['de-De'] = 3
 }
 
-local projector = Projector()
+projector = Projector()
 projector.setSmooth(smooth)
 
 local waypointObjectGroup = ObjectGroup()
@@ -62,9 +62,7 @@ waypointObjectGroup.setStyle(css)
 if not highPerformanceMode then
     waypointObjectGroup.setGlow(true, glowRadius)
 end
-if not lowLatencyMode then
-    projector.setLowLatency(lowLatencyMode)
-end
+projector.setLowLatency(lowLatencyMode == true)
 local function drawText(content,x, y, text, opacity,uD,c,c2,stroke)
     uD[c],uD[c+1],uD[c+2],uD[c+3],uD[c+4],uD[c+5] = x,y,opacity,opacity,stroke,text
     content[c2] = '<text x="%g" y="%g" fill-opacity="%g" stroke-opacity="%g" stroke="%s">%s</text>'
@@ -131,12 +129,12 @@ local function draw(tx,ty,tz,data)
     local r = data.radius
     local off = (((tz/1000)/200))/100
     local size = Round(max(projector.getSize(r, tz, 100000000, minWaypointSize) - off, 5),1)
+
     --if size < 1 then return '' end
     local _,distance,_,_,disM = data.getWaypointInfo()
     if data.type == 'Planet' then -- or data.type == 'WP' then
         if (disM < 2) or (tz < 30) or (size >= maxWaypointSize) or (distanceToMouse > maxD) or
            (r==archHudWaypointSize*1.25 and tz>archHudWPRender*1000) then -- Don't display
-          P("* "..size)
             return ''
         end
     elseif data.type == 'Moon' then
@@ -168,8 +166,8 @@ local function draw(tx,ty,tz,data)
 end
 
 local solarWaypoints = objectBuilder
-		.setPositionType(PositionTypes.globalP)
-		.setOrientationType(OrientationTypes.globalO)
+		.setPositionType(positionTypes.globalP)
+		.setOrientationType(orientationTypes.globalO)
 		.build()
 waypointObjectGroup.addObject(solarWaypoints)
 local builder = solarWaypoints.getSinglePointBuilder()
@@ -181,28 +179,33 @@ if displaySolarWP then
         local wName = stellar.name[localizationIndex]
         local wRadius = stellar.radius
         local wType = stellar.type[1]
-        local wlType = stellar.type[localizationIndex]
-        local waypointObject = WPointer(wCenter[1],wCenter[2],wCenter[3],
-                wRadius * 1.25, wName, wType, wlType, nil)
-        local customSVG = builder.addSinglePointSVG()
-        customSVG.setPosition({wCenter[1], wCenter[2], wCenter[3]})
-          .setData(waypointObject)
-    	  .setDrawFunction(draw)
-    	  .build()
+        if wType ~= "Asteroid" then
+            local wlType = stellar.type[localizationIndex]
+            local waypointObject = WPointer(wCenter[1],wCenter[2],wCenter[3],
+                    wRadius * 1.25, wName, wType, wlType, nil)
+            local customSVG = builder.addSinglePointSVG()
+            P("[I] "..wName)
+            customSVG.setPosition({wCenter[1], wCenter[2], wCenter[3]})
+            .setData(waypointObject)
+            .setDrawFunction(draw)
+            .build()
+        end
     end
 end
 
 -- tobitege: draw custom waypoints if enabled
 if displayCustomWP and WM then
     for k,p in ipairs(WM:getSorted()) do
-      local subId = format("%.2f", p.mapPos.altitude)
-      local waypointObject = WPointer(
+        local subId = format("%.2f", p.mapPos.altitude)
+        local waypointObject = WPointer(
                 p.mapPos.latitude, p.mapPos.longitude, p.mapPos.altitude,
                 archHudWaypointSize * 1.25, p.name, 'WP', 'WP', subId)
-      local customSVG = builder.addSinglePointSVG()
-      customSVG.setPosition({p.mapPos.latitude, p.mapPos.longitude, p.mapPos.altitude})
-              .setData(waypointObject)
-              .setDrawFunction(draw)
-              .build()
+        local customSVG = builder.addSinglePointSVG()
+        --if DEBUG then P("[WPointer] customSVG: "..Out.DumpVar(customSVG)) end
+        customSVG.setPosition({p.mapPos.latitude, p.mapPos.longitude, p.mapPos.altitude})
+            .setData(waypointObject)
+            .setDrawFunction(draw)
+            .build()
+        if DEBUG then P("[WPointer] Added "..p.name) end
     end
 end

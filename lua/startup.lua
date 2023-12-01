@@ -1,7 +1,6 @@
 ---@diagnostic disable: undefined-field
---P("startup.lua start")
 local onlyForRoute = "" --export: Load waypoints only for this route (enclosed in double quotes!)
-local onlySelectableWP = false --export: Check to only display custom route waypoints that are marked as selectable
+local onlySelectableWP = true --export: Check to only display custom route waypoints that are marked as selectable
 local loadWaypoints = true --export: Enable to load custom waypoints from databank
 local outputFont = "FiraMono" --export: Name of font used for screen output. Default: "FiraMono"
 
@@ -9,7 +8,7 @@ onlyForRoute = onlyForRoute or ""
 OutputFont = outputFont or "FiraMono"
 
 P("=========================================")
-P("YFS-Tools 1.4 (unofficial)")
+P("YFS-Tools 1.5 (unofficial)")
 P("created by tobitege (c) 2023")
 P("Thanks to Yoarii (SVEA) for YFS and LUA help!")
 P("YFS 1.4+ databank link required (Routes).")
@@ -19,7 +18,7 @@ P("* waypoints/routes while YFS runs!")
 P("=========================================")
 P("LUA parameter(s):")
 P("Load waypoints from databank: " .. BoolStr(loadWaypoints))
-P("Only waypoints for route: " .. BoolStr(onlyForRoute))
+P("Only waypoints for route: " .. onlyForRoute)
 P("Only selectable waypoints: " .. BoolStr(onlySelectableWP))
 P("Screen output font name: " .. OutputFont)
 P("=========================================")
@@ -37,7 +36,7 @@ if INGAME then
         return
     end
 else
-    -- use mocks
+    -- this requires du-mocks
     Config.core = unit.core
     Config.databanks =  { unit.databank }
     Config.screens =  { unit.screen }

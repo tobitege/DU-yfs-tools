@@ -29,7 +29,7 @@ function WPointer(x,y,z, radius, name, type, localeType, subId)
             warpCost = max(floor(tons*floor(((distance/1000)/200))*0.00024), 1)
         end
         local disR = round(distance, 4)
-
+        --if DEBUG then P("getWaypointInfo") end
         return self.name, round((distance/1000)/200, 4), warpCost, round((distance/1000), 4), disR
     end
 

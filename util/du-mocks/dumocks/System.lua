@@ -309,13 +309,13 @@ end
 --- Return the current value of the player's horizontal field of view.
 -- @treturn float The current value of the player's horizontal field of view.
 function M:getCameraHorizontalFov()
-    return self.cameraHorizontalFov
+    return self.cameraHorizontalFov or 90
 end
 
 --- Return the current value of the player's vertical field of view.
 -- @treturn float The current value of the playter's vertical field of view.
 function M:getCameraVerticalFov()
-    return self.cameraVerticalFov
+    return self.cameraVerticalFov or 64
 end
 
 --- Returns the active camera mode.
@@ -333,61 +333,74 @@ end
 --- Returns the position of the camera, in construct local coordinates.
 -- @treturn vec3 Camera position in construct local coordinates.
 function M:getCameraPos()
+    return {0.0392, 0.3420, 1.8678}
 end
 
 --- Returns the position of the camera, in world coordinates.
 -- @treturn vec3 Camera position in world coordinates.
 function M:getCameraWorldPos()
+    --somewhere on Sicari :D
+    return {52754973.5479, 27192048.8840, 52022409.1475}
 end
 
 --- Returns the forward direction vector of the active camera, in world coordinates.
 -- @treturn vec3 Camera forward direction vector in world coordinates.
 function M:getCameraWorldForward()
+    return {0.6861, -0.4330, -0.5847}
 end
 
 --- Returns the right direction vector of the active camera, in world coordinates.
 -- @treturn vec3 Camera right direction vector in world coordinates.
 function M:getCameraWorldRight()
+    return {0.3671, -0.4878, 0.7920}
 end
 
 --- Returns the up direction vector of the active camera, in world coordinates.
 -- @treturn vec3 Camera up direction vector in world coordinates.
 function M:getCameraWorldUp()
+    return {0.6281, 0.7580, 0.1757}
 end
 
 --- Returns the forward direction vector of the active camera, in construct local coordinates.
 -- @treturn vec3 Camera forward direction vector in construct local coordinates.
 function M:getCameraForward()
+    return {-0.0529, 0.5743, -0.8169}
 end
 
 --- Returns the right direction vector of the active camera, in construct local coordinates.
 -- @treturn vec3 Camera right direction vector in construct local coordinates.
 function M:getCameraRight()
+    return {0.9957, 0.0923, 0.0004}
 end
 
 --- Returns the up direction vector of the active camera, in construct local coordinates.
 -- @treturn vec3 Camera up direction vector in construct local coordinates.
 function M:getCameraUp()
+    return {-0.0756, 0.8134, 0.5767}
 end
 
 --- Return the current value of the mouse wheel (for the throttle speedUp/speedDown action).
 -- @treturn float The current input.
 function M:getThrottleInputFromMouseWheel()
+    return 0
 end
 
 --- Return the mouse input for the ship control action (forward/backward).
 -- @treturn float The current input.
 function M:getControlDeviceForwardInput()
+    return 0
 end
 
 --- Return the mouse input for the ship control action (yaw right/left).
 -- @treturn float The current input.
 function M:getControlDeviceYawInput()
+    return 0
 end
 
 --- Return the mouse input for the ship control action (right/left).
 -- @treturn float The current value of the mouse delta Y.
 function M:getControlDeviceLeftRightInput()
+    return 0
 end
 
 --- Lock or unlock the mouse free look.
@@ -443,16 +456,23 @@ end
 --- Return the current time since the arrival of the Arkship on September 30th, 2017.
 -- @treturn float Time in seconds.
 function M:getArkTime()
+    --return 194595166 -- 23-11-30
+    local function mytime()
+        return os.time{year=os.date("%Y"),month=os.date("%m"),day=os.date("%d"), hour=os.date("%H"), min=os.date("%M"), sec=os.date("%S") }
+    end
+    return mytime() - os.time{year=1970, month=1, day=1}
 end
 
 --- Return the current time since the January 1st, 1970.
 -- @treturn float Time in seconds.
 function M:getUtcTime()
+    return time()
 end
 
 --- Return the time offset between local timezone and UTC.
 -- @treturn float Time in seconds.
 function M:getUtcOffset()
+    return 0
 end
 
 --- Return the locale in which the game is currently running.
@@ -876,6 +896,7 @@ function M:mockGetClosure()
     closure.__NQ_returnFromRunPlayerLUA = function(result) return self:__NQ_returnFromRunPlayerLUA(result) end
     -- unknown use, but present in all elements
     closure.load = function() end
+    closure.onEvent = function(a, b) end
     return closure
 end
 
