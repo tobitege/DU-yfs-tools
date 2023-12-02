@@ -17,7 +17,7 @@ function WPointer(x,y,z, radius, name, type, localeType, subId)
 
     function self.getWaypointInfo()
         ---@diagnostic disable-next-line: missing-parameter
-        local cid = construct.getId()
+        local cid = CNID --in globals.lua!
         local cPos = getCWorldPos(cid)
         ---@diagnostic disable-next-line: need-check-nil
         local px,py,pz = self.x-cPos[1], self.y-cPos[2], self.z-cPos[3]
@@ -28,9 +28,8 @@ function WPointer(x,y,z, radius, name, type, localeType, subId)
             local tons = getCMass(cid) / 1000
             warpCost = max(floor(tons*floor(((distance/1000)/200))*0.00024), 1)
         end
-        local disR = round(distance, 4)
-        --if DEBUG then P("getWaypointInfo") end
-        return self.name, round((distance/1000)/200, 4), warpCost, round((distance/1000), 4), disR
+        local disR = round(distance, 2)
+        return {self.name, round((distance/1000)/200, 2), warpCost, round((distance/1000), 2), disR}
     end
 
     return self

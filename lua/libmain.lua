@@ -14,7 +14,3 @@ require('warpcost') -- warp calculator function
 
 require('wpoint') -- waypoint class
 WM = require('wpointmgr').new("MAIN") -- instantiate MAIN waypoint manager
-
----@if with_waypointer true
---require('waypointer_lib')
----@end

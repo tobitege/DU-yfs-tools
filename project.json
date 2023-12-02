@@ -18,26 +18,34 @@
     "development": {
       "name": "development",
       "minify": false,
-      "handleErrors": false
+      "handleErrors": false,
+      "variables": {
+        "debug": false
+      }
     },
     "development-wp": {
       "name": "development-wp",
       "minify": false,
       "handleErrors": false,
       "variables": {
+        "debug": false,
         "with_waypointer": true
       }
     },
     "release": {
       "name": "release",
       "minify": true,
-      "handleErrors": false
+      "handleErrors": false,
+      "variables": {
+        "debug": false
+      }
     },
     "release-wp": {
       "name": "release-wp",
       "minify": true,
       "handleErrors": false,
       "variables": {
+        "debug": false,
         "with_waypointer": true
       }
     }

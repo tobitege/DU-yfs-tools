@@ -754,7 +754,7 @@ function cmd.PosDataCmd()
     P("getCameraWorldRight: "..PM.Vec3String(system.getCameraWorldRight()))
     P("getCameraWorldUp: "..PM.Vec3String(system.getCameraWorldUp()))
 
-    P("construct.getWorldPosition: "..PM.Vec3String(construct.getWorldPosition(construct.getId())))
+    P("construct.getWorldPosition: "..PM.Vec3String(construct.getWorldPosition(CNID)))
     P("construct.getOrientationForward: "..PM.Vec3String(construct.getOrientationForward()))
     P("construct.getOrientationRight: "..PM.Vec3String(construct.getOrientationRight()))
     P("construct.getOrientationUp: "..PM.Vec3String(construct.getOrientationUp()))

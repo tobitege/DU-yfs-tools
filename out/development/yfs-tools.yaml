@@ -65,6 +65,8 @@ handlers:
     code: >-
       package.preload['YFS-Tools:globals.lua']=(function()
 
+      ---@diagnostic disable: lowercase-global
+
       -- Initialize globals and constants
 
       Config = { core = nil, databanks = {}, screens = {} }
@@ -99,9 +101,15 @@ handlers:
       end
 
 
+      projector = nil
+
       clicked = false -- for waypointer
 
+
       WaypointInfo = require('atlas')
+
+
+      CNID = construct.getId()
 
       end)
 
@@ -471,9 +479,6 @@ handlers:
 
       package.preload['YFS-Tools:libutils.lua']=(function()
 
-      --P("library_s01.lua start")
-
-
       local tonum, strmatch = tonumber, string.match
 
 
@@ -639,9 +644,6 @@ handlers:
           P(chat)
           return true
       end
-
-
-      --P("library_s01.lua end")
 
       end)
 
@@ -1452,7 +1454,7 @@ handlers:
           P("getCameraWorldRight: "..PM.Vec3String(system.getCameraWorldRight()))
           P("getCameraWorldUp: "..PM.Vec3String(system.getCameraWorldUp()))
 
-          P("construct.getWorldPosition: "..PM.Vec3String(construct.getWorldPosition(construct.getId())))
+          P("construct.getWorldPosition: "..PM.Vec3String(construct.getWorldPosition(CNID)))
           P("construct.getOrientationForward: "..PM.Vec3String(construct.getOrientationForward()))
           P("construct.getOrientationRight: "..PM.Vec3String(construct.getOrientationRight()))
           P("construct.getOrientationUp: "..PM.Vec3String(construct.getOrientationUp()))
@@ -1616,7 +1618,7 @@ handlers:
               elseif par > "" then
                   if SU.StartsWith(par, "::pos{") then
                       offs = 12 -- min. 12 km warp distance
-                      v = PM.MapPosToWorldPos(par)
+                      v = PM.MapPosToWorldVec3(par)
                   else
                       local p = PM.PlanetByName(par)
                       if p then
@@ -1652,7 +1654,7 @@ handlers:
           ---@diagnostic disable-next-line: missing-parameter
           local maxMass = 50000
           ---@diagnostic disable-next-line: missing-parameter
-          local tons = getCMass(construct.getId()) / 1000
+          local tons = getCMass(CNID) / 1000 --in globals.lua!
 
           -- check -cargo param and value
           local pCargo, bCargo = 0, false
@@ -1793,14 +1795,14 @@ handlers:
       Waypoint.new = function(parent)
           local obj = setmetatable(
               { parent = parent, name = "",
-                mapPos = { systemId = 0, planetId = 0, latitude = 0.0, longitude = 0.0, altitude = 0.0 } },
+                mapPos = { systemId = 0, id = 0, latitude = 0.0, longitude = 0.0, altitude = 0.0 } },
               { __index = Waypoint }
           )
           return obj
       end
 
 
-      ---@comment Returns the waypoint as { systemId, planetId, latitude, longitude, altitude }
+      ---@comment Returns the waypoint as { systemId, id, latitude, longitude, altitude }
 
       ---@return table
 
@@ -1827,7 +1829,7 @@ handlers:
               local s, p, x, y, z = strmatch(newMapPos, self.getPosPattern())
               if s then
                   self.mapPos.systemId = tonum(s)
-                  self.mapPos.planetId = tonum(p)
+                  self.mapPos.id = tonum(p)
                   self.mapPos.latitude = tonum(x)
                   self.mapPos.longitude = tonum(y)
                   self.mapPos.altitude = tonum(z)
@@ -1840,13 +1842,13 @@ handlers:
               self.mapPos.altitude = tonum(newMapPos[3])
           elseif type(newMapPos) == "table" and #newMapPos == 5 then
               self.mapPos.systemId = tonum(newMapPos[1])
-              self.mapPos.planetId = tonum(newMapPos[2])
+              self.mapPos.id = tonum(newMapPos[2])
               self.mapPos.latitude = tonum(newMapPos[3])
               self.mapPos.longitude = tonum(newMapPos[4])
               self.mapPos.altitude = tonum(newMapPos[5])
           elseif type(newMapPos) == "table" and newMapPos.x and newMapPos.y and newMapPos.z then
               self.mapPos.systemId = 0
-              self.mapPos.planetId = 0
+              self.mapPos.id = 0
               self.mapPos.latitude = tonum(newMapPos.x)
               self.mapPos.longitude = tonum(newMapPos.y)
               self.mapPos.altitude = tonum(newMapPos.z)
@@ -1892,7 +1894,7 @@ handlers:
 
       Waypoint.AsString = function(self)
           return string.format("::pos{%d, %d, %.4f, %.4f, %.4f}",
-                               self.mapPos.systemId, self.mapPos.planetId,
+                               self.mapPos.systemId, self.mapPos.id,
                                self.mapPos.latitude, self.mapPos.longitude, self.mapPos.altitude)
       end
 
@@ -2066,7 +2068,7 @@ handlers:
               elseif type(param) == "table" and #param == 5 then
                   -- Check if a waypoint with the same nums exists
                   if v.mapPos.systemId  == tonum(param[1]) and
-                     v.mapPos.planetId  == tonum(param[2]) and
+                     v.mapPos.id        == tonum(param[2]) and
                      v.mapPos.latitude  == tonum(param[3]) and
                      v.mapPos.longitude == tonum(param[4]) and
                      v.mapPos.altitude  == tonum(param[5]) then
@@ -2126,7 +2128,6 @@ handlers:
       require('YFS-Tools:../util/wpoint.lua') -- waypoint class
 
       WM = require('YFS-Tools:../util/wpointmgr.lua').new("MAIN") -- instantiate MAIN waypoint manager
-
 
 
       end)
@@ -2204,7 +2205,11 @@ handlers:
           ---@return table|nil returns a MapPos table of the coords or nil if invalid string
           function o.SplitPos(posStr)
               -- min. length is 16: "::pos{0,1,2,3,4}"
-              if type(posStr) ~= "string" or strlen(posStr) < 16 or not strmatch(posStr, "^::pos{") then
+              if type(posStr) ~= "string" then
+                  P("[E] Invalid position: "..type(posStr))
+                  return nil
+              end
+              if strlen(posStr) < 16 or not strmatch(posStr, "^::pos{") then
                   P("[E] Invalid position: "..posStr)
                   return nil
               end
@@ -2351,11 +2356,11 @@ handlers:
           function o.GetDistance(posStr, distToStr)
               local curPos = o.WorldPosVec3()
               if type(distToStr) == "string" then
-                  curPos = o.MapPosToWorldPos(distToStr)
+                  curPos = o.MapPosToWorldVec3(distToStr)
               elseif type(distToStr) == "table" then
                   curPos = vec3(distToStr)
               end
-              local wPos = o.MapPosToWorldPos(posStr)
+              local wPos = o.MapPosToWorldVec3(posStr)
               local dist = vec3(wPos - curPos):len()
               return dist
           end
@@ -2418,7 +2423,7 @@ handlers:
           ---comment Converts ::pos{} string into vec3
           ---@param posStr string ::pos{} string
           ---@return any vec3() or nil
-          function o.MapPosToWorldPos(posStr)
+          function o.MapPosToWorldVec3(posStr)
               local p = o.SplitPos(posStr)
               if not p or not p.systemId then return nil end
               if (p.systemId == 0 and p.id == 0) then -- already WorldPos
@@ -2509,7 +2514,7 @@ handlers:
                       posString = o.MapPos2String(p)
                   end
               else
-                  local v = o.MapPosToWorldPos(posString)
+                  local v = o.MapPosToWorldVec3(posString)
                   pcenter = { v.x, v.y, v.z }
               end
 
@@ -2523,7 +2528,7 @@ handlers:
           ---@comment Simple test for coord conversion
           function o.ConversionTest()
               local p1 = "::pos{0,2,35.5118,104.0375,285.3076}"
-              local w1 = o.MapPosToWorldPos(p1)
+              local w1 = o.MapPosToWorldVec3(p1)
               P("HQ local to world:\n"..p1.." =")
               P(o.Vec3ToPosString(w1))
               local w2 = o.WorldToMapPos(w1)
@@ -2601,7 +2606,7 @@ handlers:
 
       P("=========================================")
 
-      P("YFS-Tools 1.5 (unofficial)")
+      P("YFS-Tools 1.5.1 (unofficial)")
 
       P("created by tobitege (c) 2023")
 
@@ -2674,6 +2679,13 @@ handlers:
           local plural = ""
           if #Config.screens > 1 then plural = "s" end
           P(#Config.screens .. " screen" .. plural .. " connected.")
+      end
+
+
+      -- for local debugging, see mockaround file for demo data!
+
+      if not INGAME then
+          onlyForRoute = "Hema"
       end
 
 
@@ -2930,15 +2942,18 @@ handlers:
     code: >-
       
 
+      -- Important for local debugging:
+
       package.path = "lua/?.lua;util/wpointer/?.lua;"..package.path
 
       require('YFS-Tools:globals.lua')
 
 
-      -- trick to make it right in debugger ;)
+      -- DU-LuaC checks for true are last, so that local debugging sees true!
 
       WAYPOINTER_ENABLED = true
 
+      DEBUG = false
 
       require('YFS-Tools:libmain.lua')
 
@@ -2956,7 +2971,7 @@ handlers:
       local status, err, _ = xpcall(function() require('YFS-Tools:startup.lua') end, Traceback)
 
       if not status then
-          P("Error in startup!")
+          P("[E] Error in startup!")
           if err then P(err) end
           unit.exit()
           return
@@ -2970,17 +2985,13 @@ handlers:
       end
 
 
-      -- *****************************************
-
-
-      -- *****************************************
 
 
       if INGAME then
           if DEBUGx then
               status, err, _ = xpcall(function() PM.ConversionTest() end, Traceback)
               if not status then
-                  if err then P("Error in call:\n" .. err) end
+                  if err then P("[E] Error in test call:\n" .. err) end
                   unit.exit()
                   return
               end
@@ -2988,9 +2999,6 @@ handlers:
               unit.hideWidget()
           end
           P("Type /help for available commands.")
-          if #Config.screens > 0 then
-              P(Config.screens[1].getScreenWidth().."/"..Config.screens[1].getScreenHeight())
-          end
 
       end
 events: []

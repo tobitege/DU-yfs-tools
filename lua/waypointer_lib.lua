@@ -1,6 +1,5 @@
-require('0-FunctionManager')
-require('1-Object')
-require('2-PureModule')
+require('1-FunctionManager')
+require('2-Object')
 require('3-PureModule')
 require('4-ProjectionManager')
 require('wpointer_custom')

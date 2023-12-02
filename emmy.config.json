@@ -6,7 +6,9 @@
     },
     {
       "dir": "./util",
-      "exclude": []
+      "exclude": [
+        "Codex.lua"
+      ]
     },
     {
         "dir": "./util/du-mocks/dumocks",

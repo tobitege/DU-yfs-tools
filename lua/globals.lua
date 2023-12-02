@@ -1,3 +1,4 @@
+---@diagnostic disable: lowercase-global
 -- Initialize globals and constants
 Config = { core = nil, databanks = {}, screens = {} }
 DetectedArch = 0
@@ -20,5 +21,9 @@ else
     print = system.print
 end
 
+projector = nil
 clicked = false -- for waypointer
+
 WaypointInfo = require('atlas')
+
+CNID = construct.getId()

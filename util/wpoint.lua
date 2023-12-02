@@ -10,13 +10,13 @@ Waypoint = { mapPos = {}, name = "", parent = nil }
 Waypoint.new = function(parent)
     local obj = setmetatable(
         { parent = parent, name = "",
-          mapPos = { systemId = 0, planetId = 0, latitude = 0.0, longitude = 0.0, altitude = 0.0 } },
+          mapPos = { systemId = 0, id = 0, latitude = 0.0, longitude = 0.0, altitude = 0.0 } },
         { __index = Waypoint }
     )
     return obj
 end
 
----@comment Returns the waypoint as { systemId, planetId, latitude, longitude, altitude }
+---@comment Returns the waypoint as { systemId, id, latitude, longitude, altitude }
 ---@return table
 Waypoint.get = function(self)
     return self.mapPos
@@ -38,7 +38,7 @@ Waypoint.set = function(self, newMapPos)
         local s, p, x, y, z = strmatch(newMapPos, self.getPosPattern())
         if s then
             self.mapPos.systemId = tonum(s)
-            self.mapPos.planetId = tonum(p)
+            self.mapPos.id = tonum(p)
             self.mapPos.latitude = tonum(x)
             self.mapPos.longitude = tonum(y)
             self.mapPos.altitude = tonum(z)
@@ -51,13 +51,13 @@ Waypoint.set = function(self, newMapPos)
         self.mapPos.altitude = tonum(newMapPos[3])
     elseif type(newMapPos) == "table" and #newMapPos == 5 then
         self.mapPos.systemId = tonum(newMapPos[1])
-        self.mapPos.planetId = tonum(newMapPos[2])
+        self.mapPos.id = tonum(newMapPos[2])
         self.mapPos.latitude = tonum(newMapPos[3])
         self.mapPos.longitude = tonum(newMapPos[4])
         self.mapPos.altitude = tonum(newMapPos[5])
     elseif type(newMapPos) == "table" and newMapPos.x and newMapPos.y and newMapPos.z then
         self.mapPos.systemId = 0
-        self.mapPos.planetId = 0
+        self.mapPos.id = 0
         self.mapPos.latitude = tonum(newMapPos.x)
         self.mapPos.longitude = tonum(newMapPos.y)
         self.mapPos.altitude = tonum(newMapPos.z)
@@ -93,7 +93,7 @@ end
 ---@return string
 Waypoint.AsString = function(self)
     return string.format("::pos{%d, %d, %.4f, %.4f, %.4f}",
-                         self.mapPos.systemId, self.mapPos.planetId,
+                         self.mapPos.systemId, self.mapPos.id,
                          self.mapPos.latitude, self.mapPos.longitude, self.mapPos.altitude)
 end
 

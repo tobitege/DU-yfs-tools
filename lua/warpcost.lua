@@ -49,7 +49,7 @@ function CalcWarpCost(text)
         elseif par > "" then
             if SU.StartsWith(par, "::pos{") then
                 offs = 12 -- min. 12 km warp distance
-                v = PM.MapPosToWorldPos(par)
+                v = PM.MapPosToWorldVec3(par)
             else
                 local p = PM.PlanetByName(par)
                 if p then
@@ -85,7 +85,7 @@ function CalcWarpCost(text)
     ---@diagnostic disable-next-line: missing-parameter
     local maxMass = 50000
     ---@diagnostic disable-next-line: missing-parameter
-    local tons = getCMass(construct.getId()) / 1000
+    local tons = getCMass(CNID) / 1000 --in globals.lua!
 
     -- check -cargo param and value
     local pCargo, bCargo = 0, false

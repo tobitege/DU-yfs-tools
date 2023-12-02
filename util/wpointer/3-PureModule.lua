@@ -1,5 +1,5 @@
 function LoadPureModule(self, singleGroup, multiGroup)
-    
+
     function self.getMultiPointBuilder(groupId)
         local builder = {}
         local multiplePoints = LinkedList('','')
@@ -10,8 +10,8 @@ function LoadPureModule(self, singleGroup, multiGroup)
             local mp = {pointSetX,pointSetY,pointSetZ,false,false}
             local self={}
             local pC=1
-            function self.show() 
-                if not shown then 
+            function self.show()
+                if not shown then
                     shown = true
                     multiplePoints.Add(mp)
                 end
@@ -58,7 +58,7 @@ function LoadPureModule(self, singleGroup, multiGroup)
         end
         return builder
     end
-    
+
     function self.getSinglePointBuilder(groupId)
         local builder = {}
         local points = LinkedList('','')
@@ -75,23 +75,20 @@ function LoadPureModule(self, singleGroup, multiGroup)
                 end
                 return self
             end
-            
             function self.setDrawFunction(draw)
                 outArr[4] = draw
                 return self
             end
-            
             function self.setData(dat)
                 outArr[5] = dat
                 return self
             end
-            
             function self.show()
-                if ~shown then
+                if not shown then
                     shown = true
                 end
             end
-            function self.hide() 
+            function self.hide()
                 if shown then
                     points.Remove(outArr)
                     shown = false

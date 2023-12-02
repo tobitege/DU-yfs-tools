@@ -594,7 +594,7 @@ end
 --
 -- Note: This function is disabled if the player is not running the script explicitly (pressing F on the Control Unit,
 -- vs. via a plug signal).
--- @tparam 0/1 show 1 show the top helper menu, 0 hide the top helper menu.
+-- @tparam boolean show true = show the top helper menu, false hide the top helper menu.
 function M:showHelper(show)
 end
 
@@ -645,8 +645,16 @@ end
 function M:addMarker(filter, name)
 end
 
---- Unknown use.
---
+-- @Return integer Returns the current instruction count during this tick
+function M:getInstructionCount()
+    return 1234
+end
+
+-- @Return integer Returns the instruction limit before the CPU overloads
+function M:getInstructionLimit()
+    return 1000000
+end
+
 -- Note: This method is not documented in the codex.
 -- @param filter
 -- @param sectionName
@@ -887,6 +895,8 @@ function M:mockGetClosure()
     closure.playSound = function(filePath) return self:playSound(filePath) end
     closure.isPlayingSound = function() return self:isPlayingSound() end
     closure.stopSound = function() return self:stopSound() end
+    closure.getInstructionCount = function() return self:getInstructionCount() end
+    closure.getInstructionLimit = function() return self:getInstructionLimit() end
 
     closure.logInfo = function(msg) return self:logInfo(msg) end
     closure.logWarning = function(msg) return self:logWarning(msg) end

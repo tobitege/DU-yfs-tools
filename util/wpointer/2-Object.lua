@@ -4,7 +4,7 @@ positionTypes = {
 }
 orientationTypes = {
     globalO=false,
-    localO=true 
+    localO=true
 }
 local print = DUSystem.print
 function ObjectGroup(objects, transX, transY)
@@ -25,7 +25,7 @@ function ObjectGroup(objects, transX, transY)
     function self.setClass(class) self.class = class end
     function self.setStyle(style) self.style = style end
     function self.setGlowStyle(gStyle) self.gStyle = gStyle end
-    function self.setGlow(enable,radius,scale) self.glow = enable; self.gRad = radius or self.gRad; self.scale = scale or false end 
+    function self.setGlow(enable,radius,scale) self.glow = enable; self.gRad = radius or self.gRad; self.scale = scale or false end
     return self
 end
 ConstructReferential = getRotationManager({0,0,0,1},{0,0,0}, 'Construct')
@@ -40,7 +40,7 @@ function Object(posType, oriType)
     local ori = {0,0,0,1}
     local position = {0,0,0}
     local objRotationHandler = getRotationManager(ori,position, 'Object Rotation Handler')
-    
+
     local self = {
         true, -- 1
         multiGroup, -- 2
@@ -59,12 +59,12 @@ function Object(posType, oriType)
 
     local loadUIModule = LoadUIModule
     if loadUIModule == nil then
-        print('No UI Module installed.')
+        --print('No UI Module installed.')
         loadUIModule = function() end
     end
     local loadPureModule = LoadPureModule
     if loadPureModule == nil then
-        print('No Pure Module installed.')
+        --print('No Pure Module installed.')
         loadPureModule = function() end
     end
 
@@ -90,7 +90,6 @@ function Object(posType, oriType)
         self[8] = positionType
         choose()
     end
-    
     function self.getRotationManager()
         return objRotationHandler
     end

@@ -62,7 +62,11 @@ function o.New(pCore, pConstruct, pWM)
     ---@return table|nil returns a MapPos table of the coords or nil if invalid string
     function o.SplitPos(posStr)
         -- min. length is 16: "::pos{0,1,2,3,4}"
-        if type(posStr) ~= "string" or strlen(posStr) < 16 or not strmatch(posStr, "^::pos{") then
+        if type(posStr) ~= "string" then
+            P("[E] Invalid position: "..type(posStr))
+            return nil
+        end
+        if strlen(posStr) < 16 or not strmatch(posStr, "^::pos{") then
             P("[E] Invalid position: "..posStr)
             return nil
         end
@@ -209,11 +213,11 @@ function o.New(pCore, pConstruct, pWM)
     function o.GetDistance(posStr, distToStr)
         local curPos = o.WorldPosVec3()
         if type(distToStr) == "string" then
-            curPos = o.MapPosToWorldPos(distToStr)
+            curPos = o.MapPosToWorldVec3(distToStr)
         elseif type(distToStr) == "table" then
             curPos = vec3(distToStr)
         end
-        local wPos = o.MapPosToWorldPos(posStr)
+        local wPos = o.MapPosToWorldVec3(posStr)
         local dist = vec3(wPos - curPos):len()
         return dist
     end
@@ -276,7 +280,7 @@ function o.New(pCore, pConstruct, pWM)
     ---comment Converts ::pos{} string into vec3
     ---@param posStr string ::pos{} string
     ---@return any vec3() or nil
-    function o.MapPosToWorldPos(posStr)
+    function o.MapPosToWorldVec3(posStr)
         local p = o.SplitPos(posStr)
         if not p or not p.systemId then return nil end
         if (p.systemId == 0 and p.id == 0) then -- already WorldPos
@@ -367,7 +371,7 @@ function o.New(pCore, pConstruct, pWM)
                 posString = o.MapPos2String(p)
             end
         else
-            local v = o.MapPosToWorldPos(posString)
+            local v = o.MapPosToWorldVec3(posString)
             pcenter = { v.x, v.y, v.z }
         end
 
@@ -381,7 +385,7 @@ function o.New(pCore, pConstruct, pWM)
     ---@comment Simple test for coord conversion
     function o.ConversionTest()
         local p1 = "::pos{0,2,35.5118,104.0375,285.3076}"
-        local w1 = o.MapPosToWorldPos(p1)
+        local w1 = o.MapPosToWorldVec3(p1)
         P("HQ local to world:\n"..p1.." =")
         P(o.Vec3ToPosString(w1))
         local w2 = o.WorldToMapPos(w1)

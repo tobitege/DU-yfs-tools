@@ -132,7 +132,7 @@ WaypointMgr.exists = function(self, param)
         elseif type(param) == "table" and #param == 5 then
             -- Check if a waypoint with the same nums exists
             if v.mapPos.systemId  == tonum(param[1]) and
-               v.mapPos.planetId  == tonum(param[2]) and
+               v.mapPos.id        == tonum(param[2]) and
                v.mapPos.latitude  == tonum(param[3]) and
                v.mapPos.longitude == tonum(param[4]) and
                v.mapPos.altitude  == tonum(param[5]) then

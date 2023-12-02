@@ -3,7 +3,7 @@ function LinkedList(name, prefix)
     local internalDataTable = {}
     local internalTableSize = 0
     local removeKey,addKey,indexKey,refKey = prefix .. 'Remove',prefix .. 'Add',prefix..'index',prefix..'ref'
-    
+
     functions[removeKey] = function (node)
         local tblSize,internalDataTable = internalTableSize,internalDataTable
         if tblSize > 1 then
@@ -33,7 +33,6 @@ function LinkedList(name, prefix)
             end
         end
         local tblSize = internalTableSize + 1
-        
         internalDataTable[tblSize] = node
         node[indexKey] = tblSize
         node[refKey] = functions
@@ -48,7 +47,7 @@ function LinkedList(name, prefix)
 end
 
 local math = math
-local sin, cos, rad, type = math.sin,math.cos,math.rad, type
+local sin, cos, rad = math.sin,math.cos,math.rad
 
 function RotMatrixToQuat(m1,m2,m3)
     local m11,m22,m33 = m1[1],m2[2],m3[3]
@@ -90,7 +89,7 @@ function GetQuaternion(x,y,z,w)
         elseif #x == 4 then
             return x[1],x[2],x[3],x[4]
         else
-            print('Unsupported Rotation!')
+            print('[E] Unsupported Rotation!')
         end
     end
 end
@@ -112,7 +111,7 @@ function getRotationManager(out_rotation, wXYZ, name)
     --====================--
     --Local Math Functions--
     --====================--
-    local print,type,unpack,multiply,rotatePoint,getQuaternion = DUSystem.print,type,table.unpack,QuaternionMultiply,RotatePoint,GetQuaternion
+    local print,unpack,multiply,rotatePoint,getQuaternion = DUSystem.print,table.unpack,QuaternionMultiply,RotatePoint,GetQuaternion
 
     local superManager,needsUpdate,notForwarded,needNormal = nil,false,true,false
     local outBubble = nil
@@ -168,13 +167,13 @@ function getRotationManager(out_rotation, wXYZ, name)
         else
             wx,wy,wz,ww = ix,iy,iz,iw
         end
-        
+
         out_rotation[1],out_rotation[2],out_rotation[3],out_rotation[4] = wx,wy,wz,ww
         if needNormal then
             nx,ny,nz = 2*(wx*wy+wz*ww),1-2*(wx*wx+wz*wz),2*(wy*wz-wx*ww)
         end
         local subRots,subRotsSize = subRotations.subGetData()
-       
+
         for i=1, subRotsSize do
             subRots[i].update(wx,wy,wz,ww,pX,pY,pZ,wXYZ[1],wXYZ[2],wXYZ[3])
         end

@@ -1,5 +1,3 @@
---P("library_s01.lua start")
-
 local tonum, strmatch = tonumber, string.match
 
 function IsTable(obj)
@@ -140,5 +138,3 @@ end ]]
     P(chat)
     return true
 end
-
---P("library_s01.lua end")

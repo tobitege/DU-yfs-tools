@@ -65,6 +65,8 @@ handlers:
     code: >-
       package.preload['YFS-Tools:globals.lua']=(function()
 
+      ---@diagnostic disable: lowercase-global
+
       -- Initialize globals and constants
 
       Config = { core = nil, databanks = {}, screens = {} }
@@ -99,9 +101,15 @@ handlers:
       end
 
 
+      projector = nil
+
       clicked = false -- for waypointer
 
+
       WaypointInfo = require('atlas')
+
+
+      CNID = construct.getId()
 
       end)
 
@@ -471,9 +479,6 @@ handlers:
 
       package.preload['YFS-Tools:libutils.lua']=(function()
 
-      --P("library_s01.lua start")
-
-
       local tonum, strmatch = tonumber, string.match
 
 
@@ -639,9 +644,6 @@ handlers:
           P(chat)
           return true
       end
-
-
-      --P("library_s01.lua end")
 
       end)
 
@@ -1452,7 +1454,7 @@ handlers:
           P("getCameraWorldRight: "..PM.Vec3String(system.getCameraWorldRight()))
           P("getCameraWorldUp: "..PM.Vec3String(system.getCameraWorldUp()))
 
-          P("construct.getWorldPosition: "..PM.Vec3String(construct.getWorldPosition(construct.getId())))
+          P("construct.getWorldPosition: "..PM.Vec3String(construct.getWorldPosition(CNID)))
           P("construct.getOrientationForward: "..PM.Vec3String(construct.getOrientationForward()))
           P("construct.getOrientationRight: "..PM.Vec3String(construct.getOrientationRight()))
           P("construct.getOrientationUp: "..PM.Vec3String(construct.getOrientationUp()))
@@ -1616,7 +1618,7 @@ handlers:
               elseif par > "" then
                   if SU.StartsWith(par, "::pos{") then
                       offs = 12 -- min. 12 km warp distance
-                      v = PM.MapPosToWorldPos(par)
+                      v = PM.MapPosToWorldVec3(par)
                   else
                       local p = PM.PlanetByName(par)
                       if p then
@@ -1652,7 +1654,7 @@ handlers:
           ---@diagnostic disable-next-line: missing-parameter
           local maxMass = 50000
           ---@diagnostic disable-next-line: missing-parameter
-          local tons = getCMass(construct.getId()) / 1000
+          local tons = getCMass(CNID) / 1000 --in globals.lua!
 
           -- check -cargo param and value
           local pCargo, bCargo = 0, false
@@ -1793,14 +1795,14 @@ handlers:
       Waypoint.new = function(parent)
           local obj = setmetatable(
               { parent = parent, name = "",
-                mapPos = { systemId = 0, planetId = 0, latitude = 0.0, longitude = 0.0, altitude = 0.0 } },
+                mapPos = { systemId = 0, id = 0, latitude = 0.0, longitude = 0.0, altitude = 0.0 } },
               { __index = Waypoint }
           )
           return obj
       end
 
 
-      ---@comment Returns the waypoint as { systemId, planetId, latitude, longitude, altitude }
+      ---@comment Returns the waypoint as { systemId, id, latitude, longitude, altitude }
 
       ---@return table
 
@@ -1827,7 +1829,7 @@ handlers:
               local s, p, x, y, z = strmatch(newMapPos, self.getPosPattern())
               if s then
                   self.mapPos.systemId = tonum(s)
-                  self.mapPos.planetId = tonum(p)
+                  self.mapPos.id = tonum(p)
                   self.mapPos.latitude = tonum(x)
                   self.mapPos.longitude = tonum(y)
                   self.mapPos.altitude = tonum(z)
@@ -1840,13 +1842,13 @@ handlers:
               self.mapPos.altitude = tonum(newMapPos[3])
           elseif type(newMapPos) == "table" and #newMapPos == 5 then
               self.mapPos.systemId = tonum(newMapPos[1])
-              self.mapPos.planetId = tonum(newMapPos[2])
+              self.mapPos.id = tonum(newMapPos[2])
               self.mapPos.latitude = tonum(newMapPos[3])
               self.mapPos.longitude = tonum(newMapPos[4])
               self.mapPos.altitude = tonum(newMapPos[5])
           elseif type(newMapPos) == "table" and newMapPos.x and newMapPos.y and newMapPos.z then
               self.mapPos.systemId = 0
-              self.mapPos.planetId = 0
+              self.mapPos.id = 0
               self.mapPos.latitude = tonum(newMapPos.x)
               self.mapPos.longitude = tonum(newMapPos.y)
               self.mapPos.altitude = tonum(newMapPos.z)
@@ -1892,7 +1894,7 @@ handlers:
 
       Waypoint.AsString = function(self)
           return string.format("::pos{%d, %d, %.4f, %.4f, %.4f}",
-                               self.mapPos.systemId, self.mapPos.planetId,
+                               self.mapPos.systemId, self.mapPos.id,
                                self.mapPos.latitude, self.mapPos.longitude, self.mapPos.altitude)
       end
 
@@ -2066,7 +2068,7 @@ handlers:
               elseif type(param) == "table" and #param == 5 then
                   -- Check if a waypoint with the same nums exists
                   if v.mapPos.systemId  == tonum(param[1]) and
-                     v.mapPos.planetId  == tonum(param[2]) and
+                     v.mapPos.id        == tonum(param[2]) and
                      v.mapPos.latitude  == tonum(param[3]) and
                      v.mapPos.longitude == tonum(param[4]) and
                      v.mapPos.altitude  == tonum(param[5]) then
@@ -2127,8 +2129,6 @@ handlers:
 
       WM = require('YFS-Tools:../util/wpointmgr.lua').new("MAIN") -- instantiate MAIN waypoint manager
 
-
-      --require('waypointer_lib')
 
       end)
 
@@ -2205,7 +2205,11 @@ handlers:
           ---@return table|nil returns a MapPos table of the coords or nil if invalid string
           function o.SplitPos(posStr)
               -- min. length is 16: "::pos{0,1,2,3,4}"
-              if type(posStr) ~= "string" or strlen(posStr) < 16 or not strmatch(posStr, "^::pos{") then
+              if type(posStr) ~= "string" then
+                  P("[E] Invalid position: "..type(posStr))
+                  return nil
+              end
+              if strlen(posStr) < 16 or not strmatch(posStr, "^::pos{") then
                   P("[E] Invalid position: "..posStr)
                   return nil
               end
@@ -2352,11 +2356,11 @@ handlers:
           function o.GetDistance(posStr, distToStr)
               local curPos = o.WorldPosVec3()
               if type(distToStr) == "string" then
-                  curPos = o.MapPosToWorldPos(distToStr)
+                  curPos = o.MapPosToWorldVec3(distToStr)
               elseif type(distToStr) == "table" then
                   curPos = vec3(distToStr)
               end
-              local wPos = o.MapPosToWorldPos(posStr)
+              local wPos = o.MapPosToWorldVec3(posStr)
               local dist = vec3(wPos - curPos):len()
               return dist
           end
@@ -2419,7 +2423,7 @@ handlers:
           ---comment Converts ::pos{} string into vec3
           ---@param posStr string ::pos{} string
           ---@return any vec3() or nil
-          function o.MapPosToWorldPos(posStr)
+          function o.MapPosToWorldVec3(posStr)
               local p = o.SplitPos(posStr)
               if not p or not p.systemId then return nil end
               if (p.systemId == 0 and p.id == 0) then -- already WorldPos
@@ -2510,7 +2514,7 @@ handlers:
                       posString = o.MapPos2String(p)
                   end
               else
-                  local v = o.MapPosToWorldPos(posString)
+                  local v = o.MapPosToWorldVec3(posString)
                   pcenter = { v.x, v.y, v.z }
               end
 
@@ -2524,7 +2528,7 @@ handlers:
           ---@comment Simple test for coord conversion
           function o.ConversionTest()
               local p1 = "::pos{0,2,35.5118,104.0375,285.3076}"
-              local w1 = o.MapPosToWorldPos(p1)
+              local w1 = o.MapPosToWorldVec3(p1)
               P("HQ local to world:\n"..p1.." =")
               P(o.Vec3ToPosString(w1))
               local w2 = o.WorldToMapPos(w1)
@@ -2602,7 +2606,7 @@ handlers:
 
       P("=========================================")
 
-      P("YFS-Tools 1.5 (unofficial)")
+      P("YFS-Tools 1.5.1 (unofficial)")
 
       P("created by tobitege (c) 2023")
 
@@ -2675,6 +2679,13 @@ handlers:
           local plural = ""
           if #Config.screens > 1 then plural = "s" end
           P(#Config.screens .. " screen" .. plural .. " connected.")
+      end
+
+
+      -- for local debugging, see mockaround file for demo data!
+
+      if not INGAME then
+          onlyForRoute = "Hema"
       end
 
 
@@ -2803,14 +2814,14 @@ handlers:
 
       end)
 
-      package.preload['YFS-Tools:../util/wpointer/0-FunctionManager.lua']=(function()
+      package.preload['YFS-Tools:../util/wpointer/1-FunctionManager.lua']=(function()
 
       function LinkedList(name, prefix)
           local functions = {}
           local internalDataTable = {}
           local internalTableSize = 0
           local removeKey,addKey,indexKey,refKey = prefix .. 'Remove',prefix .. 'Add',prefix..'index',prefix..'ref'
-          
+
           functions[removeKey] = function (node)
               local tblSize,internalDataTable = internalTableSize,internalDataTable
               if tblSize > 1 then
@@ -2840,7 +2851,6 @@ handlers:
                   end
               end
               local tblSize = internalTableSize + 1
-              
               internalDataTable[tblSize] = node
               node[indexKey] = tblSize
               node[refKey] = functions
@@ -2857,7 +2867,7 @@ handlers:
 
       local math = math
 
-      local sin, cos, rad, type = math.sin,math.cos,math.rad, type
+      local sin, cos, rad = math.sin,math.cos,math.rad
 
 
       function RotMatrixToQuat(m1,m2,m3)
@@ -2901,7 +2911,7 @@ handlers:
               elseif #x == 4 then
                   return x[1],x[2],x[3],x[4]
               else
-                  print('Unsupported Rotation!')
+                  print('[E] Unsupported Rotation!')
               end
           end
       end
@@ -2926,7 +2936,7 @@ handlers:
           --====================--
           --Local Math Functions--
           --====================--
-          local print,type,unpack,multiply,rotatePoint,getQuaternion = DUSystem.print,type,table.unpack,QuaternionMultiply,RotatePoint,GetQuaternion
+          local print,unpack,multiply,rotatePoint,getQuaternion = DUSystem.print,table.unpack,QuaternionMultiply,RotatePoint,GetQuaternion
 
           local superManager,needsUpdate,notForwarded,needNormal = nil,false,true,false
           local outBubble = nil
@@ -2982,13 +2992,13 @@ handlers:
               else
                   wx,wy,wz,ww = ix,iy,iz,iw
               end
-              
+
               out_rotation[1],out_rotation[2],out_rotation[3],out_rotation[4] = wx,wy,wz,ww
               if needNormal then
                   nx,ny,nz = 2*(wx*wy+wz*ww),1-2*(wx*wx+wz*wz),2*(wy*wz-wx*ww)
               end
               local subRots,subRotsSize = subRotations.subGetData()
-             
+
               for i=1, subRotsSize do
                   subRots[i].update(wx,wy,wz,ww,pX,pY,pZ,wXYZ[1],wXYZ[2],wXYZ[3])
               end
@@ -3136,7 +3146,7 @@ handlers:
 
       end)
 
-      package.preload['YFS-Tools:../util/wpointer/1-Object.lua']=(function()
+      package.preload['YFS-Tools:../util/wpointer/2-Object.lua']=(function()
 
       positionTypes = {
           globalP=false,
@@ -3145,7 +3155,7 @@ handlers:
 
       orientationTypes = {
           globalO=false,
-          localO=true 
+          localO=true
       }
 
       local print = DUSystem.print
@@ -3168,7 +3178,7 @@ handlers:
           function self.setClass(class) self.class = class end
           function self.setStyle(style) self.style = style end
           function self.setGlowStyle(gStyle) self.gStyle = gStyle end
-          function self.setGlow(enable,radius,scale) self.glow = enable; self.gRad = radius or self.gRad; self.scale = scale or false end 
+          function self.setGlow(enable,radius,scale) self.glow = enable; self.gRad = radius or self.gRad; self.scale = scale or false end
           return self
       end
 
@@ -3188,7 +3198,7 @@ handlers:
           local ori = {0,0,0,1}
           local position = {0,0,0}
           local objRotationHandler = getRotationManager(ori,position, 'Object Rotation Handler')
-          
+
           local self = {
               true, -- 1
               multiGroup, -- 2
@@ -3207,12 +3217,12 @@ handlers:
 
           local loadUIModule = LoadUIModule
           if loadUIModule == nil then
-              print('No UI Module installed.')
+              --print('No UI Module installed.')
               loadUIModule = function() end
           end
           local loadPureModule = LoadPureModule
           if loadPureModule == nil then
-              print('No Pure Module installed.')
+              --print('No Pure Module installed.')
               loadPureModule = function() end
           end
 
@@ -3238,7 +3248,6 @@ handlers:
               self[8] = positionType
               choose()
           end
-          
           function self.getRotationManager()
               return objRotationHandler
           end
@@ -3273,174 +3282,10 @@ handlers:
 
       end)
 
-      package.preload['YFS-Tools:../util/wpointer/2-PureModule.lua']=(function()
-
-      function LoadPureModule(self, singleGroup, multiGroup)
-          
-          function self.getMultiPointBuilder(groupId)
-              local builder = {}
-              local multiplePoints = LinkedList('','')
-              multiGroup[#multiGroup+1] = multiplePoints
-              function builder.addMultiPointSVG()
-                  local shown = false
-                  local pointSetX,pointSetY,pointSetZ={},{},{}
-                  local mp = {pointSetX,pointSetY,pointSetZ,false,false}
-                  local self={}
-                  local pC=1
-                  function self.show() 
-                      if not shown then 
-                          shown = true
-                          multiplePoints.Add(mp)
-                      end
-                  end
-                  function self.hide()
-                      if shown then 
-                          shown = false
-                          multiplePoints.Remove(mp)
-                      end
-                  end
-                  function self.addPoint(point)
-                      pointSetX[pC]=point[1]
-                      pointSetY[pC]=point[2]
-                      pointSetZ[pC]=point[3]
-                      pC=pC+1
-                      return self
-                  end
-                  function self.setPoints(bulk)
-                      for i=1,#bulk do
-                          local point = bulk[i]
-                          pointSetX[i]=point[1]
-                          pointSetY[i]=point[2]
-                          pointSetZ[i]=point[3]
-                      end
-                      pC=#bulk+1
-                      return self
-                  end
-                  function self.setDrawFunction(draw)
-                      mp[4] = draw
-                      return self
-                  end
-                  function self.setData(dat)
-                      mp[5] = dat
-                      return self
-                  end
-                  function self.build()
-                      if pC > 1 then
-                          multiplePoints.Add(mp)
-                          shown = true
-                      else print("WARNING! Malformed multi-point build operation, no points specified. Ignoring.")
-                      end
-                  end
-                  return self
-              end
-              return builder
-          end
-          
-          function self.getSinglePointBuilder(groupId)
-              local builder = {}
-              local points = LinkedList('','')
-              singleGroup[#singleGroup+1] = points
-              function builder.addSinglePointSVG()
-                  local shown = false
-                  local outArr = {false,false,false,false,false}
-
-                  function self.setPosition(px,py,pz)
-                      if type(px) == 'table' then
-                          outArr[1],outArr[2],outArr[3]=px[1],px[2],px[3]
-                      else
-                          outArr[1],outArr[2],outArr[3]=px,py,pz
-                      end
-                      return self
-                  end
-                  
-                  function self.setDrawFunction(draw)
-                      outArr[4] = draw
-                      return self
-                  end
-                  
-                  function self.setData(dat)
-                      outArr[5] = dat
-                      return self
-                  end
-                  
-                  function self.show()
-                      if ~shown then
-                          shown = true
-                      end
-                  end
-                  function self.hide() 
-                      if shown then
-                          points.Remove(outArr)
-                          shown = false
-                      end
-                  end
-                  function self.build()
-                      points.Add(outArr)
-                      shown = true
-                      return self
-                  end
-                  return self
-              end
-              return builder
-          end
-      end
-
-
-      function ProcessPureModule(zBC, singleGroup, multiGroup, zBuffer, zSorter,
-              mXX, mXY, mXZ,
-              mYX, mYY, mYZ,
-              mZX, mZY, mZZ,
-              mXW, mYW, mZW)
-          for cG = 1, #singleGroup do
-              local group = singleGroup[cG]
-              local singleGroups,singleSize = group.GetData()
-              for sGC = 1, singleSize do
-                  local singleGroup = singleGroups[sGC]
-                  local x,y,z = singleGroup[1], singleGroup[2], singleGroup[3]
-                  local pz = mYX*x + mYY*y + mYZ*z + mYW
-                  if pz < 0 then goto disabled end
-                  zBC = zBC + 1
-                  zSorter[zBC] = -pz
-                  zBuffer[-pz] = singleGroup[4]((mXX*x + mXY*y + mXZ*z + mXW)/pz,(mZX*x + mZY*y + mZZ*z + mZW)/pz,pz,singleGroup[5])
-                  ::disabled::
-              end
-          end
-          for cG = 1, #multiGroup do
-              local group = multiGroup[cG]
-              local multiGroups,groupSize = group.GetData()
-              for mGC = 1, groupSize do
-                  local multiGroup = multiGroups[mGC]
-
-                  local tPointsX,tPointsY,tPointsZ = {},{},{}
-                  local pointsX,pointsY,pointsZ = multiGroup[1],multiGroup[2],multiGroup[3]
-                  local size = #pointsX
-                  local mGAvg = 0
-                  for pC=1,size do
-                      local x,y,z = pointsX[pC],pointsY[pC],pointsZ[pC]
-                      local pz = mYX*x + mYY*y + mYZ*z + mYW
-                      if pz < 0 then
-                          goto disabled
-                      end
-
-                      tPointsX[pC],tPointsY[pC] = (mXX*x + mXY*y + mXZ*z + mXW)/pz,(mZX*x + mZY*y + mZZ*z + mZW)/pz
-                      mGAvg = mGAvg + pz
-                  end
-                  local depth = -mGAvg/size
-                  zBC = zBC + 1
-                  zSorter[zBC] = depth
-                  zBuffer[depth] = multiGroup[4](tPointsX,tPointsY,depth,multiGroup[5])
-                  ::disabled::
-              end
-          end
-          return zBC
-      end
-
-      end)
-
       package.preload['YFS-Tools:../util/wpointer/3-PureModule.lua']=(function()
 
       function LoadPureModule(self, singleGroup, multiGroup)
-          
+
           function self.getMultiPointBuilder(groupId)
               local builder = {}
               local multiplePoints = LinkedList('','')
@@ -3451,8 +3296,8 @@ handlers:
                   local mp = {pointSetX,pointSetY,pointSetZ,false,false}
                   local self={}
                   local pC=1
-                  function self.show() 
-                      if not shown then 
+                  function self.show()
+                      if not shown then
                           shown = true
                           multiplePoints.Add(mp)
                       end
@@ -3499,7 +3344,7 @@ handlers:
               end
               return builder
           end
-          
+
           function self.getSinglePointBuilder(groupId)
               local builder = {}
               local points = LinkedList('','')
@@ -3516,23 +3361,20 @@ handlers:
                       end
                       return self
                   end
-                  
                   function self.setDrawFunction(draw)
                       outArr[4] = draw
                       return self
                   end
-                  
                   function self.setData(dat)
                       outArr[5] = dat
                       return self
                   end
-                  
                   function self.show()
-                      if ~shown then
+                      if not shown then
                           shown = true
                       end
                   end
-                  function self.hide() 
+                  function self.hide()
                       if shown then
                           points.Remove(outArr)
                           shown = false
@@ -3605,8 +3447,8 @@ handlers:
 
       function Projector()
           -- Localize frequently accessed data
-          local construct, player, system, math = DUConstruct, DUPlayer, DUSystem, math
-          
+          local construct, system, math = DUConstruct, DUSystem, math
+
           -- Internal Parameters
           local frameBuffer,frameRender,isSmooth,lowLatency = {'',''},true,true,true
 
@@ -3619,14 +3461,14 @@ handlers:
           system.setScreen
 
           --- Camera-based function calls
-          
+
           local getCamWorldRight, getCamWorldFwd, getCamWorldUp, getCamWorldPos =
           system.getCameraWorldRight,
           system.getCameraWorldForward,
           system.getCameraWorldUp,
           system.getCameraWorldPos
-         
-          local getConWorldRight, getConWorldFwd, getConWorldUp, getConWorldPos = 
+
+          local getConWorldRight, getConWorldFwd, getConWorldUp, getConWorldPos =
           construct.getWorldRight,
           construct.getWorldForward,
           construct.getWorldUp,
@@ -3635,7 +3477,7 @@ handlers:
           --- Manager-based function calls
           ---- Quaternion operations
           local rotMatrixToQuat,quatMulti = RotMatrixToQuat,QuaternionMultiply
-          
+
           -- Localize Math functions
           local tan, atan, rad = math.tan, math.atan, math.rad
 
@@ -3690,7 +3532,7 @@ handlers:
               local width,height = getWidth(), getHeight()
               local aspect = width/height
               local tanFov = tan(rad(horizontalFov() * 0.5))
-              
+
               --- Matrix Subprocessing
               local nearDivAspect = (width*0.5) / tanFov
               fnearDivAspect = nearDivAspect
@@ -3700,11 +3542,7 @@ handlers:
               local pz3 = px1 * aspect
 
               local pxw,pzw = px1 * width * 0.5, -pz3 * height * 0.5
-              
-              --- View Matrix Processing
-               --- View Matrix Processing
-              
-              
+
               -- Localize screen info
               local objectGroupsArray,objectGroupSize = objectGroups.GetData()
               local svgBuffer,svgZBuffer,svgBufferCounter = {},{},0
@@ -3723,7 +3561,7 @@ handlers:
               end
               local predefinedRotations = {}
               local camR,camF,camU,camP = getCamWorldRight(),getCamWorldFwd(),getCamWorldUp(),getCamWorldPos()
-              
+
               do
                   local cwr,cwf,cwu = getConWorldRight(),getConWorldFwd(),getConWorldUp()
                   ConstructReferential.rotateXYZ(cwr,cwf,cwu)
@@ -3733,7 +3571,6 @@ handlers:
                   ConstructOriReferential.checkUpdate()
               end
               local vx,vy,vz,vw = rotMatrixToQuat(camR,camF,camU)
-              
               local vxx,vxy,vxz,vyx,vyy,vyz,vzx,vzy,vzz = camR[1]*pxw,camR[2]*pxw,camR[3]*pxw,camF[1],camF[2],camF[3],camU[1]*pzw,camU[2]*pzw,camU[3]*pzw
               local ex,ey,ez = camP[1],camP[2],camP[3]
               local deltaPreProcessing = getTime() - startTime
@@ -3759,32 +3596,32 @@ handlers:
                       local objOri, objPos, oriType, posType  = obj[5], obj[6], obj[7], obj[8]
                       local objX,objY,objZ = objPos[1]-ex,objPos[2]-ey,objPos[3]-ez
                       local mx,my,mz,mw = objOri[1], objOri[2], objOri[3], objOri[4]
-                      
+
                       local a,b,c,d = quatMulti(mx,my,mz,mw,vx,vy,vz,vw)
                       local aa, ab, ac, ad, bb, bc, bd, cc, cd = 2*a*a, 2*a*b, 2*a*c, 2*a*d, 2*b*b, 2*b*c, 2*b*d, 2*c*c, 2*c*d
-                      
+
                       local mXX, mXY, mXZ,
                             mYX, mYY, mYZ,
-                            mZX, mZY, mZZ = 
-                      (1 - bb - cc)*pxw,    (ab + cd)*pxw,    (ac - bd)*pxw,
-                      (ab - cd),           (1 - aa - cc),     (bc + ad),
-                      (ac + bd)*pzw,        (bc - ad)*pzw,    (1 - aa - bb)*pzw
-                      
+                            mZX, mZY, mZZ =
+                      (1 - bb - cc)*pxw, (ab + cd)*pxw,  (ac - bd)*pxw,
+                      (ab - cd),         (1 - aa - cc),  (bc + ad),
+                      (ac + bd)*pzw,     (bc - ad)*pzw,  (1 - aa - bb)*pzw
+
                       local mWX,mWY,mWZ = ((vxx*objX+vxy*objY+vxz*objZ)),(vyx*objX+vyy*objY+vyz*objZ),((vzx*objX+vzy*objY+vzz*objZ))
 
                       local processRotations = processRots(predefinedRotations,vx,vy,vz,vw,pxw,pzw)
                       predefinedRotations[mx .. ',' .. my .. ',' .. mz .. ',' .. mw] = {mXX,mXZ,mYX,mYZ,mZX,mZZ}
-                      
+
                       avgZ = avgZ + mWY
                       local uiGroups = obj[4]
-                      
+
                       -- Process Actionables
                       local eventStartTime = getTime()
                       obj.previousUI = processEvents(uiGroups, obj.previousUI, isClicked, isHolding, vyx, vyy, vyz, processRotations, ex,ey,ez, sort)
                       local drawProcessingStartTime = getTime()
                       deltaEvent = deltaEvent + drawProcessingStartTime - eventStartTime
+
                       -- Progress Pure
-             
                       zBC = processPure(zBC, obj[2], obj[3], zBuffer, zSorter,
                           mXX, mXY, mXZ,
                           mYX, mYY, mYZ,
@@ -3827,10 +3664,10 @@ handlers:
                       end
                       local styleHeader = ('<style>svg{background:none;width:%gpx;height:%gpx;position:absolute;top:0px;left:0px;}'):format(width,height)
                       local svgHeader = ('<svg viewbox="-%g -%g %g %g"'):format(width*0.5,height*0.5,width,height)
-                      
+
                       svgBufferCounter = svgBufferCounter + 1
                       svgZBuffer[svgBufferCounter] = dpth
-                      
+
                       if objectGroup.glow then
                           local size
                           if objectGroup.scale then
@@ -3843,7 +3680,7 @@ handlers:
                                       '<div class="', objectGroup.class ,'">',
                                       styleHeader,
                                       objectGroup.style,
-                                      '.blur { filter: blur(',size,'px) brightness(60%) saturate(3);',
+                                      '.blur {filter: blur(',size,'px) brightness(60%) saturate(3);',
                                       objectGroup.gStyle, '}</style>',
                                       svgHeader,
                                       ' class="blur">',
@@ -3853,18 +3690,18 @@ handlers:
                                       '</svg></div>',
                                       ending
                                   })
-                          
                       else
                           svgBuffer[dpth] = concat({
                                       beginning,
                                       '<div class="', objectGroup.class ,'">',
                                       styleHeader,
-                                      objectGroup.style, '}</style>',
+                                      objectGroup.style, '</style>', --orig: '}</style>',
                                       svgHeader, '>',
                                       actualSVGCode,
                                       '</svg></div>',
                                       ending
                                   })
+                          P(svgBuffer[dpth])
                       end
                   end
                   deltaPostProcessing = deltaPostProcessing + getTime() - postProcessingStartTime
@@ -3918,7 +3755,7 @@ handlers:
 
           function self.getWaypointInfo()
               ---@diagnostic disable-next-line: missing-parameter
-              local cid = construct.getId()
+              local cid = CNID --in globals.lua!
               local cPos = getCWorldPos(cid)
               ---@diagnostic disable-next-line: need-check-nil
               local px,py,pz = self.x-cPos[1], self.y-cPos[2], self.z-cPos[3]
@@ -3929,9 +3766,8 @@ handlers:
                   local tons = getCMass(cid) / 1000
                   warpCost = max(floor(tons*floor(((distance/1000)/200))*0.00024), 1)
               end
-              local disR = round(distance, 4)
-              --if DEBUG then P("getWaypointInfo") end
-              return self.name, round((distance/1000)/200, 4), warpCost, round((distance/1000), 4), disR
+              local disR = round(distance, 2)
+              return {self.name, round((distance/1000)/200, 2), warpCost, round((distance/1000), 2), disR}
           end
 
           return self
@@ -3941,17 +3777,300 @@ handlers:
 
       package.preload['YFS-Tools:waypointer_lib.lua']=(function()
 
-      require('YFS-Tools:../util/wpointer/0-FunctionManager.lua')
+      require('YFS-Tools:../util/wpointer/1-FunctionManager.lua')
 
-      require('YFS-Tools:../util/wpointer/1-Object.lua')
-
-      require('YFS-Tools:../util/wpointer/2-PureModule.lua')
+      require('YFS-Tools:../util/wpointer/2-Object.lua')
 
       require('YFS-Tools:../util/wpointer/3-PureModule.lua')
 
       require('YFS-Tools:../util/wpointer/4-ProjectionManager.lua')
 
       require('YFS-Tools:../util/wpointer/wpointer_custom.lua')
+
+      end)
+
+      package.preload['YFS-Tools:waypointer_start.lua']=(function()
+
+      -- Original waypointer script (c) EasternGamer
+
+      -- tobitege: customisation to read YFS route waypoints
+
+      -- as well as ArchHud locations and add these for display
+
+
+      local enableWaypointer=true--export: Enable waypoint AR display. Default: checked.
+
+      local lowLatencyMode=true--export: Enables low latency for screen render, which can sometimes bug out if a frame gets skipped. A restart is required then.
+
+      local highPerformanceMode=false--export: Disables glow effect which can in some cases improve FPS significantly
+
+      local smooth=false--export: Caution: display can fault! Enables full FPS rendering, which increases the perceived performance for an actual performance impact
+
+      local glowRadius=3--export: Sets the pixel size of the glow effect. Only in non-higPerformanceMode; 0=disabled.
+
+      local displayWarpCells=false--export: Enable display of warp cells amount
+
+      local displaySolarWP=false--export: Enable display of solar objects (planets, moons)
+
+      local displayCustomWP=true--export: Enable display of custom waypoints (routes)
+
+      local archHudWaypointSize=1--export: The size in meters of a custom waypoint (0.1 - 10)
+
+      local archHudWPRender=3--export: The number of kilometers above which distance custom waypoints are not rendered
+
+      local maxWaypointSize=200--export: The max size of a waypoint in pixels
+
+      local minWaypointSize=20--export: The min size of a waypoint in pixels (max 300)
+
+      local infoHighlight=300--export: The number of pixels within info is displayed
+
+      local fontsize=30--export: Font size (default: 20)
+
+      local colorWarp="#ADD8E6"--export: RGB color of warpable waypoints. Default: "#ADD8E6"
+
+      local nonWarp="#FFA500"--export: RGB color of non-warpable waypoints. Default: "#FFA500"
+
+      local colorWaypoint="#32CD32"--export: RGB color of custom waypoints. Default: "#32CD32"
+
+
+      local format, sqrt, len, max, print, uclamp = string.format, math.sqrt, string.len, math.max, system.print, utils.clamp
+
+      local concat,unpack = table.concat,table.unpack
+
+
+      local position = {0,0,0}
+
+      local offsetPos = {0,0,0}
+
+      local orientation = {0,0,0}
+
+      ---@diagnostic disable-next-line: missing-parameter
+
+      local width = system.getScreenWidth() / 2
+
+      ---@diagnostic disable-next-line: missing-parameter
+
+      local height = system.getScreenHeight() / 2
+
+      local objectBuilder = ObjectBuilderLinear()
+
+      fontsize = uclamp(fontsize, 10, 40)
+
+      glowRadius = uclamp(glowRadius, 0, 10)
+
+      minWaypointSize = uclamp(minWaypointSize, 5, 200)
+
+      maxWaypointSize = uclamp(maxWaypointSize, minWaypointSize+1, 400)
+
+      archHudWaypointSize = uclamp((archHudWaypointSize or 0.5), 0.1, 10)
+
+
+      if not enableWaypointer then
+          WAYPOINTER_ENABLED = false
+      end
+
+      WaypointOpt = false
+
+
+      local localeIndex = {
+          ['en-US'] = 1,
+          ['fr-FR'] = 2,
+          ['de-De'] = 3
+      }
+
+
+      ---@diagnostic disable-next-line: lowercase-global
+
+      projector = Projector()
+
+      projector.setSmooth(smooth)
+
+
+      local waypointObjectGroup = ObjectGroup()
+
+      projector.addObjectGroup(waypointObjectGroup)
+
+
+      local css = [[
+
+      svg {
+          stroke-width: 3;
+          vertical-align:middle;
+          text-anchor:start;
+          fill: white;
+          font-family: Refrigerator;
+          font-size: ]] .. fontsize .. [[;
+      }]]
+
+      waypointObjectGroup.setStyle(css)
+
+
+      if not highPerformanceMode and glowRadius > 0 then
+          waypointObjectGroup.setGlow(true, glowRadius, true)
+      end
+
+
+      projector.setLowLatency(lowLatencyMode == true)
+
+      local function drawText(content,x, y, text, opacity,uD,c,c2,stroke)
+          uD[c],uD[c+1],uD[c+2],uD[c+3],uD[c+4],uD[c+5] = x,y,opacity,opacity,stroke,text
+          content[c2] = '<text x="%g" y="%g" fill-opacity="%g" stroke-opacity="%g" stroke="%s">%s</text>'
+          return c+6,c2+1
+      end
+
+
+      local function drawHorizontalLine(content,x, y, length, thickness,dU,c,c2,stroke)
+          dU[c],dU[c+1],dU[c+2],dU[c+3],dU[c+4]=thickness,stroke,x,y,length
+          content[c2] = '<path fill="none" stroke-width="%g" stroke="%s" d="M%g %gh%g"/>'
+          return c+5,c2+1
+      end
+
+
+      local maxD = sqrt(width*width + height*height)
+
+      local function drawInfo(content,tx,ty,data,dU,c,c1,stroke,distanceToMouse,wpInfo)
+          local font = fontsize
+          local name,distance,warpCost,disKM,disM = unpack(wpInfo)
+          local keyframe = data.keyframe
+          c,c1 = drawHorizontalLine(content, tx, ty + 3, len(name)*(font*0.6), 2,dU,c,c1,stroke)
+          c,c1 = drawText(content, tx, ty, name, 1,dU,c,c1,stroke)
+          if distanceToMouse <= infoHighlight then
+              if keyframe < 6 then
+                  data.keyframe = keyframe + 1
+              end
+          else
+              if keyframe ~= 0 then
+                  data.keyframe = keyframe - 1
+              end
+          end
+          local opacity = keyframe/6
+          if WaypointOpt and distanceToMouse < 15 then
+              system.setWaypoint('::pos{0,0,' .. data.x ..',' .. data.y .. ',' .. data.z ..'}')
+              WaypointOpt = false
+          end
+          if keyframe > 0 then
+              disM = disM or 0
+              disKM = disKM or 0
+              distance = distance or 0
+              local disText = ''
+              if disM <= 2000 then
+                  disText = disM .. ' m'
+              elseif disKM <= 200 then
+                  disText = disKM .. ' km'
+              else
+                  disText = distance .. ' SU'
+              end
+              local f5 = font + 5
+              local kf = keyframe * 10
+              local tx2 = tx + 80
+              c,c1 = drawText(content, tx2 - kf, ty+f5, disText, opacity,dU,c,c1,stroke)
+              if displayWarpCells and distance > 2 then
+                  c,c1 = drawText(content, tx2 - kf, ty+f5*2, data.localeType, opacity,dU,c,c1,stroke)
+                  c,c1 = drawText(content, tx2 - kf, ty+f5*3, warpCost .. ' Warp Cells', opacity,dU,c,c1,stroke)
+              elseif data.type == 'WP' then
+                  c,c1 = drawText(content, tx2 - kf, ty+f5*2, 'Alt: '..data.subId, opacity,dU,c,c1,stroke)
+              else
+                  c,c1 = drawText(content, tx2 - kf, ty+f5*2, data.localeType, opacity,dU,c,c1,stroke)
+              end
+          end
+          return c
+      end
+
+
+      local function draw(tx,ty,tz,data)
+          local dU, c = {},1
+          local content,c1 = {},1
+          local distanceToMouse = sqrt(tx*tx + ty*ty)
+          local r = data.radius
+          local off = (((tz/1000)/200))/100
+          local size = Round(max(projector.getSize(r, tz, 100000000, minWaypointSize) - off, 2),1)
+          local wpInfo = data.getWaypointInfo()
+          local distance,disM = wpInfo[2],wpInfo[5]
+          size = uclamp(size, minWaypointSize, maxWaypointSize)
+          if data.type == 'Planet' or data.type == 'WP' then
+              if (disM < 2) or (distanceToMouse > maxD) or --or (tz < 30) or (size >= maxWaypointSize)
+                 (data.type == 'WP' and tz>archHudWPRender*1000) then -- Don't display
+                return ''
+              end
+          elseif data.type == 'Moon' then
+              if distance > 20 then return '' end
+          else
+              if distance > 10 then return '' end
+          end
+
+          local stroke = colorWarp
+          if data.type == 'WP' then
+              stroke = colorWaypoint
+          elseif distance > 500 then
+              stroke = nonWarp
+          end
+          content[c1] = '<circle cx="%g" cy="%g" r="%g" fill="%s" stroke="%s"/>'
+          dU[c],dU[c+1] = tx,ty
+          c=c+2
+          if r==archHudWaypointSize*1.25 then
+              size = size /2
+              dU[c+1] = colorWarp
+          else
+              dU[c+1] = 'none'
+          end
+          dU[c] = size
+          dU[c+2] = stroke
+          c=c+3
+          c=drawInfo(content, tx + size + 5, ty - size + 5, data,dU,c,c1+1,stroke,distanceToMouse,wpInfo)
+          return concat(content):format(unpack(dU))
+      end
+
+
+      local solarWaypoints = objectBuilder
+      		.setPositionType(positionTypes.globalP)
+      		.setOrientationType(orientationTypes.globalO)
+      		.build()
+
+      waypointObjectGroup.addObject(solarWaypoints)
+
+      local builder = solarWaypoints.getSinglePointBuilder()
+
+      if displaySolarWP then
+          ---@diagnostic disable-next-line: missing-parameter
+          local localizationIndex = localeIndex[system.getLocale()]
+          for k,stellar in pairs(WaypointInfo[0]) do
+              local wCenter = stellar.center
+              local wName = stellar.name[localizationIndex]
+              local wRadius = stellar.radius
+              local wType = stellar.type[1]
+              if wType ~= "Asteroid" then
+                  local wlType = stellar.type[localizationIndex]
+                  local waypointObject = WPointer(wCenter[1],wCenter[2],wCenter[3],
+                          wRadius * 1.25, wName, wType, wlType, nil)
+                  local customSVG = builder.addSinglePointSVG()
+                  customSVG.setPosition(wCenter[1], wCenter[2], wCenter[3])
+                      .setData(waypointObject)
+                      .setDrawFunction(draw)
+                      .build()
+                  P("[WPointer] Added "..wName)
+              end
+          end
+      end
+
+
+      -- tobitege: draw custom waypoints if enabled
+
+      if displayCustomWP and WM then
+          for _,p in ipairs(WM:getSorted()) do
+              local subId = format("%.2f", p.mapPos.altitude)
+              local s = PM.MapPos2String(p.mapPos)
+              local wPos = PM.MapPosToWorldVec3(s);
+              local waypointObject = WPointer(
+                      wPos.x, wPos.y, wPos.z,
+                      archHudWaypointSize * 1.25, p.name, 'WP', 'WP', subId)
+              local customSVG = builder.addSinglePointSVG()
+              customSVG.setPosition(wPos.x, wPos.y, wPos.z)
+                  .setData(waypointObject)
+                  .setDrawFunction(draw)
+                  .build()
+                  P("[WPointer] Added "..p.name)
+          end
+      end
 
       end)
 
@@ -3986,284 +4105,55 @@ handlers:
 
       function timerFunc.Run(timerId)
           if timerId == 'update' then
-              local svg, index = projector.getSVG()
-              ---@diagnostic disable-next-line: param-type-mismatch
+              if not INGAME then P("onTimer(update)") end
+              if not DEBUG then
+                  local svg = projector.getSVG()
+                  ---@diagnostic disable-next-line: param-type-mismatch
+                  if svg then system.setScreen(svg) end
+                  return
+              end
+
+      -- EasternGamer's Screen Update with debug info
+
+      local timeStart = system.getArkTime()
+
+      local svg, deltaPreProcessing, deltaDrawProcessing, deltaEvent, deltaZSort, deltaZBufferCopy, deltaPostProcessing = projector.getSVG()
+
+      local delta = system.getArkTime() - timeStart
+
+      local floor = math.floor
+
+      local function WriteDelta(name, dt, suffix)
+          return '<div>'.. name .. ':'.. floor((dt*100000))/100 .. suffix .. '</div>'
+      end
+
+      collectgarbage('collect')
+
+      if svg then
+          if not DEBUG then
               system.setScreen(svg)
-              --if DEBUG and not svg then P(string.format("%.2f",system.getArkTime() - ScriptStartTime) .." [W] svg empty!") end
+          else
+              system.setScreen(table.concat({
+                  svg,
+                  '<div>CPU Instructions: ', system.getInstructionCount() .. '/' .. system.getInstructionLimit() .. '</div>',
+                  WriteDelta('Memory',collectgarbage('count')/1000, 'kb'),
+                  WriteDelta('Total',delta, 'ms'),
+                  WriteDelta('Pre-Processing', deltaPreProcessing, 'ms'),
+                  WriteDelta('Draw Processing', deltaDrawProcessing, 'ms'),
+                  WriteDelta('Event', deltaEvent, 'ms'),
+                  WriteDelta('Z-Sorting', deltaZSort, 'ms'),
+                  WriteDelta('Z-Buffer Copy', deltaZBufferCopy, 'ms'),
+                  WriteDelta('Post Processing', deltaPostProcessing, 'ms')
+              }))
+          end
+      end
+
+      --==================================--
           end
       end
 
 
       return timerFunc
-
-      end)
-
-      package.preload['YFS-Tools:waypointer_start.lua']=(function()
-
-      -- Original waypointer script (c) EasternGamer
-
-      -- tobitege: customisation to read YFS route waypoints
-
-      -- as well as ArchHud locations and add these for display
-
-
-      local lowLatencyMode=true--export: Enables low latency for screen render, which can sometimes bug out if a frame gets skipped. A restart is required then.
-
-      local smooth=true--export: Enables full FPS rendering, which increases the perceived performance for an actual performance impact
-
-      local highPerformanceMode=false--export: Disables glow effect which can in some cases improve FPS significantly
-
-      local glowRadius=3--export: Sets the pixel size of the glow effect
-
-      local displayWarpCells=false--export: Enable display of warp cells amount
-
-      local displaySolarWP=true--export: Enable display of solar objects (planets, moons)
-
-      local displayCustomWP=true--export: Enable display of custom waypoints (routes)
-
-      local archHudWaypointSize=0.5--export: The size in meters of a custom waypoint (0.1 - 10)
-
-      local archHudWPRender=3--export: The number of kilometers above which distance custom waypoints are not rendered
-
-      local maxWaypointSize=200--export: The max size of a waypoint in pixels
-
-      local minWaypointSize=20--export: The min size of a waypoint in pixels (max 300)
-
-      local infoHighlight=300--export: The number of pixels within info is displayed
-
-      local fontsize=30--export: Font size (default: 20)
-
-      local colorWarp="#ADD8E6"--export: RGB color of warpable waypoints. Default: "#ADD8E6"
-
-      local nonWarp="#FFA500"--export: RGB color of non-warpable waypoints. Default: "#FFA500"
-
-      local colorWaypoint="#32CD32"--export: RGB color of custom waypoints. Default: "#32CD32"
-
-
-      local format, sqrt, len, max, print, uclamp = string.format, math.sqrt, string.len, math.max, system.print, utils.clamp
-
-
-      local position = {0,0,0}
-
-      local offsetPos = {0,0,0}
-
-      local orientation = {0,0,0}
-
-      ---@diagnostic disable-next-line: missing-parameter
-
-      local width = system.getScreenWidth() / 2
-
-      ---@diagnostic disable-next-line: missing-parameter
-
-      local height = system.getScreenHeight() / 2
-
-      local objectBuilder = ObjectBuilderLinear()
-
-      fontsize = uclamp(fontsize, 10,40)
-
-      minWaypointSize = uclamp(minWaypointSize, 5, 200)
-
-      maxWaypointSize = uclamp(maxWaypointSize, minWaypointSize+1, 400)
-
-      archHudWaypointSize = uclamp((archHudWaypointSize or 0.5), 0.1, 10)
-
-
-      WaypointOpt = false
-
-
-      local localeIndex = {
-          ['en-US'] = 1,
-          ['fr-FR'] = 2,
-          ['de-De'] = 3
-      }
-
-
-      projector = Projector()
-
-      projector.setSmooth(smooth)
-
-
-      local waypointObjectGroup = ObjectGroup()
-
-      projector.addObjectGroup(waypointObjectGroup)
-
-
-      local css = [[
-
-      svg {
-          stroke-width: 3;
-          vertical-align:middle;
-          text-anchor:start;
-          fill: white;
-          font-family: Refrigerator;
-          font-size: ]] .. fontsize .. [[;
-      }]]
-
-      waypointObjectGroup.setStyle(css)
-
-
-      if not highPerformanceMode then
-          waypointObjectGroup.setGlow(true, glowRadius)
-      end
-
-      projector.setLowLatency(lowLatencyMode == true)
-
-      local function drawText(content,x, y, text, opacity,uD,c,c2,stroke)
-          uD[c],uD[c+1],uD[c+2],uD[c+3],uD[c+4],uD[c+5] = x,y,opacity,opacity,stroke,text
-          content[c2] = '<text x="%g" y="%g" fill-opacity="%g" stroke-opacity="%g" stroke="%s">%s</text>'
-          return c+6,c2+1
-      end
-
-      local function drawHorizontalLine(content,x, y, length, thickness,dU,c,c2,stroke)
-          dU[c],dU[c+1],dU[c+2],dU[c+3],dU[c+4]=thickness,stroke,x,y,length
-          content[c2] = '<path fill="none" stroke-width="%g" stroke="%s" d="M%g %gh%g"/>'
-          return c+5,c2+1
-      end
-
-      local maxD = sqrt(width*width + height*height)
-
-      local function drawInfo(content,tx, ty, data,dU,c,c1,stroke,distanceToMouse)
-          local font = fontsize
-          -- "distance" here is in SU!!!
-          local name,distance,warpCost,disKM,disM = data.getWaypointInfo()
-          local keyframe = data.keyframe
-          c,c1 = drawHorizontalLine(content, tx, ty + 3, len(name)*(font*0.6), 2,dU,c,c1,stroke)
-          c,c1 = drawText(content, tx, ty, name, 1,dU,c,c1,stroke)
-          if distanceToMouse <= infoHighlight then
-              if keyframe < 6 then
-                  data.keyframe = keyframe + 1
-              end
-          else
-              if keyframe ~= 0 then
-                  data.keyframe = keyframe - 1
-              end
-          end
-          local opacity = keyframe/6
-          if distanceToMouse < 15 and WaypointOpt then
-              system.setWaypoint('::pos{0,0,' .. data.x ..',' .. data.y .. ',' .. data.z ..'}')
-              WaypointOpt = false
-          end
-          if keyframe > 0 then
-              disM = disM or 0
-              disKM = disKM or 0
-              local disText = ''
-              if disM <= 1000 then
-                  disText = disM .. ' m'
-              elseif disKM <= 200 then
-                  disText = disKM .. ' km'
-              else
-                  disText = distance .. ' SU'
-              end
-              local f5 = font + 5
-              local kf = keyframe * 10
-              local tx2 = tx + 80
-              c,c1 = drawText(content, tx2 - kf, ty+f5, disText, opacity,dU,c,c1,stroke)
-              if displayWarpCells and distance > 2 then
-                  c,c1 = drawText(content, tx2 - kf, ty+f5*2, data.localeType, opacity,dU,c,c1,stroke)
-                  c,c1 = drawText(content, tx2 - kf, ty+f5*3, warpCost .. ' Warp Cells', opacity,dU,c,c1,stroke)
-              elseif data.localeType == 'WP' then
-                  c,c1 = drawText(content, tx2 - kf, ty+f5*2, 'Alt: '..(data.subId or 0), opacity,dU,c,c1,stroke)
-              else
-                  c,c1 = drawText(content, tx2 - kf, ty+f5*2, data.localeType, opacity,dU,c,c1,stroke)
-              end
-          end
-          return c
-      end
-
-      local concat,unpack = table.concat,table.unpack
-
-      local function draw(tx,ty,tz,data)
-          local dU, c = {},1
-          local content,c1 = {},1
-          local distanceToMouse = sqrt(tx*tx + ty*ty)
-          local r = data.radius
-          local off = (((tz/1000)/200))/100
-          local size = Round(max(projector.getSize(r, tz, 100000000, minWaypointSize) - off, 5),1)
-
-          --if size < 1 then return '' end
-          local _,distance,_,_,disM = data.getWaypointInfo()
-          if data.type == 'Planet' then -- or data.type == 'WP' then
-              if (disM < 2) or (tz < 30) or (size >= maxWaypointSize) or (distanceToMouse > maxD) or
-                 (r==archHudWaypointSize*1.25 and tz>archHudWPRender*1000) then -- Don't display
-                  return ''
-              end
-          elseif data.type == 'Moon' then
-              if distance > 20 then return '' end
-          else
-              if distance > 10 then return '' end
-          end
-
-          local stroke = colorWarp
-          if data.type == 'WP' then
-              stroke = colorWaypoint
-          elseif distance > 500 then
-              stroke = nonWarp
-          end
-          content[c1] = '<circle cx="%g" cy="%g" r="%g" fill="%s" stroke="%s"/>'
-          dU[c],dU[c+1] = tx,ty
-          c=c+2
-          if r==archHudWaypointSize*1.25 then
-              size = size /2
-              dU[c+1] = colorWarp
-          else
-              dU[c+1] = 'none'
-          end
-          dU[c] = size
-          dU[c+2] = stroke
-          c=c+3
-          c=drawInfo(content, tx + size + 5, ty - size + 5, data,dU,c,c1+1,stroke,distanceToMouse)
-          return concat(content):format(unpack(dU))
-      end
-
-
-      local solarWaypoints = objectBuilder
-      		.setPositionType(positionTypes.globalP)
-      		.setOrientationType(orientationTypes.globalO)
-      		.build()
-      waypointObjectGroup.addObject(solarWaypoints)
-
-      local builder = solarWaypoints.getSinglePointBuilder()
-
-      if displaySolarWP then
-          ---@diagnostic disable-next-line: missing-parameter
-          local localizationIndex = localeIndex[system.getLocale()]
-          for k,stellar in pairs(WaypointInfo[0]) do
-              local wCenter = stellar.center
-              local wName = stellar.name[localizationIndex]
-              local wRadius = stellar.radius
-              local wType = stellar.type[1]
-              if wType ~= "Asteroid" then
-                  local wlType = stellar.type[localizationIndex]
-                  local waypointObject = WPointer(wCenter[1],wCenter[2],wCenter[3],
-                          wRadius * 1.25, wName, wType, wlType, nil)
-                  local customSVG = builder.addSinglePointSVG()
-                  P("[I] "..wName)
-                  customSVG.setPosition({wCenter[1], wCenter[2], wCenter[3]})
-                  .setData(waypointObject)
-                  .setDrawFunction(draw)
-                  .build()
-              end
-          end
-      end
-
-
-      -- tobitege: draw custom waypoints if enabled
-
-      if displayCustomWP and WM then
-          for k,p in ipairs(WM:getSorted()) do
-              local subId = format("%.2f", p.mapPos.altitude)
-              local waypointObject = WPointer(
-                      p.mapPos.latitude, p.mapPos.longitude, p.mapPos.altitude,
-                      archHudWaypointSize * 1.25, p.name, 'WP', 'WP', subId)
-              local customSVG = builder.addSinglePointSVG()
-              --if DEBUG then P("[WPointer] customSVG: "..Out.DumpVar(customSVG)) end
-              customSVG.setPosition({p.mapPos.latitude, p.mapPos.longitude, p.mapPos.altitude})
-                  .setData(waypointObject)
-                  .setDrawFunction(draw)
-                  .build()
-              if DEBUG then P("[WPointer] Added "..p.name) end
-          end
-      end
 
       end)
   - key: 4
@@ -4395,15 +4285,18 @@ handlers:
     code: >-
       
 
+      -- Important for local debugging:
+
       package.path = "lua/?.lua;util/wpointer/?.lua;"..package.path
 
       require('YFS-Tools:globals.lua')
 
 
-      -- trick to make it right in debugger ;)
+      -- DU-LuaC checks for true are last, so that local debugging sees true!
 
       WAYPOINTER_ENABLED = true
 
+      DEBUG = false
 
       require('YFS-Tools:libmain.lua')
 
@@ -4421,7 +4314,7 @@ handlers:
       local status, err, _ = xpcall(function() require('YFS-Tools:startup.lua') end, Traceback)
 
       if not status then
-          P("Error in startup!")
+          P("[E] Error in startup!")
           if err then P(err) end
           unit.exit()
           return
@@ -4439,29 +4332,37 @@ handlers:
 
       -- Only for waypointer mod
 
+      ---@diagnostic disable-next-line: lowercase-global
+
+      rot = 0 -- for waypointer
+
       local onT
 
       if WAYPOINTER_ENABLED then
           require('YFS-Tools:waypointer_lib.lua')
-          local asWP = require('YFS-Tools:sys_onActionStartWp.lua')
-          if asWP ~= nil then
-              system:onEvent('onActionStart', function (self, option) asWP.Run(option) end)
+          require('YFS-Tools:waypointer_start.lua') -- lua param could turn it off!
+          if WAYPOINTER_ENABLED then -- so check again if it is enabled
+              local asWP = require('YFS-Tools:sys_onActionStartWp.lua')
+              if asWP ~= nil then
+                  system:onEvent('onActionStart', function (self, option) asWP.Run(option) end)
+              end
+
+              onT = require('YFS-Tools:unit_onTimer(update).lua')
+              if onT ~= nil then
+                  unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
+              end
+
+              P('[I] Waypointer module enabled.')
+
+              unit.setTimer("update", 1/240) -- The timer to update the screen
+              system.showScreen(1)
           end
-
-          onT = require('YFS-Tools:unit_onTimer(update).lua')
-          if onT ~= nil then
-              unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
-          end
-
-          P('[I] Waypointer module enabled.')
-          require('YFS-Tools:waypointer_start.lua')
-          ---@diagnostic disable-next-line: lowercase-global
-          rot = 0 -- for wpointer0
-
-          unit.setTimer("update", 1/240) -- The timer to update the screen
-          ---@diagnostic disable-next-line: param-type-mismatch
-          system.showScreen(1)
       end
+
+      if not WAYPOINTER_ENABLED then
+          P('[I] Waypointer module disabled.')
+      end
+
 
       -- *****************************************
 
@@ -4470,7 +4371,7 @@ handlers:
           if DEBUGx then
               status, err, _ = xpcall(function() PM.ConversionTest() end, Traceback)
               if not status then
-                  if err then P("Error in call:\n" .. err) end
+                  if err then P("[E] Error in test call:\n" .. err) end
                   unit.exit()
                   return
               end
@@ -4478,9 +4379,6 @@ handlers:
               unit.hideWidget()
           end
           P("Type /help for available commands.")
-          if #Config.screens > 0 then
-              P(Config.screens[1].getScreenWidth().."/"..Config.screens[1].getScreenHeight())
-          end
 
       end
 events: []
