@@ -254,7 +254,6 @@ function Projector()
                                 '</svg></div>',
                                 ending
                             })
-                    P(svgBuffer[dpth])
                 end
             end
             deltaPostProcessing = deltaPostProcessing + getTime() - postProcessingStartTime
