@@ -1,5 +1,9 @@
 -- Requires global WaypointInfo with Atlas-data!
-local wolfie = { core = nil }
+local wolfie = {
+    core = nil,
+    destList = {},
+    destCount = 0
+}
 
 local SmartTemplateLibrary = (function ()
     --[[
@@ -555,17 +559,24 @@ local render = (function()
     end
 end)()
 
--- Main render function returning the generated SVG
+-- Pass a core unit
 function wolfie.setCore(pCore)
     core = pCore
 end
 
+-- Pass a list of waypoints (vec3) with their names in (name/vec3 pairs)
+function wolfie.AddWaypoint(destName, vector)
+    if not destName or type(vector) ~= "table" then return end
+    wolfie.destCount = wolfie.destCount + 1
+    wolfie.destList[wolfie.destCount] = { name = destName, position = vec3(vector) }
+end
+
 -- Main render function returning the generated SVG
 function wolfie.onRenderFrame()
+    if wolfie.destCount == 0 then return "" end
+
     -- Pre-calculates some vectors
-    local worldVertical = vec3(core.getWorldVertical())
     local worldVelocity = vec3(construct.getWorldVelocity())
-    local worldAcceleration = vec3(construct.getWorldAcceleration())
 
     -- This is our current celestial body and coordinates
     local currentPosition = vec3(construct.getWorldPosition())
@@ -574,68 +585,68 @@ function wolfie.onRenderFrame()
         currentCelestialBodyCoordinates = getLatLonAltFromWorldPosition(currentPosition, currentCelestialBody)
     end
 
-    -- This is our current destination
-    -- TODO: replace with runtime list!
-    local currentDestination = getCurrentDestination()
-
-    -- This is our current destination in lat/lon/alt space, along with what celestial body it is
-    local currentDestinationCelestialBody, currentDestinationCelestialBodyCoordinates = nil, nil
-    if currentDestination then
-        currentDestinationCelestialBody = getClosestCelestialBody(currentDestination.position,false)
-        if currentDestinationCelestialBody then
-          currentDestinationCelestialBodyCoordinates = getLatLonAltFromWorldPosition(currentDestination.position, currentDestinationCelestialBody)
-        end
-    end
-
-    -- Prepares data for our current and destination celestial body
-    local currentCelestialBodyInfo, destinationCelestialBodyInfo = nil, nil
-    if currentCelestialBody and currentCelestialBodyCoordinates then
-        currentCelestialBodyInfo = {
-            info = currentCelestialBody,
-            coordinates = currentCelestialBodyCoordinates,
-        }
-    end
-    if currentDestinationCelestialBody and currentDestinationCelestialBodyCoordinates then
-        destinationCelestialBodyInfo = {
-            info = currentDestinationCelestialBody,
-            coordinates = currentDestinationCelestialBodyCoordinates,
-        }
-    end
-
-    -- Is destination on same celestial body
-    local isDestinationOnSameCelestialBody = false
-    if currentCelestialBody and currentDestinationCelestialBody and currentCelestialBody.id == currentDestinationCelestialBody.id then
-        isDestinationOnSameCelestialBody = true
-    end
-
     -- This is our current direction forward
     local currentPointingAt = getCurrentPointedAt()
 
     -- This is our current motion vector
     local currentMotion = getCurrentMotion()
 
-    -- Let's calculate whether we're getting closer to our destination or not
-    local currentDestinationApproachSpeed = worldVelocity:len()
-    if isDestinationOnSameCelestialBody then
-        currentDestinationApproachSpeed = worldVelocity:len()
-    elseif currentDestination then
-        local destinationVector = (currentDestination.position - currentPosition):normalize()
-        currentDestinationApproachSpeed = destinationVector:dot(worldVelocity)
-    end
-    --P(Out.DumpVar(currentDestination.position))
-    -- This will print all data with our template
-    return render({
-        currentDestination = currentDestination,
-        currentDestinationApproachSpeed = currentDestinationApproachSpeed,
-        currentPointingAt = currentPointingAt,
-        currentMotion = currentMotion,
-        currentSpeed = worldVelocity:len(),
-        currentSpeedVertical = -worldVertical:dot(worldVelocity),
-        -- Routing utilities
-        currentCelestialBody = currentCelestialBodyInfo,
-        destinationCelestialBody = destinationCelestialBodyInfo,
+    local output = ""
+    for _,currentDestination in pairs(wolfie.destList) do
 
-    })
+        -- This is our current destination in lat/lon/alt space, along with what celestial body it is
+        local currentDestinationCelestialBody, currentDestinationCelestialBodyCoordinates = nil, nil
+        if currentDestination then
+            currentDestinationCelestialBody = getClosestCelestialBody(currentDestination.position,false)
+            if currentDestinationCelestialBody then
+                currentDestinationCelestialBodyCoordinates = getLatLonAltFromWorldPosition(currentDestination.position, currentDestinationCelestialBody)
+            end
+        end
+
+        -- Prepares data for our current and destination celestial body
+        local currentCelestialBodyInfo, destinationCelestialBodyInfo = nil, nil
+        if currentCelestialBody and currentCelestialBodyCoordinates then
+            currentCelestialBodyInfo = {
+                info = currentCelestialBody,
+                coordinates = currentCelestialBodyCoordinates,
+            }
+        end
+        if currentDestinationCelestialBody and currentDestinationCelestialBodyCoordinates then
+            destinationCelestialBodyInfo = {
+                info = currentDestinationCelestialBody,
+                coordinates = currentDestinationCelestialBodyCoordinates,
+            }
+        end
+
+        -- Is destination on same celestial body
+        local isDestinationOnSameCelestialBody = false
+        if currentCelestialBody and currentDestinationCelestialBody and currentCelestialBody.id == currentDestinationCelestialBody.id then
+            isDestinationOnSameCelestialBody = true
+        end
+
+        -- Let's calculate whether we're getting closer to our destination or not
+        local currentDestinationApproachSpeed = worldVelocity:len()
+        if isDestinationOnSameCelestialBody then
+            currentDestinationApproachSpeed = worldVelocity:len()
+        elseif currentDestination then
+            local destinationVector = (currentDestination.position - currentPosition):normalize()
+            currentDestinationApproachSpeed = destinationVector:dot(worldVelocity)
+        end
+
+        -- This will print all data with our template
+        output = output .. render({
+            currentDestination = currentDestination,
+            currentDestinationApproachSpeed = currentDestinationApproachSpeed,
+            currentPointingAt = currentPointingAt,
+            currentMotion = currentMotion,
+            currentSpeed = worldVelocity:len(),
+            -- Routing utilities
+            currentCelestialBody = currentCelestialBodyInfo,
+            destinationCelestialBody = destinationCelestialBodyInfo,
+        })
+    end
+
+    return output
 end
 
 return wolfie

@@ -8,8 +8,6 @@ YFS_NAMED_POINTS = "NamedPoints"
 YFS_ROUTES = "NamedRoutes"
 ARCH_SAVED_LOCATIONS = "SavedLocations"
 DEBUG = false
-WP_EG_ENABLED = false -- Waypointer by EasternGamer
-WP_WOLF_ENABLED = false -- Waypointer AR by Wolfe Labs
 ScriptStartTime = 0
 INGAME = system ~= nil
 
@@ -24,5 +22,8 @@ end
 
 projector = nil
 clicked = false -- for waypointer
+
+WP_EG_ENABLED = false -- Waypointer by EasternGamer
+WP_WOLF_ENABLED = false -- Waypointer AR by Wolfe Labs
 
 CNID = construct.getId()

@@ -44,7 +44,7 @@ if inp ~= nil then
     system:onEvent('onInputText', function (self, text) inp.Run(text) end)
 end
 
----@if with_waypointer true
+---@if with_waypointer_eg true
 -- EasternGamer's waypointer mod
 -- *****************************************
 if WP_WOLF_ENABLED then WP_EG_ENABLED = false end -- only enable one
@@ -54,7 +54,6 @@ local onT
 
 if WP_EG_ENABLED then
     require('waypointer_lib')
-    require('waypointer_start') -- lua param could turn it off!
     if WP_EG_ENABLED then -- so check again if it is enabled
         local asWP = require('sys_onActionStartWp')
         if asWP ~= nil then
@@ -74,10 +73,13 @@ end
 -- *****************************************
 if WP_WOLF_ENABLED and Config.core then
     WolfAR = require('wolflib')
-    WolfAR.setCore(Config.core)
-    onT = require('unit_onTimer(update)_wolf')
-    if onT ~= nil then
-        unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
+    require('wolf_start')
+    if WP_WOLF_ENABLED then
+        WolfAR.setCore(Config.core)
+        onT = require('unit_onTimer(update)_wolf')
+        if onT ~= nil then
+            unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
+        end
     end
 end
 -- *****************************************
@@ -88,7 +90,7 @@ if not WP_EG_ENABLED and not WP_WOLF_ENABLED then
 else
     P('[I] Waypointer module enabled.')
 
-    unit.setTimer("update", 1/60) -- The timer to update the screen
+    unit.setTimer("update", 1/120) -- The timer to update the screen
     system.showScreen(1)
 end
 
