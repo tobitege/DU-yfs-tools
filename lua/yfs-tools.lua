@@ -3,11 +3,18 @@ package.path = "lua/?.lua;util/wpointer/?.lua;"..package.path
 require('globals')
 
 -- DU-LuaC checks for true are last, so that local debugging sees true!
----@if with_waypointer false
-WAYPOINTER_ENABLED = false
+---@if with_waypointer_eg false
+WP_EG_ENABLED = false
 ---@else
-WAYPOINTER_ENABLED = true
+--WP_EG_ENABLED = true
 ---@end
+
+---@if with_waypointer_wl false
+WP_WOLF_ENABLED = false
+---@else
+WP_WOLF_ENABLED = true
+---@end
+
 ---@if debug false
 DEBUG = false
 ---@else
@@ -38,37 +45,52 @@ if inp ~= nil then
 end
 
 ---@if with_waypointer true
+-- EasternGamer's waypointer mod
 -- *****************************************
--- Only for waypointer mod
+if WP_WOLF_ENABLED then WP_EG_ENABLED = false end -- only enable one
 ---@diagnostic disable-next-line: lowercase-global
 rot = 0 -- for waypointer
 local onT
-if WAYPOINTER_ENABLED then
+
+if WP_EG_ENABLED then
     require('waypointer_lib')
     require('waypointer_start') -- lua param could turn it off!
-    if WAYPOINTER_ENABLED then -- so check again if it is enabled
+    if WP_EG_ENABLED then -- so check again if it is enabled
         local asWP = require('sys_onActionStartWp')
         if asWP ~= nil then
             system:onEvent('onActionStart', function (self, option) asWP.Run(option) end)
         end
 
-        onT = require('unit_onTimer(update)')
+        onT = require('unit_onTimer(update)_eg')
         if onT ~= nil then
             unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
         end
-
-        P('[I] Waypointer module enabled.')
-
-        unit.setTimer("update", 1/240) -- The timer to update the screen
-        system.showScreen(1)
     end
 end
-if not WAYPOINTER_ENABLED then
-    P('[I] Waypointer module disabled.')
-end
+---@end
 
+---@if with_waypointer_wl true
+-- Wolf Labs' waypointer mod (customized)
+-- *****************************************
+if WP_WOLF_ENABLED and Config.core then
+    WolfAR = require('wolflib')
+    WolfAR.setCore(Config.core)
+    onT = require('unit_onTimer(update)_wolf')
+    if onT ~= nil then
+        unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
+    end
+end
 -- *****************************************
 ---@end
+
+if not WP_EG_ENABLED and not WP_WOLF_ENABLED then
+    P('[I] Waypointer module disabled.')
+else
+    P('[I] Waypointer module enabled.')
+
+    unit.setTimer("update", 1/60) -- The timer to update the screen
+    system.showScreen(1)
+end
 
 if INGAME then
     if DEBUGx then

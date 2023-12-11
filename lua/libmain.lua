@@ -14,3 +14,7 @@ require('warpcost') -- warp calculator function
 
 require('wpoint') -- waypoint class
 WM = require('wpointmgr').new("MAIN") -- instantiate MAIN waypoint manager
+
+WaypointInfo = require('atlas')
+
+WolfAR = nil -- customized Wolf Labs' AR waypointing

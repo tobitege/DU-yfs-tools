@@ -183,7 +183,9 @@ end
 -- @treturn vec3 The xyz world coordinates of the construct center position in meters.
 function M:getWorldPosition()
     --somewhere on Sicari :D
-    return {52754973.5479, 27192048.8840, 52022409.1475}
+    --return {52754973.5479, 27192048.8840, 52022409.1475}
+    -- Alioth, POIN HQ
+    return {-24934.5625,99969.3945,-53168.6052}
 end
 
 --- The construct's linear velocity, relative to its parent, in construct local coordinates.
@@ -201,13 +203,13 @@ end
 --- The construct's absolute linear velocity, in construct local coordinates.
 -- @treturn vec3 Absolute linear velocity vector, in construct local coordinates in m/s.
 function M:getAbsoluteVelocity()
-    return {1,0,0}
+    return {0,0,0}
 end
 
 --- The construct's absolute linear velocity, in world coordinates.
 -- @treturn vec3 Absolute linear velocity vector, in world coordinates in m/s.
 function M:getWorldAbsoluteVelocity()
-    return {1,0,0}
+    return {0,0,0}
 end
 
 --- The construct's linear acceleration, in construct local coordinates.

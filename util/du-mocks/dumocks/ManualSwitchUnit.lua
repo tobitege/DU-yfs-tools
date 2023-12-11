@@ -217,8 +217,6 @@ end
 -- @see Element:mockGetClosure
 function M:mockGetClosure()
     local closure = MockElementWithToggle.mockGetClosure(self)
-    closure.activate = function() return self:activate() end
-    closure.deactivate = function() return self:deactivate() end
     closure.isActive = function() return self:isActive() end
 
     closure.setSignalIn = function(plug, state) return self:setSignalIn(plug, state) end

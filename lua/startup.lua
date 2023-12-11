@@ -8,7 +8,7 @@ onlyForRoute = onlyForRoute or ""
 OutputFont = outputFont or "FiraMono"
 
 P("=========================================")
-P("YFS-Tools 1.5.1 (unofficial)")
+P("YFS-Tools 1.6 (unofficial)")
 P("created by tobitege (c) 2023")
 P("Thanks to Yoarii (SVEA) for YFS and LUA help!")
 P("YFS 1.4+ databank link required (Routes).")
@@ -66,7 +66,7 @@ end
 
 -- for local debugging, see mockaround file for demo data!
 if not INGAME then
-    onlyForRoute = "Hema"
+    onlyForRoute = "Garni"
 end
 
 -- load waypoints from databank(s) (ArchHUD or YFS)?

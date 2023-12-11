@@ -3,10 +3,13 @@ local timerFunc = {}
 function timerFunc.Run(timerId)
     if timerId == 'update' then
         if not INGAME then P("onTimer(update)") end
-        if not DEBUG then
+        if not DEBUG or not INGAME then
             local svg = projector.getSVG()
             ---@diagnostic disable-next-line: param-type-mismatch
-            if svg then system.setScreen(svg) end
+            if svg then
+                system.setScreen(svg)
+                if not INGAME then P(svg) end
+            end
             return
         end
 
@@ -35,6 +38,7 @@ if svg then
             WriteDelta('Z-Buffer Copy', deltaZBufferCopy, 'ms'),
             WriteDelta('Post Processing', deltaPostProcessing, 'ms')
         }))
+        P(svg)
     end
 end
 --==================================--

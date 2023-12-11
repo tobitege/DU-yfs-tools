@@ -1,7 +1,8 @@
 # Changelog
 
-## v1.5.1
+## v1.6.0
 
+- Added 2nd AR waypointer solution based on Wolfe Labs' "userclass" for ArchHud
 - WP version now states which (if any) waypoints are loaded during startup
 - Local debugging: enter q and **ENTER** to close the emulated chat in console (ends debugging session)
 - Local debugging: emulated chat in console also runs onTimer on each **ENTER** for testing

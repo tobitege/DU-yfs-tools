@@ -38,7 +38,7 @@ maxWaypointSize = uclamp(maxWaypointSize, minWaypointSize+1, 400)
 archHudWaypointSize = uclamp((archHudWaypointSize or 0.5), 0.1, 10)
 
 if not enableWaypointer then
-    WAYPOINTER_ENABLED = false
+    WP_EG_ENABLED = false
 end
 WaypointOpt = false
 
@@ -73,13 +73,14 @@ end
 projector.setLowLatency(lowLatencyMode == true)
 local function drawText(content,x, y, text, opacity,uD,c,c2,stroke)
     uD[c],uD[c+1],uD[c+2],uD[c+3],uD[c+4],uD[c+5] = x,y,opacity,opacity,stroke,text
-    content[c2] = '<text x="%g" y="%g" fill-opacity="%g" stroke-opacity="%g" stroke="%s">%s</text>'
+    --content[c2] = '<text x="%g" y="%g" fill-opacity="%g" stroke-opacity="%g" stroke="%s">%s</text>'
+    content[c2] = '<text x="%.1f" y="%.1f" fill-opacity="%.1f" stroke-opacity="%.1f" stroke="%s">%s</text>'
     return c+6,c2+1
 end
 
 local function drawHorizontalLine(content,x, y, length, thickness,dU,c,c2,stroke)
     dU[c],dU[c+1],dU[c+2],dU[c+3],dU[c+4]=thickness,stroke,x,y,length
-    content[c2] = '<path fill="none" stroke-width="%g" stroke="%s" d="M%g %gh%g"/>'
+    content[c2] = '<path fill="none" stroke-width="%.1f" stroke="%s" d="M%.1f %.1fh%.1f"/>'
     return c+5,c2+1
 end
 
@@ -138,7 +139,8 @@ local function draw(tx,ty,tz,data)
     local distanceToMouse = sqrt(tx*tx + ty*ty)
     local r = data.radius
     local off = (((tz/1000)/200))/100
-    local size = Round(max(projector.getSize(r, tz, 100000000, minWaypointSize) - off, 2),1)
+    --local size = Round(max(projector.getSize(r, tz, 100000000, minWaypointSize) - off, 5), 1)
+    local size = max(projector.getSize(r, tz, 100000000, minWaypointSize) - off, 5)
     local wpInfo = data.getWaypointInfo()
     local distance,disM = wpInfo[2],wpInfo[5]
     size = uclamp(size, minWaypointSize, maxWaypointSize)
@@ -159,7 +161,8 @@ local function draw(tx,ty,tz,data)
     elseif distance > 500 then
         stroke = nonWarp
     end
-    content[c1] = '<circle cx="%g" cy="%g" r="%g" fill="%s" stroke="%s"/>'
+    --content[c1] = '<circle cx="%g" cy="%g" r="%g" fill="%s" stroke="%s"/>'
+    content[c1] = '<circle cx="%.1f" cy="%.1f" r="%.1f" fill="%s" stroke="%s"/>'
     dU[c],dU[c+1] = tx,ty
     c=c+2
     if r==archHudWaypointSize*1.25 then
@@ -210,14 +213,17 @@ if displayCustomWP and WM then
         local subId = format("%.2f", p.mapPos.altitude)
         local s = PM.MapPos2String(p.mapPos)
         local wPos = PM.MapPosToWorldVec3(s);
-        local waypointObject = WPointer(
-                wPos.x, wPos.y, wPos.z,
-                archHudWaypointSize * 1.25, p.name, 'WP', 'WP', subId)
-        local customSVG = builder.addSinglePointSVG()
-        customSVG.setPosition(wPos.x, wPos.y, wPos.z)
-            .setData(waypointObject)
-            .setDrawFunction(draw)
-            .build()
-            P("[WPointer] Added "..p.name)
+        if wPos then
+            local waypointObject = WPointer(wPos.x, wPos.y, wPos.z,
+                    archHudWaypointSize * 1.25, p.name, 'WP', 'WP', subId)
+            local customSVG = builder.addSinglePointSVG()
+            customSVG.setPosition(wPos.x, wPos.y, wPos.z)
+                .setData(waypointObject)
+                .setDrawFunction(draw)
+                .build()
+            P("[WPointer] Added "..p.name.."\r\n"..s)
+        else
+            P("[E] "..p.name.."\r\n"..s)
+        end
     end
 end

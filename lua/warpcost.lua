@@ -85,7 +85,7 @@ function CalcWarpCost(text)
     ---@diagnostic disable-next-line: missing-parameter
     local maxMass = 50000
     ---@diagnostic disable-next-line: missing-parameter
-    local tons = getCMass(CNID) / 1000 --in globals.lua!
+    local tons = getCMass(CNID) / 1000 -- CNID in globals.lua!
 
     -- check -cargo param and value
     local pCargo, bCargo = 0, false
@@ -182,11 +182,11 @@ function CalcWarpCost(text)
             offset = 2 * v.radius
             if locFrom.isP then
                 locFrom.parm = v.name[1]
-                locFrom.v = vec3(v.center)
+                locFrom.v = v.centerV3
                 offset = offset + locTo.offset
             else
                 locTo.parm = v.name[1]
-                locTo.v = vec3(v.center)
+                locTo.v = v.centerV3
                 offset = offset + locFrom.offset
             end
             local distance = mabs(vec3(locFrom.v - locTo.v):len()) - offset

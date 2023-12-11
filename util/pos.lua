@@ -357,10 +357,9 @@ function o.New(pCore, pConstruct, pWM)
         local p = o.SplitPos(posString)
         if not p or not p.systemId then return false end
 
-        local pcenter = { p.latitude, p.longitude, p.altitude }
         -- if world pos, try to determine planet
         if p.id == 0 then
-            local w = o.WorldToMapPos(vec3(pcenter))
+            local w = o.WorldToMapPos(vec3{ p.latitude, p.longitude, p.altitude })
             if w and w.id and w.id > 0 then
                 -- update pos with converted values
                 p.latitude  = w.latitude
@@ -370,9 +369,6 @@ function o.New(pCore, pConstruct, pWM)
                 p.systemId  = w.systemId
                 posString = o.MapPos2String(p)
             end
-        else
-            local v = o.MapPosToWorldVec3(posString)
-            pcenter = { v.x, v.y, v.z }
         end
 
         -- add waypoint to waypoint manager
@@ -416,6 +412,7 @@ function o.New(pCore, pConstruct, pWM)
             WaypointInfo[0][i].habitability = nil
             WaypointInfo[0][i].ores = nil
             -- new props
+            WaypointInfo[0][i].centerV3 = vec3(WaypointInfo[0][i].centerVec)
             if v.hasAtmosphere then
                 local res = v.atmosphereRadius - v.radius
                 WaypointInfo[0][i].atmoAltitude = res
@@ -426,7 +423,6 @@ function o.New(pCore, pConstruct, pWM)
             WaypointInfo[0][i].isPlanet = WaypointInfo[0][i].type[1] == "Planet"
         end
 
-        --s.wm = WaypointMgr.new("MAIN")
         if s.wm then
             P("[I] WaypointMgr assigned: "..s.wm:getName())
         else

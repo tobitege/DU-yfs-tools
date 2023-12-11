@@ -24,12 +24,12 @@ function WPointer(x,y,z, radius, name, type, localeType, subId)
         local distance = sqrt(px*px + py*py + pz*pz)
         local warpCost = 0
         -- min 2 SU, max 500 SU (1 SU = 200000 m)
-        if distance > 400000 and distance <= 100000000 then
+        local disR = round(distance, 1)
+        if disR > 400000 and disR <= 100000000 then
             local tons = getCMass(cid) / 1000
-            warpCost = max(floor(tons*floor(((distance/1000)/200))*0.00024), 1)
+            warpCost = max(floor(tons*floor(((disR/1000)/200))*0.00024), 1)
         end
-        local disR = round(distance, 2)
-        return {self.name, round((distance/1000)/200, 2), warpCost, round((distance/1000), 2), disR}
+        return {self.name, round((disR/1000)/200, 1), warpCost, round((disR/1000), 1), disR}
     end
 
     return self

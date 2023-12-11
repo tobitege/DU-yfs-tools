@@ -29,7 +29,8 @@
       "handleErrors": false,
       "variables": {
         "debug": false,
-        "with_waypointer": true
+        "with_waypointer_eg": false,
+        "with_waypointer_wl": true
       }
     },
     "release": {
@@ -46,7 +47,8 @@
       "handleErrors": false,
       "variables": {
         "debug": false,
-        "with_waypointer": true
+        "with_waypointer_eg": false,
+        "with_waypointer_wl": true
       }
     }
   },
