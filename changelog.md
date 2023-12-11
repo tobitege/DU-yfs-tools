@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.6.0
+## v1.6.1
 
 - Added 2nd AR waypointer solution based on Wolfe Labs' "userclass" for ArchHud
 - WP version now states which (if any) waypoints are loaded during startup
