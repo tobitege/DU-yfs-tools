@@ -69,14 +69,14 @@ end
 ---@end
 
 ---@if with_waypointer_wl true
--- Wolf Labs' waypointer mod (customized)
+-- Wolfe Labs' waypointer mod (customized)
 -- *****************************************
 if WP_WOLF_ENABLED and Config.core then
-    WolfAR = require('wolflib')
-    require('wolf_start')
+    WolfAR = require('wolfeARlib')
+    require('wolfeAR_start')
     if WP_WOLF_ENABLED then
         WolfAR.setCore(Config.core)
-        onT = require('unit_onTimer(update)_wolf')
+        onT = require('unit_onTimer(update)_wolfeAR')
         if onT ~= nil then
             unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
         end

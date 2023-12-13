@@ -1,9 +1,17 @@
--- Requires global WaypointInfo with Atlas-data!
+-- wolflib.lua
+-- Requires global WaypointInfo (Atlas data!)
 local wolfie = {
     core = nil,
     destList = {},
     destCount = 0
 }
+-- 'Montserrat' is better with 0.8
+-- 'Refrigerator' is better with 1.2
+local fontSize = 1.2 -- em's, not pixels :P
+local font = 'Refrigerator'
+local colorBlue = { 130, 224, 255 } -- blue #66CCFF
+local colorLime = { 50, 205, 50 }   -- lime #32CD32
+local showEta = false
 
 local SmartTemplateLibrary = (function ()
     --[[
@@ -87,7 +95,7 @@ local SmartTemplateLibrary = (function ()
     ---@param source string The code for your template
     ---@param globals table Global variables to be used on on the template
     ---@param buildErrorHandler function A function to handle build errors, if none is found throws an error
-    ---@return Template
+    ---@return Template|nil
     function Template.new(source, globals, buildErrorHandler)
       -- Creates our instance
       local self = {
@@ -122,27 +130,27 @@ local SmartTemplateLibrary = (function ()
           if not iLuaEnd then
             error('Template error, missing Lua closing tag near: ' .. source:sub(0, 16))
           end
-  
+
           --- The current text before Lua tag
           local currentText = source:sub(1, iLuaStart - 1)
           if #currentText then
             table.insert(tPieces, mkPrint(currentText))
           end
-  
+
           --- Our Lua tag content
           local luaTagContent = source:sub(iLuaStart, iLuaEnd + 1):match('{%%(.-)%%}') or ''
           table.insert(tPieces, luaTagContent)
-  
+
           -- Removes parsed content
           source = source:sub(iLuaEnd + 2)
         else
           -- Adds remaining Lua as a single print statement
           table.insert(tPieces, mkPrint(source))
-  
+
           -- Marks content as parsed
           source = ''
         end
-  
+
         -- Yields loading
         yield()
       end
@@ -161,7 +169,7 @@ local SmartTemplateLibrary = (function ()
         if buildErrorHandler then
           buildErrorHandler(self, err)
         else
-          error('Failed compiling template: ' .. err)
+          error('[E] Failed compiling template: ' .. err)
         end
 
         -- Retuns an invalid instance
@@ -197,8 +205,7 @@ local referenceGravity1g = nil
 ---@param forcePvPZone boolean
 ---@return table<number,number>
 local function getHudColor()
-    local SafeR, SafeG, SafeB = 130, 224, 255
-    return { SafeR, SafeG, SafeB }
+    return colorLime
 end
 
 --- Gets the appropriate HUD color in RGB notation
@@ -217,12 +224,6 @@ local function convertLocalToWorldCoordinates(coordinate)
     + coordinate.x * vec3(construct.getWorldOrientationRight())
     + coordinate.y * vec3(construct.getWorldOrientationForward())
     + coordinate.z * vec3(construct.getWorldOrientationUp())
-end
-
---- TODO: replace this to feed position into rendering!
----@return table
-local function getCurrentDestination()
-    return { name = 'Alioth Market 6', position = vec3({-20385.371087319,100031.74253829,-51957.968352493}) }
 end
 
 --- Gets the current forward direction in world space
@@ -430,7 +431,6 @@ end
 local render = (function()
     local UI = {}
     local Shapes = {}
-    local Font = 'Montserrat' --'Play'
 
     --- Draws the hexagon, showing the current destiantion point in space
     Shapes.Hexagon = SmartTemplate([[
@@ -448,8 +448,6 @@ local render = (function()
 
     local renderGlobals = {
         Colors = {
-            Main = '#09D4EB',
-            Accent = '#5FFF77',
             Shadow = 'rgba(0, 0, 0, 0.75)',
             ShadowLight = 'rgba(0, 0, 0, 0.375)',
         },
@@ -459,7 +457,6 @@ local render = (function()
         GetHudColor = getHudColorRgb,
         GravityAt = getGravitationalForceAtAltitude,
         GravityAtInGs = getGravitationalForceAtAltitudeInGs,
-        KilometersPerHour = function(value) return ('%.0f km/h'):format(value) end,
         Metric = getDistanceAsString,
         Newtons = getNewtonsAsString,
         Percentage = function(value, precision) return getRoundedValue(100 * value, precision) .. '%' end,
@@ -469,11 +466,14 @@ local render = (function()
         WorldCoordinate = getARPointFromCoordinate,
         UI = UI,
         Shapes = Shapes,
+        ShowETA = showEta,
     }
 
     --- Draws text
+    -- text-shadow: 0px 0px 0.125em {{ stroke or Colors.Shadow }}, 0px 0px 0.250em #000, 0px 0px 0.500em #000;">
     renderGlobals.Label = SmartTemplate([[
-        <span style="font-size: {{ size or 1 }}em; font-family: {{ font or ']]..Font..[[' }}; font-weight: {{ weight or 'normal' }}; color: {{ color or GetHudColor() }}; text-shadow: 0px 0px 0.125em {{ stroke or Colors.Shadow }}, 0px 0px 0.250em #000, 0px 0px 0.500em #000;">
+        <span style="font-size: {{ size or ']]..fontSize..[[' }}em; font-family: {{ font or ']]..font..
+        [[' }}; font-weight: {{ weight or 'normal' }}; color: {{ color or GetHudColor() }}; text-shadow: 2px 2px 0.125em {{ stroke or Colors.Shadow }}, -2px -2px 0.250em #000, 2px -2px 0.500em #000;">
           {{ text }}
         </span>
     ]], renderGlobals)
@@ -497,7 +497,7 @@ local render = (function()
 
         -- Calculates the ETA at current speed
         local eta = nil
-        if speed and speed > 1 then
+        if Exists(ShowETA) and ShowETA and speed and speed > 1 then
           eta = TimeToDistance(distance, speed)
         end
       %}
@@ -509,7 +509,7 @@ local render = (function()
             <div style="font-size: 0.8em; position: absolute; top: 1em; left: 2.5em; white-space: nowrap; padding: 0px 0.5em;">
               <hr style="border: 0px none; height: 2px; background: {{ GetHudColor() }}; width: 5em; margin: 0px -0.5em 0.5em; padding: 0px;" />
             {% if title then %}
-              <div>{{ Label({ text = title, size = 1.2, weight = 'bold' }) }}</div>
+              <div>{{ Label({ text = title, size = 1.1, weight = 'bold' }) }}</div>
             {% end %}
             {% if distance then %}
               <div>{{ Label({ text = Metric(distance) }) }}</div>

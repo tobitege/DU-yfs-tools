@@ -73,6 +73,56 @@ end
 
 -- Class functions
 
+---@comment with WM: output name and position for all waypoints
+function cmd.FindCenterCmd(text)
+    if not WM or not WM:hasPoints() then
+        return E("[E] No waypoints to export.")
+    end
+    local routes = cmd.GetYFSRoutes()
+    if not routes then return end
+
+    local parts = SU.SplitQuoted(text)
+    if #parts < 1 then
+        return E("[E] Parameter(s) missing: routename\nExample: /findCenter 'Cryo' -onlySelectable")
+    end
+    local onlySelectable = GetIndex(parts, "-onlySelectable") > 0
+    local routename = parts[1]
+    local route = routes.v[routename]
+    if not route or not IsTable(route.points) or #route.points == 0 then
+        return E("[E] Route '"..routename.."' not found or empty")
+    end
+
+    local wpdata = cmd.GetYFSNamedWaypoints()
+
+    -- iterate route points and add to calculator
+    local pointlist = {}
+    local wpIdx = 1
+    for _,v in ipairs(route.points) do
+        local wppos = ""
+        local wpName = "WP "..sformat("%03d", wpIdx)
+        if v.waypointRef and wpdata then
+            wpName = v.waypointRef
+            wppos = wpdata.v[wpName].pos
+        else
+            wppos = v.pos
+        end
+
+        if wppos and ((not onlySelectable) or (v.opt["selectable"] ~= false)) then
+            P("Using "..wpName)
+            pointlist[wpIdx] = PM.MapPosToWorldVec3(wppos)
+            wpIdx = wpIdx + 1
+        end
+    end
+    local center = GetCentralPoint(pointlist)
+    if center then
+        local locPos = PM.WorldToMapPos(center)
+        local output = "[I] Center coords: "..PM.MapPos2String(locPos)
+        P(output)
+    else
+        P("[E] Could not calculate center, sorry!")
+    end
+end
+
 function cmd.GetYFSNamedWaypoints(muteMsg)
     if not DetectedYFS then
         return E("[E] Linked YFS databank required!")

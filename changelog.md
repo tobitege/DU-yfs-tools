@@ -1,6 +1,16 @@
 # Changelog
 
-## v1.6.1
+## v1.7.0
+
+- Added command "/findCenter 'routename' -selectableOnly" to calculate the center point for a specified route's waypoints (only YFS support right now).
+Useful to find a location to place a central hub reachable from all mining sites around it
+Credits to Matt (Wolfe Labs) for this commissioned, custom LUA code!
+More about this feature to come in the near future! ;)
+- Improved AR waypoints' shadows for readability
+- Switched AR waypoints' color to lime
+- Renamed some files
+
+## v1.6.2
 
 - Added 2nd AR waypointer solution based on Wolfe Labs' "userclass" for ArchHud
 - WP version now states which (if any) waypoints are loaded during startup

@@ -747,6 +747,58 @@ handlers:
       -- Class functions
 
 
+      ---@comment with WM: output name and position for all waypoints
+
+      function cmd.FindCenterCmd(text)
+          if not WM or not WM:hasPoints() then
+              return E("[E] No waypoints to export.")
+          end
+          local routes = cmd.GetYFSRoutes()
+          if not routes then return end
+
+          local parts = SU.SplitQuoted(text)
+          if #parts < 1 then
+              return E("[E] Parameter(s) missing: routename\nExample: /findCenter 'Cryo' -onlySelectable")
+          end
+          local onlySelectable = GetIndex(parts, "-onlySelectable") > 0
+          local routename = parts[1]
+          local route = routes.v[routename]
+          if not route or not IsTable(route.points) or #route.points == 0 then
+              return E("[E] Route '"..routename.."' not found or empty")
+          end
+
+          local wpdata = cmd.GetYFSNamedWaypoints()
+
+          -- iterate route points and add to calculator
+          local pointlist = {}
+          local wpIdx = 1
+          for _,v in ipairs(route.points) do
+              local wppos = ""
+              local wpName = "WP "..sformat("%03d", wpIdx)
+              if v.waypointRef and wpdata then
+                  wpName = v.waypointRef
+                  wppos = wpdata.v[wpName].pos
+              else
+                  wppos = v.pos
+              end
+
+              if wppos and ((not onlySelectable) or (v.opt["selectable"] ~= false)) then
+                  P("Using "..wpName)
+                  pointlist[wpIdx] = PM.MapPosToWorldVec3(wppos)
+                  wpIdx = wpIdx + 1
+              end
+          end
+          local center = GetCentralPoint(pointlist)
+          if center then
+              local locPos = PM.WorldToMapPos(center)
+              local output = "[I] Center coords: "..PM.MapPos2String(locPos)
+              P(output)
+          else
+              P("[E] Could not calculate center, sorry!")
+          end
+      end
+
+
       function cmd.GetYFSNamedWaypoints(muteMsg)
           if not DetectedYFS then
               return E("[E] Linked YFS databank required!")
@@ -1546,6 +1598,7 @@ handlers:
       function help.PrintHelpCmd()
           local hlp = "~~~~~~~~~~~~~~~~~~~~\nYFS-Tools Commands:\n~~~~~~~~~~~~~~~~~~~~\n"..
           "/arch-save-named\n-> Builds list of chat commands for ArchHud to add locations for all named waypoints.\n"..
+          "/findCenter\n-> Calculates center between all points of a route, like for a central hub.\n"..
           "/planetInfo (id or name)\n-> Info about current planet or for passed planet id or name, e.g. 2 for Alioth).\n"..
           "/printAltitude /printPos /printWorldPos\n-> Prints info data.\n"..
           "/warpCost -from name/::pos{}/planets -to name/::pos{}/planets -mass tons -moons\n-> Flexible warp cell calculator.\n"..
@@ -2099,6 +2152,76 @@ handlers:
 
       end)
 
+      package.preload['YFS-Tools:../util/wolfeCentralpoint.lua']=(function()
+
+      -- Requires vec3
+
+      -- Author: Matt / Wolfe Labs (@wolf_br), commissioned by tobitege (@tobitege)
+
+
+      local msqrt = math.sqrt
+
+
+      ---@comment Gets the central point for an ARRAY(!) of waypoints; nil if invalid params or empty array.
+
+      ---@param waypoints table with array of waypoints
+
+      ---@param useCentroid boolean|nil optional; default: nil (or false)
+
+      ---@return vec3|nil The vec3 of the center location (or nil)
+
+      function GetCentralPoint(waypoints, useCentroid)
+          if type(waypoints) ~= "table" or #waypoints == 0 then return nil end
+          if #waypoints == 1 then
+            -- If we only have a single point, return it
+              return waypoints[1]
+          elseif #waypoints == 2 then
+              -- For two points, we only need an average, no problem either
+              return (vec3(waypoints[1]) + vec3(waypoints[2])) / 2
+          end
+
+          -- Base weight for averaging
+          local base_weight = 1 / #waypoints
+
+          -- Calculates the centroid position
+          local centroid = vec3(0, 0, 0)
+          for _, waypoint in pairs(waypoints) do
+              centroid = centroid + vec3(waypoint) * base_weight
+          end
+
+          -- Use the centroid as the center, unless the option says otherwise
+          local center = centroid
+
+          -- Note to self: in the lines below math.sqrt(2) has been used to improve the center location.
+          -- This number seems to have worked best as an exponent for the distances, but I'm not sure why.
+          -- This is probably worth investigating at some point.
+
+          -- If we aren't using the centroid, we'll use it along with the distance of all other points to estimate a new center
+          if not useCentroid then
+              -- Calculates the average distances for the centroid
+              local avg_distance = 0
+              for _, waypoint in pairs(waypoints) do
+                  avg_distance = avg_distance + base_weight * (vec3(waypoint) - center):len() ^ msqrt(2)
+              end
+
+              -- Now we try to get closer to center
+              local center_accumulator = vec3(0, 0, 0)
+              for _, waypoint in pairs(waypoints) do
+                  local point = vec3(waypoint)
+                  local distance = (point - center):len() ^ msqrt(2)
+                  local weight = distance / avg_distance
+                  center_accumulator = center_accumulator + point * base_weight * weight
+              end
+
+              -- Sets new value for the center
+              center = center_accumulator
+          end
+
+          return center
+      end
+
+      end)
+
       package.preload['YFS-Tools:libmain.lua']=(function()
 
       -- require used classes and instantiate important ones
@@ -2133,6 +2256,11 @@ handlers:
       WaypointInfo = require('atlas')
 
 
+      require('YFS-Tools:../util/wolfeCentralpoint.lua') -- determine central point among array of waypoints
+
+      --WolfeCenterPointRS = library.embed File("../utils/wolfeCentralPointScreen.lua")
+
+
       WolfAR = nil -- customized Wolf Labs' AR waypointing
 
       end)
@@ -2143,7 +2271,7 @@ handlers:
 
       --- requires global WaypointInfo table (= atlas), vec3 library; classes SU, Out
 
-      local max, cos, macos, mdeg, msin, mabs, atan, ceil, floor, mpi = math.max, math.cos, math.acos, math.deg, math.sin, math.abs, math.atan, math.ceil, math.floor, math.pi
+      local max, mcos, macos, mdeg, msin, mabs, mrad, matan, ceil, floor, mpi = math.max, math.cos, math.acos, math.deg, math.sin, math.abs, math.rad, math.atan, math.ceil, math.floor, math.pi
 
       local tonum, strlen, strmatch, sformat = tonumber, string.len, string.match, string.format
 
@@ -2389,6 +2517,41 @@ handlers:
               return v[1],v[2],v[3]
           end
 
+          ---@comment Converts a latitude, longitude, altitude pair into a world X, Y, Z
+          --- Source: https://gis.stackexchange.com/a/4148
+          ---@param celestial_body table
+          ---@param latitude number
+          ---@param longitude number
+          ---@param altitude number
+          ---@return vec3|nil
+          function o.WorldPosFromBody(celestial_body, latitude, longitude, altitude)
+              if type(celestial_body) ~= "table" then return nil end
+              local radius = altitude + (celestial_body.radius or 0)
+              local phi, theta = mrad(latitude), mrad(longitude)
+              local pcos = mcos(phi)
+              local offset = vec3(pcos * mcos(theta), pcos * msin(theta), msin(phi))
+              -- Adds planet center and offset
+              return vec3(celestial_body.center) + offset * radius
+          end
+
+          ---@comment Gets a mappos from a world position
+          ---@param celestial_body table
+          ---@param position vec3
+          ---@return table
+          function o.BodyPosFromWorldPos(body, position)
+              -- We need to extract the "local" coordinate (offset from planet center) here and then normalize it to do math with it
+              local offset = position - vec3(body.center)
+              local offset_normalized = offset:normalize()
+
+              return {
+                  systemId  = body.systemId,
+                  id        = body.id,
+                  latitude  = 90 - (macos(offset_normalized.z) * 180 / mpi),
+                  longitude = matan(offset_normalized.y, offset_normalized.x) / mpi * 180,
+                  altitude  = offset:len() - body.radius
+              }
+          end
+
           ---@param v table the vec3() position to convert
           ---@return any MapPos table or nil
           function o.WorldToMapPos(v)
@@ -2396,23 +2559,7 @@ handlers:
               if not body or not body.center or not body.radius then
                   return { systemId = 0, id = 0, latitude = v.x, longitude = v.y, altitude = v.z }
               end
-              local coords = v - vec3(body.center)
-              local dist = coords:len()
-              local alt = dist - body.radius
-              local latitude = 0
-              local longitude = 0
-              if not float_eq(dist, 0) then
-                  local phi = atan(coords.y, coords.x)
-                  --phi >= 0 ???
-                  longitude = phi or (2 * mpi + phi)
-                  latitude = mpi / 2 - macos(coords.z / dist)
-              end
-              return {
-                  latitude  = mdeg(latitude),
-                  longitude = mdeg(longitude),
-                  altitude  = alt,
-                  id        = body.systemId,
-                  systemId  = body.id }
+              return o.BodyPosFromWorldPos(body, v)
           end
 
           function o.PlanetByName(name)
@@ -2425,9 +2572,9 @@ handlers:
               return nil
           end
 
-          ---comment Converts ::pos{} string into vec3
+          ---comment Converts ::pos{} string into a vec3
           ---@param posStr string ::pos{} string
-          ---@return any vec3() or nil
+          ---@return vec3|nil
           function o.MapPosToWorldVec3(posStr)
               local p = o.SplitPos(posStr)
               if not p or not p.systemId then return nil end
@@ -2439,8 +2586,8 @@ handlers:
               --credits to Saga for lat/lon calc
               local lat = constants.deg2rad * uclamp(p.latitude, -90, 90)
               local lon = constants.deg2rad * (p.longitude % 360)
-              local xproj = cos(lat)
-              local planetxyz = vec3(xproj*cos(lon), xproj*msin(lon), msin(lat))
+              local xproj = mcos(lat)
+              local planetxyz = vec3(xproj*mcos(lon), xproj*msin(lon), msin(lat))
               return vec3(planet.center) + (planet.radius + p.altitude) * planetxyz
           end
 
@@ -2589,9 +2736,10 @@ handlers:
 
       package.preload['YFS-Tools:startup.lua']=(function()
 
-      ---@diagnostic disable: undefined-field
+      local uclamp = utils.clamp
 
-      local onlyForRoute=""--export: Load waypoints only for this route (enclosed in double quotes!)
+
+      local onlyForRoute=""--export: Load waypoints only for this route (enclosed in double quotes!); default "".
 
       local onlySelectableWP=true--export: Check to only display custom route waypoints that are marked as selectable
 
@@ -2599,15 +2747,30 @@ handlers:
 
       local outputFont="FiraMono"--export: Name of font used for screen output. Default: "FiraMono"
 
+      local centerMaxDistance=5000--export: The furthest a point should be displayed on-screen in meters (1000..10000; default: 5000)
+
+      local centerHelperCirclesEvery=1000--export: Show grid circles every X meters (100..2000; default: 1000)
+
 
       onlyForRoute = onlyForRoute or ""
 
-      OutputFont = outputFont or "FiraMono"
+      OutputFont = outputFont or "FiraMono" -- used in libutils.lua
+
+
+      -- for new centerpoint mod
+
+      CenterMaxDistance = centerMaxDistance or 5000
+
+      CenterMaxDistance = uclamp(centerMaxDistance, 1000, 10000)
+
+      CenterHelperCirclesEvery = centerHelperCirclesEvery or 1000
+
+      CenterHelperCirclesEvery = uclamp(centerHelperCirclesEvery, 100, 2000)
 
 
       P("=========================================")
 
-      P("YFS-Tools 1.6 (unofficial)")
+      P("YFS-Tools 1.7.0 (unofficial)")
 
       P("created by tobitege (c) 2023")
 
@@ -2619,7 +2782,7 @@ handlers:
 
       P("* WARNING: do not run commands that change")
 
-      P("* waypoints/routes while YFS runs!")
+      P("* waypoints/routes while YFS is running!")
 
       P("=========================================")
 
@@ -2650,7 +2813,7 @@ handlers:
               return
           end
       else
-          -- this requires du-mocks
+          -- this requires du-mocks!
           Config.core = unit.core
           Config.databanks =  { unit.databank }
           Config.screens =  { unit.screen }
@@ -2683,6 +2846,14 @@ handlers:
       end
 
 
+      -- optionally load waypoints from databank (ArchHUD or YFS)
+
+      if loadWaypoints ~= true or #Config.databanks == 0 then
+          P("[I] Waypoints loading is off.")
+          return
+      end
+
+
       -- for local debugging, see mockaround file for demo data!
 
       if not INGAME then
@@ -2690,53 +2861,51 @@ handlers:
       end
 
 
-      -- load waypoints from databank(s) (ArchHUD or YFS)?
+      local prevCount = 0
 
-      if loadWaypoints ~= true then
-          P("[I] Waypoints loading is off.")
-      elseif #Config.databanks > 0 then
-          local prevCount = 0
-          for ix=1, #Config.databanks, 1 do
-              ---@diagnostic disable-next-line: assign-type-mismatch
-              local db = Config.databanks[ix] ---@type table DataBank
-              P("===== Checking db '"..db.getName().."' =====")
-              if db.hasKey(ARCH_SAVED_LOCATIONS) then
-                  P('ArchHud databank detected.')
-                  DetectedArch = ix
-                  local names = db.getStringValue(ARCH_SAVED_LOCATIONS)
-                  if names ~= "" then
-                      P('Searching stored locations...')
-                      local locations = json.decode(names)
-                      if IsTable(locations) then
-                          Cmd.GetStoredLocations(locations)
-                      end
+      for ix=1, #Config.databanks, 1 do
+          ---@diagnostic disable-next-line: assign-type-mismatch
+          local db = Config.databanks[ix] ---@type table DataBank
+          P("===== Checking db '"..db.getName().."' =====")
+          if db.hasKey(ARCH_SAVED_LOCATIONS) then
+              P('ArchHud databank detected.')
+              DetectedArch = ix
+              local names = db.getStringValue(ARCH_SAVED_LOCATIONS)
+              if names ~= "" then
+                  P('Searching stored locations...')
+                  local locations = json.decode(names)
+                  if IsTable(locations) then
+                      Cmd.GetStoredLocations(locations)
                   end
               end
-              if db.hasKey(YFS_ROUTES) or db.hasKey(YFS_NAMED_POINTS) then
-                  P('YFS databank detected.')
-                  YFSDB = Dtbk.new(db)
-                  DetectedYFS = true
-                  if not onlySelectableWP then
-                      Cmd.YFSLoadNamedWaypoints()
-                  end
-                  Cmd.YFSLoadRoutepoints(onlySelectableWP, onlyForRoute)
-              end
-              local count = PM.GetWaypointCount()
-              if count == prevCount then
-                  P("[I] No waypoints loaded from db "..ix)
-              else
-                  P("[I] "..(count - prevCount).." waypoints loaded from db "..ix)
-              end
-              prevCount = PM.GetWaypointCount()
           end
-          P("=======================")
-          if PM.GetWaypointCount() > 0 then
-              P("[I] Total "..PM.GetWaypointCount().." waypoints loaded.")
+          if db.hasKey(YFS_ROUTES) or db.hasKey(YFS_NAMED_POINTS) then
+              P('YFS databank detected.')
+              YFSDB = Dtbk.new(db)
+              DetectedYFS = true
+              if not onlySelectableWP then
+                  Cmd.YFSLoadNamedWaypoints()
+              end
+              Cmd.YFSLoadRoutepoints(onlySelectableWP, onlyForRoute)
+          end
+          local count = PM.GetWaypointCount()
+          if count == prevCount then
+              P("[I] No waypoints loaded from db "..ix)
           else
-              P("[I] No waypoints loaded.")
+              P("[I] "..(count - prevCount).." waypoints loaded from db "..ix)
           end
-          P("=======================")
+          prevCount = PM.GetWaypointCount()
       end
+
+      P("=======================")
+
+      if PM.GetWaypointCount() > 0 then
+          P("[I] Total "..PM.GetWaypointCount().." waypoints loaded.")
+      else
+          P("[I] No waypoints loaded.")
+      end
+
+      P("=======================")
 
       end)
 
@@ -2756,6 +2925,7 @@ handlers:
           local cmdList = {}
           cmdList['arch-save-named'] = 1
           cmdList['conversionTest'] = 1
+          cmdList['findCenter'] = 1
           cmdList['posData'] = 1
           cmdList['help'] = 'Help'
           cmdList['planetInfo'] = 1
@@ -2815,15 +2985,31 @@ handlers:
 
       end)
 
-      package.preload['YFS-Tools:../util/wolflib.lua']=(function()
+      package.preload['YFS-Tools:../util/wolfeARlib.lua']=(function()
 
-      -- Requires global WaypointInfo with Atlas-data!
+      -- wolflib.lua
+
+      -- Requires global WaypointInfo (Atlas data!)
 
       local wolfie = {
           core = nil,
           destList = {},
           destCount = 0
       }
+
+      -- 'Montserrat' is better with 0.8
+
+      -- 'Refrigerator' is better with 1.2
+
+      local fontSize = 1.2 -- em's, not pixels :P
+
+      local font = 'Refrigerator'
+
+      local colorBlue = { 130, 224, 255 } -- blue #66CCFF
+
+      local colorLime = { 50, 205, 50 }   -- lime #32CD32
+
+      local showEta = false
 
 
       local SmartTemplateLibrary = (function ()
@@ -2908,7 +3094,7 @@ handlers:
           ---@param source string The code for your template
           ---@param globals table Global variables to be used on on the template
           ---@param buildErrorHandler function A function to handle build errors, if none is found throws an error
-          ---@return Template
+          ---@return Template|nil
           function Template.new(source, globals, buildErrorHandler)
             -- Creates our instance
             local self = {
@@ -2943,27 +3129,27 @@ handlers:
                 if not iLuaEnd then
                   error('Template error, missing Lua closing tag near: ' .. source:sub(0, 16))
                 end
-        
+
                 --- The current text before Lua tag
                 local currentText = source:sub(1, iLuaStart - 1)
                 if #currentText then
                   table.insert(tPieces, mkPrint(currentText))
                 end
-        
+
                 --- Our Lua tag content
                 local luaTagContent = source:sub(iLuaStart, iLuaEnd + 1):match('{%%(.-)%%}') or ''
                 table.insert(tPieces, luaTagContent)
-        
+
                 -- Removes parsed content
                 source = source:sub(iLuaEnd + 2)
               else
                 -- Adds remaining Lua as a single print statement
                 table.insert(tPieces, mkPrint(source))
-        
+
                 -- Marks content as parsed
                 source = ''
               end
-        
+
               -- Yields loading
               yield()
             end
@@ -2982,7 +3168,7 @@ handlers:
               if buildErrorHandler then
                 buildErrorHandler(self, err)
               else
-                error('Failed compiling template: ' .. err)
+                error('[E] Failed compiling template: ' .. err)
               end
 
               -- Retuns an invalid instance
@@ -3030,8 +3216,7 @@ handlers:
       ---@return table<number,number>
 
       local function getHudColor()
-          local SafeR, SafeG, SafeB = 130, 224, 255
-          return { SafeR, SafeG, SafeB }
+          return colorLime
       end
 
 
@@ -3057,15 +3242,6 @@ handlers:
           + coordinate.x * vec3(construct.getWorldOrientationRight())
           + coordinate.y * vec3(construct.getWorldOrientationForward())
           + coordinate.z * vec3(construct.getWorldOrientationUp())
-      end
-
-
-      --- TODO: replace this to feed position into rendering!
-
-      ---@return table
-
-      local function getCurrentDestination()
-          return { name = 'Alioth Market 6', position = vec3({-20385.371087319,100031.74253829,-51957.968352493}) }
       end
 
 
@@ -3341,7 +3517,6 @@ handlers:
       local render = (function()
           local UI = {}
           local Shapes = {}
-          local Font = 'Montserrat' --'Play'
 
           --- Draws the hexagon, showing the current destiantion point in space
           Shapes.Hexagon = SmartTemplate([[
@@ -3359,8 +3534,6 @@ handlers:
 
           local renderGlobals = {
               Colors = {
-                  Main = '#09D4EB',
-                  Accent = '#5FFF77',
                   Shadow = 'rgba(0, 0, 0, 0.75)',
                   ShadowLight = 'rgba(0, 0, 0, 0.375)',
               },
@@ -3370,7 +3543,6 @@ handlers:
               GetHudColor = getHudColorRgb,
               GravityAt = getGravitationalForceAtAltitude,
               GravityAtInGs = getGravitationalForceAtAltitudeInGs,
-              KilometersPerHour = function(value) return ('%.0f km/h'):format(value) end,
               Metric = getDistanceAsString,
               Newtons = getNewtonsAsString,
               Percentage = function(value, precision) return getRoundedValue(100 * value, precision) .. '%' end,
@@ -3380,11 +3552,14 @@ handlers:
               WorldCoordinate = getARPointFromCoordinate,
               UI = UI,
               Shapes = Shapes,
+              ShowETA = showEta,
           }
 
           --- Draws text
+          -- text-shadow: 0px 0px 0.125em {{ stroke or Colors.Shadow }}, 0px 0px 0.250em #000, 0px 0px 0.500em #000;">
           renderGlobals.Label = SmartTemplate([[
-              <span style="font-size: {{ size or 1 }}em; font-family: {{ font or ']]..Font..[[' }}; font-weight: {{ weight or 'normal' }}; color: {{ color or GetHudColor() }}; text-shadow: 0px 0px 0.125em {{ stroke or Colors.Shadow }}, 0px 0px 0.250em #000, 0px 0px 0.500em #000;">
+              <span style="font-size: {{ size or ']]..fontSize..[[' }}em; font-family: {{ font or ']]..font..
+              [[' }}; font-weight: {{ weight or 'normal' }}; color: {{ color or GetHudColor() }}; text-shadow: 2px 2px 0.125em {{ stroke or Colors.Shadow }}, -2px -2px 0.250em #000, 2px -2px 0.500em #000;">
                 {{ text }}
               </span>
           ]], renderGlobals)
@@ -3408,7 +3583,7 @@ handlers:
 
               -- Calculates the ETA at current speed
               local eta = nil
-              if speed and speed > 1 then
+              if Exists(ShowETA) and ShowETA and speed and speed > 1 then
                 eta = TimeToDistance(distance, speed)
               end
             %}
@@ -3420,7 +3595,7 @@ handlers:
                   <div style="font-size: 0.8em; position: absolute; top: 1em; left: 2.5em; white-space: nowrap; padding: 0px 0.5em;">
                     <hr style="border: 0px none; height: 2px; background: {{ GetHudColor() }}; width: 5em; margin: 0px -0.5em 0.5em; padding: 0px;" />
                   {% if title then %}
-                    <div>{{ Label({ text = title, size = 1.2, weight = 'bold' }) }}</div>
+                    <div>{{ Label({ text = title, size = 1.1, weight = 'bold' }) }}</div>
                   {% end %}
                   {% if distance then %}
                     <div>{{ Label({ text = Metric(distance) }) }}</div>
@@ -3571,7 +3746,7 @@ handlers:
 
       end)
 
-      package.preload['YFS-Tools:../util/wolf_start.lua']=(function()
+      package.preload['YFS-Tools:../util/wolfeAR_start.lua']=(function()
 
       -- Feed waypoints to script based on "userclass.lua" by Wolf Labs (@wolfe_br)
 
@@ -3609,7 +3784,7 @@ handlers:
 
       end)
 
-      package.preload['YFS-Tools:unit_onTimer(update)_wolf.lua']=(function()
+      package.preload['YFS-Tools:unit_onTimer(update)_wolfeAR.lua']=(function()
 
       local timerFunc = {}
 
@@ -3806,16 +3981,16 @@ handlers:
 
 
 
-      -- Wolf Labs' waypointer mod (customized)
+      -- Wolfe Labs' waypointer mod (customized)
 
       -- *****************************************
 
       if WP_WOLF_ENABLED and Config.core then
-          WolfAR = require('YFS-Tools:../util/wolflib.lua')
-          require('YFS-Tools:../util/wolf_start.lua')
+          WolfAR = require('YFS-Tools:../util/wolfeARlib.lua')
+          require('YFS-Tools:../util/wolfeAR_start.lua')
           if WP_WOLF_ENABLED then
               WolfAR.setCore(Config.core)
-              onT = require('YFS-Tools:unit_onTimer(update)_wolf.lua')
+              onT = require('YFS-Tools:unit_onTimer(update)_wolfeAR.lua')
               if onT ~= nil then
                   unit:onEvent('onTimer', function (unit, id) onT.Run("update") end)
               end

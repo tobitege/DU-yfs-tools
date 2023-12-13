@@ -17,4 +17,7 @@ WM = require('wpointmgr').new("MAIN") -- instantiate MAIN waypoint manager
 
 WaypointInfo = require('atlas')
 
+require('wolfeCentralpoint') -- determine central point among array of waypoints
+--WolfeCenterPointRS = library.embed File("../utils/wolfeCentralPointScreen.lua")
+
 WolfAR = nil -- customized Wolf Labs' AR waypointing

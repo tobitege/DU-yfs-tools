@@ -10,6 +10,7 @@ function inputTextFunc.Run(t)
     local cmdList = {}
     cmdList['arch-save-named'] = 1
     cmdList['conversionTest'] = 1
+    cmdList['findCenter'] = 1
     cmdList['posData'] = 1
     cmdList['help'] = 'Help'
     cmdList['planetInfo'] = 1

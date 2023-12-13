@@ -3,6 +3,7 @@ local help = {}
 function help.PrintHelpCmd()
     local hlp = "~~~~~~~~~~~~~~~~~~~~\nYFS-Tools Commands:\n~~~~~~~~~~~~~~~~~~~~\n"..
     "/arch-save-named\n-> Builds list of chat commands for ArchHud to add locations for all named waypoints.\n"..
+    "/findCenter\n-> Calculates center between all points of a route, like for a central hub.\n"..
     "/planetInfo (id or name)\n-> Info about current planet or for passed planet id or name, e.g. 2 for Alioth).\n"..
     "/printAltitude /printPos /printWorldPos\n-> Prints info data.\n"..
     "/warpCost -from name/::pos{}/planets -to name/::pos{}/planets -mass tons -moons\n-> Flexible warp cell calculator.\n"..

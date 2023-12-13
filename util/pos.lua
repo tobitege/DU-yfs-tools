@@ -1,6 +1,6 @@
 --- Class related to positions/coordinates like local/world conversion etc.
 --- requires global WaypointInfo table (= atlas), vec3 library; classes SU, Out
-local max, cos, macos, mdeg, msin, mabs, atan, ceil, floor, mpi = math.max, math.cos, math.acos, math.deg, math.sin, math.abs, math.atan, math.ceil, math.floor, math.pi
+local max, mcos, macos, mdeg, msin, mabs, mrad, matan, ceil, floor, mpi = math.max, math.cos, math.acos, math.deg, math.sin, math.abs, math.rad, math.atan, math.ceil, math.floor, math.pi
 local tonum, strlen, strmatch, sformat = tonumber, string.len, string.match, string.format
 local uclamp, vec3 = utils.clamp, vec3
 
@@ -241,6 +241,41 @@ function o.New(pCore, pConstruct, pWM)
         return v[1],v[2],v[3]
     end
 
+    ---@comment Converts a latitude, longitude, altitude pair into a world X, Y, Z
+    --- Source: https://gis.stackexchange.com/a/4148
+    ---@param celestial_body table
+    ---@param latitude number
+    ---@param longitude number
+    ---@param altitude number
+    ---@return vec3|nil
+    function o.WorldPosFromBody(celestial_body, latitude, longitude, altitude)
+        if type(celestial_body) ~= "table" then return nil end
+        local radius = altitude + (celestial_body.radius or 0)
+        local phi, theta = mrad(latitude), mrad(longitude)
+        local pcos = mcos(phi)
+        local offset = vec3(pcos * mcos(theta), pcos * msin(theta), msin(phi))
+        -- Adds planet center and offset
+        return vec3(celestial_body.center) + offset * radius
+    end
+
+    ---@comment Gets a mappos from a world position
+    ---@param celestial_body table
+    ---@param position vec3
+    ---@return table
+    function o.BodyPosFromWorldPos(body, position)
+        -- We need to extract the "local" coordinate (offset from planet center) here and then normalize it to do math with it
+        local offset = position - vec3(body.center)
+        local offset_normalized = offset:normalize()
+
+        return {
+            systemId  = body.systemId,
+            id        = body.id,
+            latitude  = 90 - (macos(offset_normalized.z) * 180 / mpi),
+            longitude = matan(offset_normalized.y, offset_normalized.x) / mpi * 180,
+            altitude  = offset:len() - body.radius
+        }
+    end
+
     ---@param v table the vec3() position to convert
     ---@return any MapPos table or nil
     function o.WorldToMapPos(v)
@@ -248,23 +283,7 @@ function o.New(pCore, pConstruct, pWM)
         if not body or not body.center or not body.radius then
             return { systemId = 0, id = 0, latitude = v.x, longitude = v.y, altitude = v.z }
         end
-        local coords = v - vec3(body.center)
-        local dist = coords:len()
-        local alt = dist - body.radius
-        local latitude = 0
-        local longitude = 0
-        if not float_eq(dist, 0) then
-            local phi = atan(coords.y, coords.x)
-            --phi >= 0 ???
-            longitude = phi or (2 * mpi + phi)
-            latitude = mpi / 2 - macos(coords.z / dist)
-        end
-        return {
-            latitude  = mdeg(latitude),
-            longitude = mdeg(longitude),
-            altitude  = alt,
-            id        = body.systemId,
-            systemId  = body.id }
+        return o.BodyPosFromWorldPos(body, v)
     end
 
     function o.PlanetByName(name)
@@ -277,9 +296,9 @@ function o.New(pCore, pConstruct, pWM)
         return nil
     end
 
-    ---comment Converts ::pos{} string into vec3
+    ---comment Converts ::pos{} string into a vec3
     ---@param posStr string ::pos{} string
-    ---@return any vec3() or nil
+    ---@return vec3|nil
     function o.MapPosToWorldVec3(posStr)
         local p = o.SplitPos(posStr)
         if not p or not p.systemId then return nil end
@@ -291,8 +310,8 @@ function o.New(pCore, pConstruct, pWM)
         --credits to Saga for lat/lon calc
         local lat = constants.deg2rad * uclamp(p.latitude, -90, 90)
         local lon = constants.deg2rad * (p.longitude % 360)
-        local xproj = cos(lat)
-        local planetxyz = vec3(xproj*cos(lon), xproj*msin(lon), msin(lat))
+        local xproj = mcos(lat)
+        local planetxyz = vec3(xproj*mcos(lon), xproj*msin(lon), msin(lat))
         return vec3(planet.center) + (planet.radius + p.altitude) * planetxyz
     end
 
