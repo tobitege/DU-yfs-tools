@@ -5,7 +5,7 @@
 Unofficial commands for the [YFS flight script](https://github.com/PerMalmberg/du-yfs-wiki) by Yoarii (SVEA) for Dual Universe (DU).
 Credits to parts of the open software code to Yoarii, Archaegeo and EasternGamer.
 
-Big thanks for Wolfram for his awesome tool [DU-LuaC](https://github.com/wolfe-labs/DU-LuaC)
+Big thanks to Wolfram for his awesome tool [DU-LuaC](https://github.com/wolfe-labs/DU-LuaC)
 with which this project was built to create "ready-to-install" JSON files for DU.
 **I love that tool! :)**
 
@@ -29,8 +29,9 @@ the easiest way to get generated output of commands copied to the clipboard
 - Link the constructs' core to the board.
 - If present, link a new screen to the board (never use the YFS screen!)
 - Link the existing YFS databank named "Routes" to the board.
-- Install onto the board the "yfs-tools.json" script from either
-the "out\development" or "out\release" folders (see installation section below).
+- Install onto the board the "yfs-tools.json" script from either the "out\development-wp" or "out\release-wp" folders (see installation section below).
+
+The "development-wp" version is recommended for use now as the integrated waypointing for routes is working very well and just awesome to have. :)
 
 ### Script Installation
 

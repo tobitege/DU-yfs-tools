@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.7.1
+
+- AR Waypoint label font name+size changed for better readability
+- AR Waypoint symbol in orange if > 2.25km away (max container link range)
+- AR Waypoint distances: decimals staggered, normally 2, but between 10 and 1000 only 1 decimal
+- Added LUA parameter wpRenderLimit to specify the km within which range waypoints are displayed (default: 5)
+- If within 10m of a waypoint, its name will be displayed at center-left screen border for info
+- Improved AR performance and removed unneeded code
+- Hint: AR waypointer display can be turned off via LUA parameters
+- To compile: update DU-LuaC to v1.3.2 at least
+
 ## v1.7.0
 
 - Added command "/findCenter 'routename' -selectableOnly" to calculate the center point for a specified route's waypoints (only YFS support right now).

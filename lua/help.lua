@@ -17,7 +17,7 @@ function help.PrintHelpCmd()
     "/yfs-save-named\n-> Builds list of YFS commands to recreate all named waypoints.\n"..
     "/yfs-save-route\n-> Builds list of YFS commands to recreate full route incl. named waypoints and their options.\n"..
     "/yfs-wp-altitude\n-> Changes altitude of a named waypoint to specified altitude.\n"..
-    "----------------------------------\n"..
+    "=========================================\n"..
     "Important: Enclose names (as parameters) in single quotes if they contain blanks!\n"..
     "*** DO NOT USE COMMANDS THAT CHANGE POINTS ***\n*** OR ROUTES WHILE YFS IS RUNNING! ***\n"
     ScreenOutput(hlp)

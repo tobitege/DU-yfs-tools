@@ -128,8 +128,8 @@ local function draw_cursor(layer)
     setNextShadow(layer, 0.25 * cursor_size, 0, 0, 0, 1)
     setNextFillColor(layer, 1, 1, 1, 1)
     addQuad(
-      layer, 
-      x, y, 
+      layer,
+      x, y,
       x + cursor_size, y + 0.5 * cursor_size,
       x + 0.5 * cursor_size, y + 0.5 * cursor_size,
       x + 0.5 * cursor_size, y + cursor_size

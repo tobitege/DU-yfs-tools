@@ -5,14 +5,12 @@
       "exclude": []
     },
     {
-      "dir": "./util",
-      "exclude": [
-        "Codex.lua"
-      ]
+      "dir": "./libs",
+      "exclude": []
     },
     {
-        "dir": "./util/du-mocks/dumocks",
-        "exclude": []
+      "dir": "./util",
+      "exclude": []
     }
   ]
 }

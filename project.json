@@ -1,6 +1,6 @@
 {
   "cli": {
-    "fmtVersion": 3
+    "fmtVersion": 5
   },
   "name": "YFS-Tools",
   "description": "YFS support tools (unofficial)",
@@ -19,6 +19,7 @@
       "name": "development",
       "minify": false,
       "handleErrors": false,
+      "stripComments": true,
       "variables": {
         "debug": false
       }
@@ -27,6 +28,7 @@
       "name": "development-wp",
       "minify": false,
       "handleErrors": false,
+      "stripComments": true,
       "variables": {
         "debug": false,
         "with_waypointer_eg": false,
@@ -37,6 +39,7 @@
       "name": "release",
       "minify": true,
       "handleErrors": false,
+      "stripComments": true,
       "variables": {
         "debug": false
       }
@@ -45,6 +48,7 @@
       "name": "release-wp",
       "minify": true,
       "handleErrors": false,
+      "stripComments": true,
       "variables": {
         "debug": false,
         "with_waypointer_eg": false,

@@ -1,17 +1,21 @@
 -- wolflib.lua
 -- Requires global WaypointInfo (Atlas data!)
+
+local uclamp = utils.clamp
+
 local wolfie = {
     core = nil,
     destList = {},
-    destCount = 0
+    destCount = 0,
+    renderLimitKm = 5
 }
 -- 'Montserrat' is better with 0.8
 -- 'Refrigerator' is better with 1.2
 local fontSize = 1.2 -- em's, not pixels :P
-local font = 'Refrigerator'
+local font = 'Oxanium' -- 'Refrigerator'
 local colorBlue = { 130, 224, 255 } -- blue #66CCFF
 local colorLime = { 50, 205, 50 }   -- lime #32CD32
-local showEta = false
+local colorOrange = { 256, 128, 0 } -- orange #ff8000
 
 local SmartTemplateLibrary = (function ()
     --[[
@@ -58,6 +62,7 @@ local SmartTemplateLibrary = (function ()
 
     -- Makes our template directly callable
     function Template.__call(self, ...)
+        local t = ...
       return Template.render(self, ({...})[1])
     end
 
@@ -204,7 +209,10 @@ local referenceGravity1g = nil
 --- Gets the appropriate HUD color
 ---@param forcePvPZone boolean
 ---@return table<number,number>
-local function getHudColor()
+local function getHudColor(distance)
+    if distance and distance > 2250 then
+        return colorOrange
+    end
     return colorLime
 end
 
@@ -212,8 +220,8 @@ end
 ---@param alpha number
 ---@param forcePvPZone boolean
 ---@return string
-local function getHudColorRgb(alpha)
-    local color = getHudColor()
+local function getHudColorRgb(alpha, distance)
+    local color = getHudColor(distance)
     color[4] = alpha or 1
     return ('rgba(%s, %s, %s, %s)'):format(color[1], color[2], color[3], color[4])
 end
@@ -221,9 +229,9 @@ end
 --- Converts a coordinate from local to world space
 local function convertLocalToWorldCoordinates(coordinate)
     return vec3(construct.getWorldPosition())
-    + coordinate.x * vec3(construct.getWorldOrientationRight())
-    + coordinate.y * vec3(construct.getWorldOrientationForward())
-    + coordinate.z * vec3(construct.getWorldOrientationUp())
+        + coordinate.x * vec3(construct.getWorldOrientationRight())
+        + coordinate.y * vec3(construct.getWorldOrientationForward())
+        + coordinate.z * vec3(construct.getWorldOrientationUp())
 end
 
 --- Gets the current forward direction in world space
@@ -232,24 +240,18 @@ local function getCurrentPointedAt()
     return convertLocalToWorldCoordinates(vec3(0, infinityDistance, 0))
 end
 
---- Gets the current motion direction in world space
----@return vec3|nil
-local function getCurrentMotion()
-    local worldVelocity = vec3(construct.getWorldAbsoluteVelocity())
-    if worldVelocity:len() < 1 then return nil end
-    return worldVelocity:normalize_inplace() * infinityDistance + vec3(construct.getWorldPosition())
-end
-
 --- Converts a distance amount into meters, kilometers or su
 ---@param distance number
 ---@return string
 local function getDistanceAsString(distance)
     if distance > 100000 then
-        return ('%.1f su'):format(distance / 200000)
+        return ('%.2f su'):format(distance / 200000)
     elseif distance > 1000 then
-        return ('%.1f km'):format(distance / 1000)
+        return ('%.2f km'):format(distance / 1000)
+    elseif distance > 10 then
+        return ('%.1f m'):format(distance)
     end
-    return ('%.1f m'):format(distance)
+    return ('%.2f m'):format(distance)
 end
 
 --- Gets the distance to a certain point in space
@@ -262,44 +264,9 @@ end
 local function getARPointFromCoordinate(coordinate)
     local result = vec3(library.getPointOnScreen({ coordinate:unpack() }))
     if result:len() == 0 then
-      return nil
+        return nil
     end
     return result
-end
-
---- Converts a number of seconds into a string
----@param seconds number
----@return string
-local function getTimeAsString(seconds, longFormat)
-    local days = math.floor(seconds / 86400)
-    seconds = seconds - days * 86400
-
-    local hours = math.floor(seconds / 3600)
-    seconds = seconds - hours * 3600
-
-    local minutes = math.floor(seconds / 60)
-    seconds = seconds - minutes * 60
-
-    -- Long format (X hours, Y minutes, Z seconds)
-    if longFormat then
-        local result = {}
-        if days > 0 then table.insert(result, days .. 'd') end
-        if hours > 0 then table.insert(result, hours .. 'h') end
-        if minutes > 0 then table.insert(result, minutes .. 'm') end
-        if hours == 0 then
-        table.insert(result, math.floor(seconds) .. 's')
-        end
-        return table.concat(result, ' ')
-    end
-
-    -- Short format (X:YY:ZZ)
-    local result = {}
-    if hours > 0 then
-        table.insert(result, hours + 24 * days)
-    end
-    table.insert(result, ('%02d'):format(math.floor(minutes)))
-    table.insert(result, ('%02d'):format(math.floor(seconds)))
-    return table.concat(result, ':')
 end
 
 --- Rounds a value to desired precision
@@ -308,30 +275,6 @@ end
 ---@return string
 local function getRoundedValue(value, precision)
     return ('%.' .. (precision or 0) .. 'f'):format(value)
-end
-
---- Converts a m/s value into a string (optionally converts to km/h too)
----@param value number
----@param convertToKmph boolean
----@param decimals number
----@return string
-local function getMetersPerSecondAsString(value, convertToKmph, decimals)
-    if convertToKmph then
-        return ('%s km/h'):format(getRoundedValue(value * 3.6, decimals or 1))
-    end
-    return ('%s m/s'):format(getRoundedValue(value, decimals or 1))
-end
-
-local function getNewtonsAsString(value, decimals)
-    local suffix = 'N'
-    if value > 1000000 then
-        value = value / 1000000
-        suffix = 'MN'
-    elseif value > 1000 then
-        value = value / 1000
-        suffix = 'kN'
-    end
-    return ('%s %s'):format(getRoundedValue(value, decimals or 1), suffix)
 end
 
 --- Gets closest celestial body to world position (in m/s²)
@@ -353,13 +296,6 @@ end
 ---@param celestialBody table
 local function getAltitudeAtGravitationalForce(intensity, celestialBody)
     return math.sqrt(celestialBody.GM / intensity) - celestialBody.radius
-end
-
---- Gets the altitude where a celestial body has certain gravitational force (in Gs)
----@param intensity number
----@param celestialBody number
-local function getAltitudeAtGravitationalForceInGs(intensity, celestialBody)
-    return getAltitudeAtGravitationalForce(intensity * referenceGravity1g, celestialBody)
 end
 
 --- Gets closest celestial body to world position
@@ -428,7 +364,7 @@ local function getDistanceAroundCelestialBody(point, celestialBody)
     return (celestialBody.radius + flyingAltitude) * c
 end
 
-local render = (function()
+function wolfie.render(destList)
     local UI = {}
     local Shapes = {}
 
@@ -458,195 +394,158 @@ local render = (function()
         GravityAt = getGravitationalForceAtAltitude,
         GravityAtInGs = getGravitationalForceAtAltitudeInGs,
         Metric = getDistanceAsString,
-        Newtons = getNewtonsAsString,
-        Percentage = function(value, precision) return getRoundedValue(100 * value, precision) .. '%' end,
+        Percentage = function(value, precision) return getRoundedValue(100 * (value or 1), precision) .. '%' end,
         Round = getRoundedValue,
-        Time = getTimeAsString,
-        TimeToDistance = function(distance, speed) return ((speed > 0) and getTimeAsString(distance / speed, true)) or nil end,
         WorldCoordinate = getARPointFromCoordinate,
         UI = UI,
         Shapes = Shapes,
-        ShowETA = showEta,
+        renderLimit = wolfie.renderLimitKm
     }
 
     --- Draws text
     -- text-shadow: 0px 0px 0.125em {{ stroke or Colors.Shadow }}, 0px 0px 0.250em #000, 0px 0px 0.500em #000;">
-    renderGlobals.Label = SmartTemplate([[
-        <span style="font-size: {{ size or ']]..fontSize..[[' }}em; font-family: {{ font or ']]..font..
-        [[' }}; font-weight: {{ weight or 'normal' }}; color: {{ color or GetHudColor() }}; text-shadow: 2px 2px 0.125em {{ stroke or Colors.Shadow }}, -2px -2px 0.250em #000, 2px -2px 0.500em #000;">
-          {{ text }}
-        </span>
+    renderGlobals.Label = SmartTemplate([[<span style="font-size: {{ size or ']]..fontSize..[[' }}em; font-family: {{ font or ']]..font..[[' }};
+        font-weight: {{ weight or 'normal' }}; color: {{ color or GetHudColor() }};
+        text-shadow: 2px 2px 0.125em {{ stroke or Colors.Shadow }}, -2px -2px 0.50em #000, 2px -2px 0.50em #000;">
+    {{ text }}
+    </span>
     ]], renderGlobals)
 
     --- Creates an element that is always centered at a certain coordinate
-    UI.PositionCenteredAt = SmartTemplate(
-        'position: absolute; top: {{ Percentage(y, 6) }}; left: {{ Percentage(x, 6) }}; margin-top: -{{ (height or 1) / 2 }}em; margin-left: -{{ (width or 1) / 2 }}em;'
+    UI.PositionCenteredAt = SmartTemplate('position: absolute; top: {{ Percentage(y, 5) }}; left: {{ Percentage(x, 5) }}; margin-top: -{{ (height or 1) / 2 }}em; margin-left: -{{ (width or 1) / 2 }}em;'
     , renderGlobals)
 
     --- Renders a full destination marker (hexagon + info)
     UI.DestinationMarker = SmartTemplate([[
-      {%
-        local screen = WorldCoordinate(position)
-        local distance = DistanceTo(position)
+    {%
+    local screen = WorldCoordinate(position)
+    local distance = DistanceTo(position)
 
-        -- When on same celestial body, we need to take into account going around it
-        -- We use math.max here so we can also take the vertical displacement into account
-        if Exists(currentCelestialBody) and Exists(destinationCelestialBody) and currentCelestialBody.info.id == destinationCelestialBody.info.id then
-          distance = math.max(distance, DistanceAroundCelestialBody(position, destinationCelestialBody.info))
-        end
-
-        -- Calculates the ETA at current speed
-        local eta = nil
-        if Exists(ShowETA) and ShowETA and speed and speed > 1 then
-          eta = TimeToDistance(distance, speed)
-        end
-      %}
-      {% if screen then %}
+    -- When on same celestial body, we need to take into account going around it
+    -- We use math.max here so we can also take the vertical displacement into account
+    if Exists(currentCelestialBody) and Exists(destinationCelestialBody) and currentCelestialBody.info.id == destinationCelestialBody.info.id then
+        distance = math.max(distance, DistanceAroundCelestialBody(position, destinationCelestialBody.info))
+    end
+    local distKm = distance / 1000
+    local showWP = screen and ((renderLimit < 0.01) or (renderLimit > distKm))
+    %}
+    {% if showWP then %}
+        {% if distance and title and distance < 10 then %}
+        <div style="font-size: 1em; position: absolute; top: 50%; left: 0.25em; white-space: nowrap; padding: 0px 0.5em;">
+            {{ Label({ text = title, size = 1.5 }) }}
+        </div>
+        {% end %}
         <div style="{{ UI.PositionCenteredAt({ x = screen.x, y = screen.y, width = 2, height = 2 }) }}">
-          <div style="postion: relative;">
-            {{ Shapes.Hexagon({ color = GetHudColor(), stroke = Colors.Shadow, size = 2 }) }}
-          {% if title or distance then %}
+        <div style="postion: relative;">
+            {{ Shapes.Hexagon({ color = GetHudColor(1, distance), stroke = Colors.Shadow, size = 2 }) }}
+            {% if title or distance then %}
             <div style="font-size: 0.8em; position: absolute; top: 1em; left: 2.5em; white-space: nowrap; padding: 0px 0.5em;">
-              <hr style="border: 0px none; height: 2px; background: {{ GetHudColor() }}; width: 5em; margin: 0px -0.5em 0.5em; padding: 0px;" />
+            <hr style="border: 0px none; height: 2px; background: {{ GetHudColor(1, distance) }}; width: 5em; margin: 0px -0.5em 0.5em; padding: 0px;" />
             {% if title then %}
-              <div>{{ Label({ text = title, size = 1.1, weight = 'bold' }) }}</div>
+            <div>{{ Label({ text = title, size = 1, weight = 'bold' }) }}</div>
             {% end %}
             {% if distance then %}
-              <div>{{ Label({ text = Metric(distance) }) }}</div>
-            {% end %}
-            {% if eta then %}
-              <div style="font-size: 0.8em;">{{ Label({ text = 'ETA: ' .. eta }) }}</div>
+            <div>{{ Label({ text = Metric(distance), size = 1 }) }}</div>
             {% end %}
             </div>
-          {% end %}
-          </div>
+            {% end %}
+            </div>
         </div>
-      {% end %}
-      ]], renderGlobals)
+    {% end %}
+    ]], renderGlobals)
 
-      --- Renders a crosshair shape
+    --- Renders a crosshair shape
     UI.Crosshair = SmartTemplate([[
     <div style="{{ UI.PositionCenteredAt({ x = x, y = y, width = 1.5, height = 1.5 }) }}">
         {{ Shapes.Crosshair({ color = GetHudColor(), stroke = Colors.Shadow, size = 1.5 }) }}
     </div>
     ]], renderGlobals)
 
-    --- This function renders anything AR-related, it has support for smooth mode, so it renders both latest and previous frame data
-    local renderAR = SmartTemplate([[
-    <div class="wlhud-ar-elements">
-        {%
-        if currentPointingAt then
-            currentPointingAtOnScreen = WorldCoordinate(currentPointingAt)
-        end
-        if currentMotion then
-            currentMotionOnScreen = WorldCoordinate(currentMotion)
-        end
-        %}
+    renderGlobals.currentPointingAt = getCurrentPointedAt() -- current direction forward
 
-        {% if Exists(currentDestination) then %}
-        {{ UI.DestinationMarker({ title = currentDestination.name, position = currentDestination.position, speed = currentDestinationApproachSpeed }) }}
-        {% end %}
-
-        {% if Exists(currentPointingAtOnScreen) then %}
-        {{ UI.Crosshair(currentPointingAtOnScreen) }}
-        {% end %}
-    </div>
-    ]], renderGlobals)
-
-    --- This is what actually renders to the screen
-    return function(data)
-        return renderAR(data or {})
+    --- rAR contains rendered, AR-related items
+    local rAR = [[<div class="wlhud-ar-elements">
+    {%
+    if currentPointingAt then
+        currentPointingAtOnScreen = WorldCoordinate(currentPointingAt)
     end
-end)()
+    %}
+    {% if Exists(currentPointingAtOnScreen) then %}
+        {{ UI.Crosshair(currentPointingAtOnScreen) }}
+    {% end %}
+    ]]
+
+    local currentCelestialBodyInfo, currentCelestialBodyCoordinates = nil, nil
+    local currentPosition = vec3(construct.getWorldPosition())
+    local currentCelestialBody = getClosestCelestialBody(currentPosition,false)
+    if currentCelestialBody then
+        currentCelestialBodyCoordinates = getLatLonAltFromWorldPosition(currentPosition, currentCelestialBody)
+        if currentCelestialBodyCoordinates then
+            currentCelestialBodyInfo = { info = currentCelestialBody, coordinates = currentCelestialBodyCoordinates }
+        end
+    end
+    if type(destList) == "table" then
+        for _,dest in pairs(destList) do
+            -- Is destination on same celestial body
+            local isDestinationOnSameCelestialBody = false
+            if currentCelestialBody and dest.bodyInfo and currentCelestialBody.id == dest.bodyInfo.info.id then
+                isDestinationOnSameCelestialBody = true
+            end
+
+            local marker = SmartTemplate([[ {{ UI.DestinationMarker({ title = currentDestination.name, position = currentDestination.position }) }} ]],
+            {
+                currentDestination = dest,
+                currentCelestialBody = currentCelestialBodyInfo,
+                destinationCelestialBody = dest.bodyInfo,
+                destinationOnSameCelestialBody = isDestinationOnSameCelestialBody
+            })
+            if marker then
+                rAR = rAR .. marker(renderGlobals)
+            end
+        end
+    end
+    rAR = rAR .. "</div>"
+    local renderAR = SmartTemplate(rAR, renderGlobals)
+    if renderAR then
+        return renderAR()
+    end
+    return ""
+end
 
 -- Pass a core unit
 function wolfie.setCore(pCore)
     core = pCore
 end
 
+-- Limit in km to display waypoints (0 = unlimited; max. 1mil)
+function wolfie.setRenderLimit(renderLimit)
+    renderLimit = renderLimit or 0
+    renderLimit = tonumber(renderLimit)
+    wolfie.renderLimitKm = uclamp(renderLimit, 0, 1000000) -- 0 = unlimited; max 500 SU
+end
+
 -- Pass a list of waypoints (vec3) with their names in (name/vec3 pairs)
 function wolfie.AddWaypoint(destName, vector)
     if not destName or type(vector) ~= "table" then return end
     wolfie.destCount = wolfie.destCount + 1
-    wolfie.destList[wolfie.destCount] = { name = destName, position = vec3(vector) }
+    local bodyCoordinates, bodyInfo = nil, nil
+    local currentBody = getClosestCelestialBody(vector,false)
+    if currentBody then
+        bodyCoordinates = getLatLonAltFromWorldPosition(vector, currentBody)
+        if bodyCoordinates then
+            bodyInfo = {
+                info = currentBody,
+                coordinates = bodyCoordinates
+            }
+        end
+    end
+    local data = { name = destName, position = vec3(vector), bodyInfo = bodyInfo }
+    wolfie.destList[wolfie.destCount] = data
 end
 
 -- Main render function returning the generated SVG
 function wolfie.onRenderFrame()
-    if wolfie.destCount == 0 then return "" end
-
-    -- Pre-calculates some vectors
-    local worldVelocity = vec3(construct.getWorldVelocity())
-
-    -- This is our current celestial body and coordinates
-    local currentPosition = vec3(construct.getWorldPosition())
-    local currentCelestialBody, currentCelestialBodyCoordinates = getClosestCelestialBody(currentPosition,false), nil
-    if currentCelestialBody then
-        currentCelestialBodyCoordinates = getLatLonAltFromWorldPosition(currentPosition, currentCelestialBody)
-    end
-
-    -- This is our current direction forward
-    local currentPointingAt = getCurrentPointedAt()
-
-    -- This is our current motion vector
-    local currentMotion = getCurrentMotion()
-
-    local output = ""
-    for _,currentDestination in pairs(wolfie.destList) do
-
-        -- This is our current destination in lat/lon/alt space, along with what celestial body it is
-        local currentDestinationCelestialBody, currentDestinationCelestialBodyCoordinates = nil, nil
-        if currentDestination then
-            currentDestinationCelestialBody = getClosestCelestialBody(currentDestination.position,false)
-            if currentDestinationCelestialBody then
-                currentDestinationCelestialBodyCoordinates = getLatLonAltFromWorldPosition(currentDestination.position, currentDestinationCelestialBody)
-            end
-        end
-
-        -- Prepares data for our current and destination celestial body
-        local currentCelestialBodyInfo, destinationCelestialBodyInfo = nil, nil
-        if currentCelestialBody and currentCelestialBodyCoordinates then
-            currentCelestialBodyInfo = {
-                info = currentCelestialBody,
-                coordinates = currentCelestialBodyCoordinates,
-            }
-        end
-        if currentDestinationCelestialBody and currentDestinationCelestialBodyCoordinates then
-            destinationCelestialBodyInfo = {
-                info = currentDestinationCelestialBody,
-                coordinates = currentDestinationCelestialBodyCoordinates,
-            }
-        end
-
-        -- Is destination on same celestial body
-        local isDestinationOnSameCelestialBody = false
-        if currentCelestialBody and currentDestinationCelestialBody and currentCelestialBody.id == currentDestinationCelestialBody.id then
-            isDestinationOnSameCelestialBody = true
-        end
-
-        -- Let's calculate whether we're getting closer to our destination or not
-        local currentDestinationApproachSpeed = worldVelocity:len()
-        if isDestinationOnSameCelestialBody then
-            currentDestinationApproachSpeed = worldVelocity:len()
-        elseif currentDestination then
-            local destinationVector = (currentDestination.position - currentPosition):normalize()
-            currentDestinationApproachSpeed = destinationVector:dot(worldVelocity)
-        end
-
-        -- This will print all data with our template
-        output = output .. render({
-            currentDestination = currentDestination,
-            currentDestinationApproachSpeed = currentDestinationApproachSpeed,
-            currentPointingAt = currentPointingAt,
-            currentMotion = currentMotion,
-            currentSpeed = worldVelocity:len(),
-            -- Routing utilities
-            currentCelestialBody = currentCelestialBodyInfo,
-            destinationCelestialBody = destinationCelestialBodyInfo,
-        })
-    end
-
-    return output
+    return wolfie.render(wolfie.destList)
 end
 
 return wolfie

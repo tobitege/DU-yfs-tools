@@ -1,14 +1,3 @@
----@diagnostic disable: missing-return, undefined-doc-name, lowercase-global
-local integer=number
----@class ShapeType
-ShapeType={}
----@class Event
-Event={}
----@return any
-function Event.new() end
----@alias AlignH number
----@alias AlignV number
-
 ---@class Adjustor
 local Adjustor = {}
 --- Show the element widget in the in-game widget stack
@@ -1460,7 +1449,7 @@ function Construct.getOwner() end
 ---@return integer The owner entity table with fields {[int] id, [bool] isOrganization} describing the owner. Use system.getPlayerName(id) and system.getOrganization(id) to retrieve info about it
 function Construct.getCreator() end
 --- Returns the local id of the current active schematic container. nil if none has been declared
----@return integer local id of the current active schematic container
+---@return interger local id of the current active schematic container
 function Construct.getSchematicContainerId() end
 --- Checks if the construct is currently warping
 ---@return boolean True if the construct is currently warping, false otherwise
@@ -8666,7 +8655,7 @@ function System.getItem(id) end
 function System.isItemInClassId(itemId, classId) end
 --- Checks if the given item is an item of the class given by its class name
 ---@param itemId integer The ID of the item
----@param className string The name of the item class
+---@param className[string]: The name of the item class
 ---@return boolean True if the item is an item of the given class, false otherwise
 function System.isItemInClass(itemId, className) end
 --- Checks if the given item is a class item
@@ -9681,10 +9670,7 @@ Weapon.onElementDestroyed = Event:new()
 ---@param damage number The damage amount dealt by the hit
 ---@type Event
 Weapon.onHit = Event:new()
-
-
 --[[ Those are headers for DU's vec2 library ]]
-
 --- A vec2 represents a 2-dimensional vector and includes methods to manipulate it
 ---@class vec2
 ---@field zero vec3 A vector representing the origin point (0, 0) - Only available OUTSIDE instances
@@ -9693,30 +9679,25 @@ Weapon.onHit = Event:new()
 ---@field x number The X component of the vector - Only available INSIDE instances
 ---@field y number The Y component of the vector - Only available INSIDE instances
 vec2 = {}
-
 --- Calculates the distance between two points
 ---@param a vec2 The first point
 ---@param b vec2 The second point
 ---@return number
 function vec2.dist(a, b) end
-
 --- Calculates the squared distance between two points
 ---@param a vec2 The first point
 ---@param b vec2 The second point
 ---@return number
 function vec2.dist2(a, b) end
-
 --- Calculates the dot product of two vectors
 ---@param a vec2 The first vector to dot with
 ---@param b vec2 The second vector to dot with
 ---@return number
 function vec2.dot(a, b) end
-
 --- Returns true when a valid vec3 is provided
 ---@param vector any The value to test against
 ---@return boolean
 function vec3.isvector(vector) end
-
 --- Calculates the linear interpolation between two points
 --- https://web.archive.org/web/20220115105703/https://keithmaggio.wordpress.com/2011/02/15/math-magician-lerp-slerp-and-nlerp/
 ---@param a vec2 The first point
@@ -9724,84 +9705,66 @@ function vec3.isvector(vector) end
 ---@param delta number A value between 0 and 1 indicating how much to interpolate towards the second point
 ---@return vec2
 function vec2.lerp(a, b, delta) end
-
 --- TODO: Write documentation about this method
 ---@param vector vec2
 ---@return number
 function vec2:angle_to(vector) end
-
 --- Creates a new instance containing the same data
 ---@return vec2
 function vec2:clone() end
-
 --- Crosses the current vector with another vector
 ---@param vector vec2 The vector to cross with
 ---@return vec2
 function vec2:cross(vector) end
-
 --- Calculates the vector's length
 ---@return number
 function vec2:len() end
-
 --- Calculates the vector's squared length
 ---@return number
 function vec2:len2() end
-
 --- TODO: Write documentation about this method
 ---@param vector vec2
 ---@return vec2
 function vec2:mirror_on(vector) end
-
 --- Normalizes the vector so that its length is 1 and returns a new copy
 ---@return vec2
 function vec2:normalize() end
-
 --- Normalizes the vector in-place so that its length is 1
 ---@return vec2
 function vec2:normalize_inplace() end
-
 --- Returns the vector perpendicular to the current
 ---@return vec2
 function vec2:perpendicular() end
-
 --- Projects the current vector into another vector
 ---@param vector vec2 The vector on which we are projecting the current vector
 ---@return vec2
 function vec2:project_on(vector) end
-
 --- Rotates the vector in a certain angle
 ---@param phi number Amount to be rotated, in radians
 ---@return vec2
 function vec2:rotate(phi) end
-
 --- Rotates the vector in-place in a certain angle
 ---@param phi number Amount to be rotated, in radians
 ---@return vec2
 function vec2:rotate_inplace(phi) end
-
 --- Truncates (scales down) the vector if its length is larger than maxLen
 --- https://web.archive.org/web/20130512171728/http://blog.signalsondisplay.com/?p=336
 ---@param maxLen number The maximum length of the vector
 ---@return vec2
 function vec2:trim(vector) end
-
 --- Truncates (scales down) the vector in-place if its length is larger than maxLen
 --- https://web.archive.org/web/20130512171728/http://blog.signalsondisplay.com/?p=336
 ---@param maxLen number The maximum length of the vector
 ---@return vec2
 function vec2:trim_inplace(vector) end
-
 --- Unpacks the vector into its components
 ---@return number, number
 function vec2:unpack() end
-
 --- Initializes a new 2D vector with its components in a table
 ---@param components number[] A table in the { x, y } format
 ---@return vec2
 function vec2(components) return setmetatable({}, { _index = vec2 }) end
-
 --[[ Those are headers for DU's vec3 library ]]
-
 --- A vec3 represents a 3-dimensional vector and includes methods to manipulate it
 ---@class vec3
 ---@field zero vec3 A vector representing the origin point (0, 0, 0) - Only available OUTSIDE instances
@@ -9812,30 +9775,25 @@ function vec2(components) return setmetatable({}, { _index = vec2 }) end
 ---@field y number The Y component of the vector - Only available INSIDE instances
 ---@field z number The Z component of the vector - Only available INSIDE instances
 vec3 = {}
-
 --- Calculates the distance between two points
 ---@param a vec3 The first point
 ---@param b vec3 The second point
 ---@return number
 function vec3.dist(a, b) end
-
 --- Calculates the squared distance between two points
 ---@param a vec3 The first point
 ---@param b vec3 The second point
 ---@return number
 function vec3.dist2(a, b) end
-
 --- Calculates the dot product of two vectors
 ---@param a vec3 The first vector to dot with
 ---@param b vec3 The second vector to dot with
 ---@return number
 function vec3.dot(a, b) end
-
 --- Returns true when a valid vec3 is provided
 ---@param vector any The value to test against
 ---@return boolean
 function vec3.isvector(vector) end
-
 --- Calculates the linear interpolation between two points
 --- https://web.archive.org/web/20220115105703/https://keithmaggio.wordpress.com/2011/02/15/math-magician-lerp-slerp-and-nlerp/
 ---@param a vec3 The first point
@@ -9843,142 +9801,118 @@ function vec3.isvector(vector) end
 ---@param delta number A value between 0 and 1 indicating how much to interpolate towards the second point
 ---@return vec3
 function vec3.lerp(a, b, delta) end
-
 --- Calculates the angle between two different vectors
 ---@param vector vec3 The second vector we are getting the angle between
 ---@return number
 function vec3:angle_between(vector) end
-
 --- TODO: Write documentation about this method, but only seems to work on 2D vectors (why is this here?)
 ---@param vector vec3
 ---@return number
 function vec3:angle_to(vector) end
-
 --- Creates a new instance containing the same data
 ---@return vec3
 function vec3:clone() end
-
 --- Crosses the current vector with another vector
 ---@param vector vec3 The vector to cross with
 ---@return vec3
 function vec3:cross(vector) end
-
 --- Calculates the vector's length
 ---@return number
 function vec3:len() end
-
 --- Calculates the vector's squared length
 ---@return number
 function vec3:len2() end
-
 --- TODO: Write documentation about this method
 ---@param vector vec3
 ---@return vec3
 function vec3:mirror_on(vector) end
-
 --- Normalizes the vector so that its length is 1 and returns a new copy
 ---@return vec3
 function vec3:normalize() end
-
 --- Normalizes the vector in-place so that its length is 1
 ---@return vec3
 function vec3:normalize_inplace() end
-
 --- TODO: Write documentation about this method
 ---@param orientation vec3
 ---@return vec3
 function vec3:orientation_to_direction(orientation) end
-
 --- Returns the vector perpendicular to the current
 ---@return vec3
 function vec3:perpendicular() end
-
 --- TODO: Write documentation about this method
 ---@param vector vec3
 ---@return vec3
 function vec3:project_from(vector) end
-
 --- Projects the current vector into another vector
 ---@param vector vec3 The vector on which we are projecting the current vector
 ---@return vec3
 function vec3:project_on(vector) end
-
 --- Projects the current vector into a plane
 ---@param plane_normal vec3 The normal of the plane on which we are projecting the current vector
 ---@return vec3
 function vec3:project_on_plane(plane_normal) end
-
 --- Rotates the vector by an axis
 ---@param phi number Amount to be rotated, in radians
 ---@param axis vec3 Axis by which the vector will be rotated
 ---@return vec3
 function vec3:rotate(phi, axis) end
-
 --- Truncates (scales down) the vector if its length is larger than maxLen
 --- https://web.archive.org/web/20130512171728/http://blog.signalsondisplay.com/?p=336
 ---@param maxLen number The maximum length of the vector
 ---@return vec3
 function vec3:trim(vector) end
-
 --- Truncates (scales down) the vector in-place if its length is larger than maxLen
 --- https://web.archive.org/web/20130512171728/http://blog.signalsondisplay.com/?p=336
 ---@param maxLen number The maximum length of the vector
 ---@return vec3
 function vec3:trim_inplace(vector) end
-
 --- Unpacks the vector into its components
 ---@return number, number, number
 function vec3:unpack() end
-
 --- Initializes a new 3D vector with its components in a table
 ---@param components number[] A table in the { x, y, z } format
 ---@return vec3
 function vec3(components) return setmetatable({}, { _index = vec3 }) end
-
 --[[ Those are the DU-LuaC Helpers ]]
-
 --- Returns a list of elements linked to the current Control Unit
 ---@param filters table<string, string> A list of filters where each key is a element function and the value is the desired value
 ---@param noLinkNames boolean When true the results will be keyed by the linking order instead of link name
 ---@return table<string|number, Element>
 function Library.getLinks(filters, noLinkNames) end
-
 --- Returns a list of elements linked to the current Control Unit of a specified class
 ---@param className string The element class name you want to match against
 ---@param noLinkNames boolean When true the results will be keyed by the linking order instead of link name
 ---@return table<string|number, Element>
 function Library.getLinksByClass(className, noLinkNames) end
-
 --- Returns the first element linked to the current Control Unit of a specified class
 ---@param className string The element class name you want to match against
 ---@return Element
 function Library.getLinkByClass(className) end
-
 --- Returns the linked Core Unit
 ---@return CoreUnit
 function Library.getCoreUnit() end
-
 --- Returns a linked element with matching name
 ---@param elementName string The element name to be matched against
 ---@return Element
 function Library.getLinkByName(elementName) end
-
 --- Adds event handling to an object's instance
 ---@param obj table The object you are adding events to
 function Library.addEventHandlers(obj) end
-
 --- Clears all event handlers currently in use everywhere in the Lua context
 function Library.clearAllEventHandlers() end
-
 --- Embeds a local file (from your LuaC project) as a Lua string
 ---@param file string The file you are embedding
 ---@return string
 function Library.embedFile(file) end
-
+--- Embeds a Lua file (from local project, imported library or your Lua path) as a Lua string, optionally compiling and minifying it
+---@param file string The Lua file you are embedding
+---@param compile boolean Whether the Lua file should be compiled or not (defaults to false)
+---@param minify boolean Whether the Lua file should be minified or not (defaults to build target setting, requires compile)
+---@return string
+function Library.embedLua(file, compile, minify) end
 --- Represents the Dual Universe atlas
 ---@alias DUAtlas table<number, DUAtlasSolarSystem>
 local DUAtlas = {}
-
 --- Represents a celestial body (planet, moon, moonlet, asteroid, etc) found in the Dual Universe atlas
 ---@class DUAtlasCelestialBody
 ---@field id number The unique ID of the celestial body
@@ -10008,11 +9942,9 @@ local DUAtlas = {}
 ---@field ores DUMultiLanguageString[] A list of all the ores that can be found on the celestial body
 ---@field territories number How many territories the celestial body has in total
 local AtlasCelestialBody = {}
-
 --- Represents a solar system on the Dual Universe atlas
 ---@alias DUAtlasSolarSystem table<number, DUAtlasCelestialBody>
 local DUAtlasSolarSystem = {}
-
 --- Describes a localized string in multiple languages
 ---@class DUMultiLanguageString
 local DUMultiLanguageString = {}
@@ -10025,3 +9957,279 @@ DULibrary = Library()
 DUSystem = System()
 DUPlayer = Player()
 DUConstruct = Construct()
+DULibrary = Library()
+--- Adds a new event handler to an object's event
+---@param event string The event being listened
+---@param handler fun(self: Library, ...: any) The event handler
+---@return number The event handler ID
+function DULibrary:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+function DULibrary:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function DULibrary:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+function DULibrary:triggerEvent(event, ...) end
+library = Library()
+--- Adds a new event handler to an object's event
+---@param event string The event being listened
+---@param handler fun(self: Library, ...: any) The event handler
+---@return number The event handler ID
+function library:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+function library:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function library:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+function library:triggerEvent(event, ...) end
+DUSystem = System()
+--- Adds a new event handler to an object's event
+---@param event string | "'onActionStart'" | "'actionStart'" | "'onActionStop'" | "'actionStop'" | "'onActionLoop'" | "'actionLoop'" | "'onUpdate'" | "'update'" | "'onFlush'" | "'flush'" | "'onInputText'" | "'inputText'" | "'onCameraChanged'" | "'cameraChanged'" The event being listened
+---@param handler fun(self: System, ...: any) The event handler
+---@return number The event handler ID
+---@overload fun(event:'onActionStart',handler:fun(self:System,action:string)):number
+---@overload fun(event:'actionStart',handler:fun(self:System)):number
+---@overload fun(event:'onActionStop',handler:fun(self:System,action:string)):number
+---@overload fun(event:'actionStop',handler:fun(self:System)):number
+---@overload fun(event:'onActionLoop',handler:fun(self:System,action:string)):number
+---@overload fun(event:'actionLoop',handler:fun(self:System)):number
+---@overload fun(event:'onUpdate',handler:fun(self:System)):number
+---@overload fun(event:'update',handler:fun(self:System)):number
+---@overload fun(event:'onFlush',handler:fun(self:System)):number
+---@overload fun(event:'flush',handler:fun(self:System)):number
+---@overload fun(event:'onInputText',handler:fun(self:System,text:string)):number
+---@overload fun(event:'inputText',handler:fun(self:System)):number
+---@overload fun(event:'onCameraChanged',handler:fun(self:System,mode:integer)):number
+---@overload fun(event:'cameraChanged',handler:fun(self:System)):number
+function DUSystem:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+---@overload fun(event:'onActionStart',handlerId:number)
+---@overload fun(event:'actionStart',handlerId:number)
+---@overload fun(event:'onActionStop',handlerId:number)
+---@overload fun(event:'actionStop',handlerId:number)
+---@overload fun(event:'onActionLoop',handlerId:number)
+---@overload fun(event:'actionLoop',handlerId:number)
+---@overload fun(event:'onUpdate',handlerId:number)
+---@overload fun(event:'update',handlerId:number)
+---@overload fun(event:'onFlush',handlerId:number)
+---@overload fun(event:'flush',handlerId:number)
+---@overload fun(event:'onInputText',handlerId:number)
+---@overload fun(event:'inputText',handlerId:number)
+---@overload fun(event:'onCameraChanged',handlerId:number)
+---@overload fun(event:'cameraChanged',handlerId:number)
+function DUSystem:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function DUSystem:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+---@overload fun(event:'onActionStart',...:any)
+---@overload fun(event:'actionStart',...:any)
+---@overload fun(event:'onActionStop',...:any)
+---@overload fun(event:'actionStop',...:any)
+---@overload fun(event:'onActionLoop',...:any)
+---@overload fun(event:'actionLoop',...:any)
+---@overload fun(event:'onUpdate',...:any)
+---@overload fun(event:'update',...:any)
+---@overload fun(event:'onFlush',...:any)
+---@overload fun(event:'flush',...:any)
+---@overload fun(event:'onInputText',...:any)
+---@overload fun(event:'inputText',...:any)
+---@overload fun(event:'onCameraChanged',...:any)
+---@overload fun(event:'cameraChanged',...:any)
+function DUSystem:triggerEvent(event, ...) end
+system = System()
+--- Adds a new event handler to an object's event
+---@param event string | "'onActionStart'" | "'actionStart'" | "'onActionStop'" | "'actionStop'" | "'onActionLoop'" | "'actionLoop'" | "'onUpdate'" | "'update'" | "'onFlush'" | "'flush'" | "'onInputText'" | "'inputText'" | "'onCameraChanged'" | "'cameraChanged'" The event being listened
+---@param handler fun(self: System, ...: any) The event handler
+---@return number The event handler ID
+---@overload fun(event:'onActionStart',handler:fun(self:System,action:string)):number
+---@overload fun(event:'actionStart',handler:fun(self:System)):number
+---@overload fun(event:'onActionStop',handler:fun(self:System,action:string)):number
+---@overload fun(event:'actionStop',handler:fun(self:System)):number
+---@overload fun(event:'onActionLoop',handler:fun(self:System,action:string)):number
+---@overload fun(event:'actionLoop',handler:fun(self:System)):number
+---@overload fun(event:'onUpdate',handler:fun(self:System)):number
+---@overload fun(event:'update',handler:fun(self:System)):number
+---@overload fun(event:'onFlush',handler:fun(self:System)):number
+---@overload fun(event:'flush',handler:fun(self:System)):number
+---@overload fun(event:'onInputText',handler:fun(self:System,text:string)):number
+---@overload fun(event:'inputText',handler:fun(self:System)):number
+---@overload fun(event:'onCameraChanged',handler:fun(self:System,mode:integer)):number
+---@overload fun(event:'cameraChanged',handler:fun(self:System)):number
+function system:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+---@overload fun(event:'onActionStart',handlerId:number)
+---@overload fun(event:'actionStart',handlerId:number)
+---@overload fun(event:'onActionStop',handlerId:number)
+---@overload fun(event:'actionStop',handlerId:number)
+---@overload fun(event:'onActionLoop',handlerId:number)
+---@overload fun(event:'actionLoop',handlerId:number)
+---@overload fun(event:'onUpdate',handlerId:number)
+---@overload fun(event:'update',handlerId:number)
+---@overload fun(event:'onFlush',handlerId:number)
+---@overload fun(event:'flush',handlerId:number)
+---@overload fun(event:'onInputText',handlerId:number)
+---@overload fun(event:'inputText',handlerId:number)
+---@overload fun(event:'onCameraChanged',handlerId:number)
+---@overload fun(event:'cameraChanged',handlerId:number)
+function system:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function system:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+---@overload fun(event:'onActionStart',...:any)
+---@overload fun(event:'actionStart',...:any)
+---@overload fun(event:'onActionStop',...:any)
+---@overload fun(event:'actionStop',...:any)
+---@overload fun(event:'onActionLoop',...:any)
+---@overload fun(event:'actionLoop',...:any)
+---@overload fun(event:'onUpdate',...:any)
+---@overload fun(event:'update',...:any)
+---@overload fun(event:'onFlush',...:any)
+---@overload fun(event:'flush',...:any)
+---@overload fun(event:'onInputText',...:any)
+---@overload fun(event:'inputText',...:any)
+---@overload fun(event:'onCameraChanged',...:any)
+---@overload fun(event:'cameraChanged',...:any)
+function system:triggerEvent(event, ...) end
+DUPlayer = Player()
+--- Adds a new event handler to an object's event
+---@param event string | "'onParentChanged'" The event being listened
+---@param handler fun(self: Player, ...: any) The event handler
+---@return number The event handler ID
+---@overload fun(event:'onParentChanged',handler:fun(self:Player,oldId:integer,newId:integer)):number
+function DUPlayer:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+---@overload fun(event:'onParentChanged',handlerId:number)
+function DUPlayer:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function DUPlayer:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+---@overload fun(event:'onParentChanged',...:any)
+function DUPlayer:triggerEvent(event, ...) end
+player = Player()
+--- Adds a new event handler to an object's event
+---@param event string | "'onParentChanged'" The event being listened
+---@param handler fun(self: Player, ...: any) The event handler
+---@return number The event handler ID
+---@overload fun(event:'onParentChanged',handler:fun(self:Player,oldId:integer,newId:integer)):number
+function player:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+---@overload fun(event:'onParentChanged',handlerId:number)
+function player:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function player:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+---@overload fun(event:'onParentChanged',...:any)
+function player:triggerEvent(event, ...) end
+DUConstruct = Construct()
+--- Adds a new event handler to an object's event
+---@param event string | "'onDocked'" | "'onUndocked'" | "'onPlayerBoarded'" | "'onVRStationEntered'" | "'onConstructDocked'" | "'onPvPTimer'" The event being listened
+---@param handler fun(self: Construct, ...: any) The event handler
+---@return number The event handler ID
+---@overload fun(event:'onDocked',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onUndocked',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onPlayerBoarded',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onVRStationEntered',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onConstructDocked',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onPvPTimer',handler:fun(self:Construct,active:boolean)):number
+function DUConstruct:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+---@overload fun(event:'onDocked',handlerId:number)
+---@overload fun(event:'onUndocked',handlerId:number)
+---@overload fun(event:'onPlayerBoarded',handlerId:number)
+---@overload fun(event:'onVRStationEntered',handlerId:number)
+---@overload fun(event:'onConstructDocked',handlerId:number)
+---@overload fun(event:'onPvPTimer',handlerId:number)
+function DUConstruct:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function DUConstruct:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+---@overload fun(event:'onDocked',...:any)
+---@overload fun(event:'onUndocked',...:any)
+---@overload fun(event:'onPlayerBoarded',...:any)
+---@overload fun(event:'onVRStationEntered',...:any)
+---@overload fun(event:'onConstructDocked',...:any)
+---@overload fun(event:'onPvPTimer',...:any)
+function DUConstruct:triggerEvent(event, ...) end
+construct = Construct()
+--- Adds a new event handler to an object's event
+---@param event string | "'onDocked'" | "'onUndocked'" | "'onPlayerBoarded'" | "'onVRStationEntered'" | "'onConstructDocked'" | "'onPvPTimer'" The event being listened
+---@param handler fun(self: Construct, ...: any) The event handler
+---@return number The event handler ID
+---@overload fun(event:'onDocked',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onUndocked',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onPlayerBoarded',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onVRStationEntered',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onConstructDocked',handler:fun(self:Construct,id:integer)):number
+---@overload fun(event:'onPvPTimer',handler:fun(self:Construct,active:boolean)):number
+function construct:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+---@overload fun(event:'onDocked',handlerId:number)
+---@overload fun(event:'onUndocked',handlerId:number)
+---@overload fun(event:'onPlayerBoarded',handlerId:number)
+---@overload fun(event:'onVRStationEntered',handlerId:number)
+---@overload fun(event:'onConstructDocked',handlerId:number)
+---@overload fun(event:'onPvPTimer',handlerId:number)
+function construct:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function construct:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+---@overload fun(event:'onDocked',...:any)
+---@overload fun(event:'onUndocked',...:any)
+---@overload fun(event:'onPlayerBoarded',...:any)
+---@overload fun(event:'onVRStationEntered',...:any)
+---@overload fun(event:'onConstructDocked',...:any)
+---@overload fun(event:'onPvPTimer',...:any)
+function construct:triggerEvent(event, ...) end
+unit = ControlUnit()
+--- Adds a new event handler to an object's event
+---@param event string | "'onTimer'" | "'tick'" The event being listened
+---@param handler fun(self: ControlUnit, ...: any) The event handler
+---@return number The event handler ID
+---@overload fun(event:'onTimer',handler:fun(self:ControlUnit,tag:string)):number
+---@overload fun(event:'tick',handler:fun(self:ControlUnit)):number
+function unit:onEvent(event, handler) end
+--- Removes an event handler from an object's event
+---@param event string The event being removed from
+---@param handlerId number The event handler ID being removed
+---@overload fun(event:'onTimer',handlerId:number)
+---@overload fun(event:'tick',handlerId:number)
+function unit:clearEvent(event, handlerId) end
+--- Removes all event handlers from all events of an object
+function unit:clearAllEvents() end
+--- Triggers an object's event
+---@param event string The event name
+---@param ... any The event arguments
+---@overload fun(event:'onTimer',...:any)
+---@overload fun(event:'tick',...:any)
+function unit:triggerEvent(event, ...) end
