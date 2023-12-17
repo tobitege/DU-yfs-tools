@@ -94,8 +94,11 @@ Outputs list of all loaded waypoints to LUA chat (with name) and to an optionall
 - **/planetInfo** [id|'name']
 
 Displays some basic info mainly from the Atlas about the current planet (no parameters), a given planet id (e.g. 2 for Alioth) or by name like Jago.
+
 The following examples will output the same result:
+
 Example 1: `/planetInfo Madis`
+
 Example 2: `/planetInfo 11`
 
 ```lua
@@ -141,11 +144,13 @@ A dev helper: outputs to chat all routes existing in the YFS databank.
 - **/findCenter** 'routename'
 
 Calculates the approximate center between all points of the given route. The result is output to the LUA chat and also set as a waypoint.
+
 For larger mining operations it can be of great help to set up a central "center" hub to use with maximum container link range and then go about your business of calibrations and/or collecting ore.
 
 - **/warpCost** -from 'name'|::pos{}|planets -to 'name'|::pos{}|planets [-mass *tons*] [-cargo *tons*] [-moons]
 
 Flexible warp cell calculator taking into account the current construct's mass and location.
+
 At least one of *-from* and *-to* parameters must be specified, the other will then be determined from the construct (closest planet). Both accept either a planet's name, a ::pos{...} string or the keyword planets itself.
 
 The latter actually generates a whole list of cell costs for all planets in the Atlas, not just the current one.
@@ -234,7 +239,9 @@ Changes altitude for a range of waypoints (from ix to endIx) of a specific YFS r
 - **/yfs-route-nearest**
 
 Shows a list of route waypoints by distance from the current location.
+
 Example: `/yfs-route-nearest 'Peta'`
+
 Sample output (shortened output; route only has unnamed waypoints, thus their index is the first value):
 
 ```lua
@@ -253,7 +260,9 @@ Route-Idx / Name / Distance (m)
 ```
 
 - **/yfs-route-to-named**
+
 Converts a route's *unnamed* waypoints to named waypoints for YFS.
+
 Example: `/yfs-route-to-named 'Route 1'`
 
 |Parameter|Comment|
@@ -264,8 +273,11 @@ Example: `/yfs-route-to-named 'Route 1'`
 |*-toDB*              | only if this is given, the changed list will be written to DB to avoid miscalls|
 
 - **/yfs-save-named**
+
 Creates a list of YFS commands to recreate *all* named waypoints the script loaded.
+
 If a screen is linked, the output will be display there as well to make it easier to copy the content to e.g. a text editor for safekeeping.
+
 *Sample output (shortened to 3 entries):*
 
 ```lua
@@ -276,10 +288,15 @@ pos-save-as 'Peta 13' -pos ::pos{0, 8, 57.1549, 23.4400, 515.3481}
 ```
 
 - **/yfs-save-route**
+
 Builds a list of YFS commands to recreate a full route setup incl. named waypoints and their options, like set margins (m) and finalSpeed values (m/s).
+
 The result is output to LUA chat as well as an optionally linked screen.
+
 This could then be copied off the screen buffer to an outside text editor to save it for safekeeping and can be used on other YFS-enabled constructs.
+
 Example: `/yfs-save-route 'Peta' -onlySelectable -withOptions -prefix 'P'`
+
 *Sample output (shortened to 3 entries):*
 
 ```lua
@@ -297,7 +314,9 @@ route-save
 ```
 
 - **/yfs-wp-altitude**
+
 Changes altitude of a named waypoint to the specified altitude (in meters).
+
 Example: `/yfs-wp-altitude 'Base 1' 324.12`
 
 ## Credits
