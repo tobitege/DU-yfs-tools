@@ -323,7 +323,7 @@ function o.New(pCore, pConstruct, pWM)
         end
         if type(id) == "string" and s.planetNames[id:lower()] then -- id as planet name
             pid = tonum(s.planetNames[id:lower()])
-        elseif type(id) == "number" and tonum(id) > 0 then -- id as planet id
+        elseif type(id) == "string" and tonum(id) > 0 then -- id as planet id
             pid = tonum(id)
         end
         if pid == nil then

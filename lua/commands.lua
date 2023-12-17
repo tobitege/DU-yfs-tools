@@ -216,7 +216,7 @@ function cmd.WpAltitudeCeilingCmd(text)
     local wpName1 = parts[1]
     local wpName2 = parts[2]
 
-    -- 2 find named waypoint as per params
+    -- 1 find the 2 named waypoints per params
     local wp1found, wp2found = true, true
     if wpnames.v[wpName1] == nil or wpnames.v[wpName1] == "" then
         P("[E] Waypoint '".. wpName1 .."' not found.")

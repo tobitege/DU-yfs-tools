@@ -3,8 +3,9 @@
 ## v1.7.2
 
 - Fixed */yfs-route-altitude* and */yfs-route-nearest* commands to also work with unnamed waypoints in a route
+- Fixed */planetInfo* command to accept a number again (as the Atlas id)
 - LUA chat input is being trimmed first so accidental whitespace does not prevent "/" commands being recognized
-- Updated README.md to include an overview of all LUA chat commands
+- Updated README.md to finally include an extensive overview of all commands with examples
 
 ## v1.7.1
 
