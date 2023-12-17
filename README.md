@@ -166,24 +166,20 @@ Example 2: `/warpCost -from Alioth -to planets -moons`
 
 Example 3: `/warpCost -from Madis -to planets -mass 534 -cargo 234`
 
-Output in LUA chat will give a list of roundtrips: first trip with cargo and the return trip "empty" (no cargo):
+Output in LUA chat will give a list of roundtrips: first trip with cargo and the return trip "empty" (no cargo).
 
 ```LUA
 Executing /warpCost with: -from Madis -to planets -mass 534 -cargo 234
 ~~~ WARP CELL CALCULATOR ~~~
 Current planet: Alioth
 Mass: 534.0 tons  ~*~  Cargo: 234.0 tons
-From: Madis
-To (Distance) / Cells / Return w/o cargo
-Madis (142.19 SU) = 18 cells / 10 cells = 28 total
 Alioth (141.37 SU) = 18 cells / 10 cells = 28 total
-Thades (142.14 SU) = 18 cells / 10 cells = 28 total
-Talemai (142.05 SU) = 18 cells / 10 cells = 28 total
-Sicari (142.12 SU) = 18 cells / 10 cells = 28 total
-Sinnen (142.08 SU) = 18 cells / 10 cells = 28 total
-Teoma (142.01 SU) = 18 cells / 10 cells = 28 total
-Jago (142.01 SU) = 18 cells / 10 cells = 28 total
-Point at screen, CTRL+L, then copy text!
+Thades (82.15 SU) = 10 cells / 5 cells = 15 total
+Talemai (224.72 SU) = 28 cells / 16 cells = 44 total
+Sicari (314.51 SU) = 40 cells / 22 cells = 62 total
+Sinnen (313.3 SU) = 40 cells / 22 cells = 62 total
+Teoma (354.06 SU) = 45 cells / 25 cells = 70 total
+Jago (559.42 SU) -> too far!
 ```
 
 Optional '*-from x*' with x being either 'here', a planet name, ::pos{} or 'planets' (multi-result).

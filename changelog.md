@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.7.3
+
+- Fix for interim bug in Atlas data loading (pos.lua) causing the warp cell calculation to be wrong
+- Fixed example for /warpCost command with correct values
+
 ## v1.7.2
 
 - Fixed */yfs-route-altitude* and */yfs-route-nearest* commands to also work with unnamed waypoints in a route

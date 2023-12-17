@@ -432,7 +432,7 @@ function o.New(pCore, pConstruct, pWM)
             WaypointInfo[0][i].habitability = nil
             WaypointInfo[0][i].ores = nil
             -- new props
-            WaypointInfo[0][i].centerV3 = vec3(WaypointInfo[0][i].centerVec)
+            WaypointInfo[0][i].centerV3 = vec3(WaypointInfo[0][i].center)
             if v.hasAtmosphere then
                 local res = v.atmosphereRadius - v.radius
                 WaypointInfo[0][i].atmoAltitude = res
