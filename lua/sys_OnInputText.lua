@@ -3,6 +3,7 @@
 local inputTextFunc = {}
 
 function inputTextFunc.Run(t)
+    t = SU.Trim(t)
     if not SU.StartsWith(t, "/") then return end
     if not Cmd then
         return E("[FATAL ERROR] Commands processor not assigned!")

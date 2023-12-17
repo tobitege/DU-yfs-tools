@@ -525,7 +525,7 @@ function cmd.YfsRouteAltitudeCmd(text)
     if not routes then return end
 
     local namedWP = cmd.GetYFSNamedWaypoints()
-    if not namedWP then return end
+    --if not namedWP then return end
 
     -- 1 check parameters
     local example = "\nExample:\n/yfs-route-altitude -route 'name' -ix 2 -endIx 3 -alt 330\nThe -endIx is optional."
@@ -549,25 +549,30 @@ function cmd.YfsRouteAltitudeCmd(text)
     if not pEnd or pEnd < pStart then pEnd = pStart end
 
     -- 2 process route waypoints and collect named waypoint names
-    -- /yfs-route-altitude -route 'Cryo' -ix 2 -endIx 3 -alt 330.1243
+    -- /yfs-route-altitude -route 'Peta' -ix 2 -endIx 3 -alt 750
     P("[I] Processing route '"..pName.."'")
     local changed = 0
     local wpnames = {}
     for i,v in ipairs(routes.v[pName].points) do
         if i >= pStart and i <= pEnd then
+            local newPos = ""
             local wpName = v.waypointRef
-            local wp = namedWP.v[wpName]
-            if wp ~= nil then
+            if wpName and namedWP and namedWP.v and namedWP.v[wpName] then
+                local wp = namedWP.v[wpName]
                 if GetIndex(wpnames, wpName) < 1 then
                     table.insert(wpnames, wpName)
                 end
-                local newPos = PM.ReplaceAltitudeInPos(wp.pos, pAlt)
-                routes.v[pName].points[i].pos = newPos
-                P("[I] Route Waypoint '"..wpName.."' changed to:\n"..newPos)
+                newPos = PM.ReplaceAltitudeInPos(wp.pos, pAlt)
+            else -- unnamed WP
+                wpName = i
+                newPos = PM.ReplaceAltitudeInPos(v.pos, pAlt)
             end
+            changed = changed + 1
+            routes.v[pName].points[i].pos = newPos
+            P("[I] Route Waypoint '"..wpName.."' changed to:\n"..newPos)
         end
     end
-    if #wpnames == 0 then
+    if changed == 0 then
         return E("[I] No waypoints in route changed.\n[*] Make sure that start (and end-index) are valid.")
     end
     -- 3 store routes back to db
@@ -677,7 +682,7 @@ function cmd.YfsRouteNearestCmd(text)
     local output = "Route-Idx / Name / Distance (m)\n"
     for _,key in pairs(GetSortedAssocKeys(res)) do
         local routeIdx = res[key]
-        local wpName = route.points[routeIdx].waypointRef
+        local wpName = route.points[routeIdx].waypointRef or routeIdx
         local wpDist = route.points[routeIdx].distance
         output = output .. sformat("%02d", routeIdx).." / '"..wpName.."' / "
         output = output .. Out.PrettyDistance(wpDist).."\n"

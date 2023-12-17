@@ -1,6 +1,6 @@
 --- Class related to positions/coordinates like local/world conversion etc.
 --- requires global WaypointInfo table (= atlas), vec3 library; classes SU, Out
-local max, mcos, macos, mdeg, msin, mabs, mrad, matan, ceil, floor, mpi = math.max, math.cos, math.acos, math.deg, math.sin, math.abs, math.rad, math.atan, math.ceil, math.floor, math.pi
+local max, min, mcos, macos, mdeg, msin, mabs, mrad, matan, ceil, floor, mpi = math.max, math.min, math.cos, math.acos, math.deg, math.sin, math.abs, math.rad, math.atan, math.ceil, math.floor, math.pi
 local tonum, strlen, strmatch, sformat = tonumber, string.len, string.match, string.format
 local uclamp, vec3 = utils.clamp, vec3
 
@@ -129,7 +129,7 @@ function o.New(pCore, pConstruct, pWM)
     function o.MapPos2String(mapPos)
         if type(mapPos) ~= "table" then return "" end
         return '::pos{' .. (mapPos.systemId or 0).. ',' .. (mapPos.id or 0) .. ',' ..
-               sformat("%.4f", (mapPos.latitude or 0)) .. ',' .. 
+               sformat("%.4f", (mapPos.latitude or 0)) .. ',' ..
                sformat("%.4f", (mapPos.longitude or 0)) ..  ',' ..
                sformat("%.4f", (mapPos.altitude or 0)) .. '}'
     end
@@ -308,8 +308,9 @@ function o.New(pCore, pConstruct, pWM)
         if not WaypointInfo[p.systemId] then return nil end
         local planet = WaypointInfo[p.systemId][p.id]
         --credits to Saga for lat/lon calc
-        local lat = constants.deg2rad * uclamp(p.latitude, -90, 90)
-        local lon = constants.deg2rad * (p.longitude % 360)
+        -- constants.deg2rad
+        local lat = 0.0174532925199 * max(min(p.latitude, 90), -90)
+        local lon = 0.0174532925199 * (p.longitude % 360)
         local xproj = mcos(lat)
         local planetxyz = vec3(xproj*mcos(lon), xproj*msin(lon), msin(lat))
         return vec3(planet.center) + (planet.radius + p.altitude) * planetxyz

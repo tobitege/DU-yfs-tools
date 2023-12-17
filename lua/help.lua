@@ -11,6 +11,7 @@ function help.PrintHelpCmd()
     "/wp-export\n-> Outputs list of plain waypoints to chat and an optional screen. Source can include ArchHud locations, too, if databank linked.\n"..
     "/yfs-add-altitude-wp\n-> Adds waypoints for each existing WP at a specified altitude and name suffix.\n"..
     "/yfs-build-route-from-wp\n-> Powerful route-building command based on existing named waypoints.\n"..
+    "/yfs-replace-wp 'name'\n-> Replaces a named waypoint with the current location.\n"..
     "/yfs-route-altitude\n-> Changes altitude for a range of waypoints of a specific YFS route.\n"..
     "/yfs-route-nearest\n-> Show list of route waypoints by distance from current location.\n"..
     "/yfs-route-to-named\n-> Converts a route's *unnamed* waypoints to named waypoints for YFS.\n"..

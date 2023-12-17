@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.7.2
+
+- Fixed */yfs-route-altitude* and */yfs-route-nearest* commands to also work with unnamed waypoints in a route
+- LUA chat input is being trimmed first so accidental whitespace does not prevent "/" commands being recognized
+- Updated README.md to include an overview of all LUA chat commands
+
 ## v1.7.1
 
 - AR Waypoint label font name+size changed for better readability

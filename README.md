@@ -71,6 +71,64 @@ as well as the connected screen).
 If a command cannot find needed parameters, it will say so in chat
 and most often provide a usage example.
 
+# Commands
+
+A variety of LUA chat commands allow to export data, create commands lists or change routes.
+Most commands are specific to YFS, but there are a couple of general purpose and ArchHUD related commands as well.
+It is highly recommended to NOT use commands whilst flying via any route in YFS!
+Commands are entered into LUA chat and all start with a forward slash (/) character in order to not collide with YFS' own commands.
+Additional parameters are usually prefixed with a dash (-).
+Any route or waypoint names should be enclosed in single quotes especially when they contain blanks in their names.
+If a command is entered with missing parameters, the script will usually output an appropriate error message and provide an example.
+
+## ArchHud related
+
+This script automatically detects stored locations in the connected databank, which could be one used by an ArchHUD script. This allows to e.g. export ArchHud locations to a list of commands to add these to a route in YFS or vice versa. For ArchHud this script only *reads* its data upon start and does not change locations in an ArchHud databank.
+
+- /arch-save-named
+Builds a list of chat commands for ArchHud to add locations for all named waypoints.
+
+## General purpose
+
+- /findCenter *routename*
+Calculates center between all points of a route, like for a central hub.
+- /planetInfo (id or name)
+Info about current planet (no parameters), a given planet id (e.g. 2 for Alioth) or by name like Jago.
+- /printAltitude
+Outputs to chat the current altitude in meters.
+- /printPos
+Outputs to chat the current position as a local ::pos string, i.e. if close to/on a planet, it will include the planet's id in the ::pos string, like ::pos{0,2, ...} for Alioth.
+- /printWorldPos
+Outputs to chat the current position in absolute world coordinates, i.e. the ::pos string will start with "0,0," instead of a planet's id.
+- /warpCost -from *name*/::pos{}/planets -to *name*/::pos{}/planets -mass *tons* -moons
+Flexible warp cell calculator. At least one of -from and -to parameters must be specified, the other will be the current construct's planet. Both accept either a planet's name, a ::pos string or the keyword planets. The latter will generate a list of cell costs for all planets. If the -moons parameter is specified, it will also include moons.
+Mass is very important for the calculation. By default it would use the current construct's total mass for it. But with e.g. "-mass 1234" added, the script will use 1234 tons instead.
+
+## YFS only
+
+- /wp-altitude-ceiling
+Of 2 *named* waypoints, changes one waypoint to have the higher altitude of both.
+- /wp-export
+Outputs list of plain waypoints to chat and an optional screen. Source can include ArchHud locations, too, if databank linked.
+- /yfs-add-altitude-wp
+Adds waypoints for each existing WP at a specified altitude and name suffix.
+- /yfs-build-route-from-wp
+Powerful route-building command based on existing named waypoints.
+- /yfs-replace-wp 'name'
+Replaces a named waypoint with the current location. If a route uses this waypoint, YFS should be restarted to read the updated value.
+- /yfs-route-altitude -route 'name' -ix 2 -endIx 3 -alt 330
+Changes altitude for a range of waypoints (from ix to endIx) of a specific YFS route (identified by name) to a specified altitude "-alt" in meters.
+- /yfs-route-nearest
+Show list of route waypoints by distance from current location.
+- /yfs-route-to-named
+Converts a route's *unnamed* waypoints to named waypoints for YFS.
+- /yfs-save-named
+Builds list of YFS commands to recreate all named waypoints.
+- /yfs-save-route
+Builds list of YFS commands to recreate full route incl. named waypoints and their options.
+- /yfs-wp-altitude
+Changes altitude of a named waypoint to specified altitude.
+
 ## Credits
 
 Big thanks to Matt for [DU-LuaC](https://github.com/wolfe-labs/DU-LuaC) and

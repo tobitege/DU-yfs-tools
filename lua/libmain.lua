@@ -17,6 +17,7 @@ WM = require('wpointmgr').new("MAIN") -- instantiate MAIN waypoint manager
 
 WaypointInfo = require('atlas')
 
+STL = require('stl') -- determine central point among array of waypoints
 require('wolfeCentralpoint') -- determine central point among array of waypoints
 -- if not INGAME then
 --     WolfeCenterPointRS = library.embedFile("../util/wolfeCentralPointScreen.lua")
