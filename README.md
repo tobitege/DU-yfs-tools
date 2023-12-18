@@ -301,7 +301,11 @@ Once all the locations are saved as waypoints in YFS, the below example command 
 
 **`/yfs-build-route-from-wp -name 'Chromite' -altitude 450 -wpStartsWith 'Chr' -suffix 'F'`**
 
-This command uses all existing waypoints, whose names start with "*Chr*", as landing locations and for each one adds an "at **F**light" waypoint directly above them at the specified altitude of 450 meters. We chose the "F" as a suffix in the name for "flight" as a personal preference. It can be different, but should be short due to limited YFS screen space in the route editor. As a result, for our waypoint "**Chr 1**" a new waypoint "**Chr 1F**" would be added and so on.
+This command uses all existing waypoints, whose names start with "*Chr*", as landing locations and for each one adds an "at **F**light" waypoint directly above them at the specified altitude of 450 meters.
+
+We chose the "F" as a suffix in the name for "flight" as a personal preference. It can be different, but should be short due to limited YFS screen space in the route editor.
+
+As a result, for our waypoint "**Chr 1**" a new waypoint "**Chr 1F**" would be added and so on.
 
 Since *there can be only one* altitude with this command, be careful to measure one that is safe to traverse between all waypoints: better to add a safety margin of 20m than being salty and dead inside the next hill along the way. ;)
 
@@ -312,9 +316,9 @@ The end result is a new route with all the above waypoints. If the route name is
 With our route, YFS starts at "Chr 1", landed on the ground.
 It then ascends up above it to 450m to reach "Chr 1F", turns and flies toward "Chr 2F" still at 450 meters and there finally descends vertically down to "Chr 2" and is landed again.
 
-This way of "*landed waypoint -> takeoff vertically to "F" -> fly over to next waypoint's F -> land again*" is then common between all waypoints.
+This is the way: "*landed at waypoint 1 -> takeoff vertically to 1F -> fly over to waypoint 2F -> land at 2*" is repeated between waypoints.
 
-Within the route all the "at flight" waypoints will be marked as "not selectable" and "not skippable", so only "Chr 1", "Chr 2" etc. are shown on the "Waypoints" list on screen (outside of the route editor) by YFS.
+Within the route all the at flight waypoints will be marked as "not selectable" and "not skippable", so only "Chr 1", "Chr 2" etc. are shown on the "Waypoints" list on screen (outside of the route editor) by YFS.
 
 *Disclaimer:* due to the common altitude setting for all "at flight" waypoints, this works best *out of the box* for either flatlands or areas with little to no difference in maximum terrain elevation between all sites.
 
@@ -322,7 +326,7 @@ If in doubt about flight altitudes across waypoints, don't panic, help is here w
 
 #### **/yfs-add-altitude-wp**
 
-Adds waypoints for each existing WP at a specified altitude and name suffix.
+Adds waypoints for each existing WP at a specified altitude and name suffix. Recommended only for first route setup or better, use previous command.
 
 This was the predecessor command to the above /yfs-build-route-from-wp command and a simple but not very luxurious way to add extra waypoints for flight altitudes. If not specified, the suffix will be defaulted to 'F'.
 
@@ -343,23 +347,25 @@ Example: `/wp-altitude-ceiling 'Base 1F' 'Base 2F'`
 Resets specific options for a range of waypoints of a given route.
 
 This sets finalSpeed to 30km/h, maxSpeed to 0 (unlimited), margin to 0.01m.
-Additionally it will remove the (currently) inaccessible option for alignment ('lockDir'), which would originate from the "Add + facing" option on the YFS route editor screen.
+Additionally it will remove the (currently) inaccessible option for alignment ('lockDir'), which would originate from the "**Add + facing**" option on the YFS route editor screen.
 
 The options for selectable and skippable are unchanged.
 
-If the -endIx parameter is left out, all waypoints starting from position -ix to the end will be processed. -ix and -endIx can have the same value to allow to change a single route point.
+If the -endIx parameter is left out, all waypoints starting from position -ix to the end will be processed. -ix and -endIx can have the same value to allow changing a single route point.
 
 Example: `/yfs-options-reset -route 'name' -ix 2 -endIx 3`
 
 #### **/yfs-replace-wp**
 
-Replaces a named waypoint with the current position of the construct. If no name is specified or no waypoint with the provided name can be found, an error message will be displaye.
+Replaces a named waypoint with the current position of the construct. If no name is specified or no waypoint with the provided name can be found, an error message will be output.
 
 Example: `/yfs-replace-wp 'Chr 1'`
 
-#### **/yfs-route-altitude** -route 'name' -ix 2 -endIx 3 -alt 330
+#### **/yfs-route-altitude**
 
-Changes altitude for a range of waypoints (from ix to endIx) of a specific YFS route (identified by 'name') to a specified altitude "-alt" in meters.
+Changes altitude for a range of waypoints (from -ix to -endIx) of a given YFS route (identified by 'name') to a specified altitude "-alt" in meters.
+
+Example: `/yfs-route-altitude -route 'name' -ix 2 -endIx 3 -alt 330`
 
 #### **/yfs-route-nearest**
 
@@ -392,16 +398,16 @@ Example: `/yfs-route-to-named 'Route 1'`
 
 |Parameter|Comment|
 |---------------------|----|
-|*-onlySelectable*    | Only write waypoints marked as selectable in route|
-|*-prefix 'Myprefix'* | if unspecified, 'WP' is the default|
-|*-toScreen*          | output JSON of list to optional screen if linked|
-|*-toDB*              | only if this is given, the changed list will be written to DB to avoid miscalls|
+|*-onlySelectable*    | Only write waypoints marked as selectable inside route|
+|*-prefix 'Myprefix'* | If unspecified, 'WP' is the default|
+|*-toScreen*          | Output JSON of list to optionally linked screen|
+|*-toDB*              | Only if this is given, the changed list will be written to DB to avoid miscalls|
 
 #### **/yfs-save-named**
 
 Creates a list of YFS commands to recreate *all* named waypoints the script loaded.
 
-If a screen is linked, the output will be display there as well to make it easier to copy the content to e.g. a text editor for safekeeping.
+If a screen is linked, the output will be displayed in it as well to make it easier to copy the content to e.g. an external text file for safekeeping/backup.
 
 *Sample output (shortened to 3 entries):*
 
