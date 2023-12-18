@@ -59,7 +59,7 @@ Type "**/help**" in LUA chat to get a command list displayed (in LUA chat as wel
 
 If a command cannot find needed parameters, it will say so in chat and most often provide a usage example.
 
-# LUA parameters
+## LUA parameters
 
 - **onlyForRoute**
 
@@ -91,7 +91,7 @@ If need be, try using the other options "onlyForRoute" and "wpRenderLimit" to re
 
 Between updates the order of LUA parameters may change, but the order is of no importance.
 
-# Commands
+## Commands
 
 A variety of LUA chat commands allow to export data, create commands lists or change routes.
 
@@ -107,23 +107,31 @@ If a command is entered with missing parameters, the script will usually output 
 
 The pipe symbol (|) in below command parameters is meant as " or ", i.e. a|b|c means a or b or c, exactly one of them.
 
-If a parameter is enclosed in square brackets [] means it is optional or only used in special scenarios.
+If a parameter is enclosed in square brackets [] means it is optional or only used in special scenarios or combinations.
 
 ## ArchHud related
 
-This script automatically detects stored locations in the connected databank, which could be one used by an ArchHUD script. This allows to e.g. export ArchHud locations to a list of commands to add these to a route in YFS or vice versa. For ArchHud this script only *reads* its data upon start and does not change locations in an ArchHud databank.
+This script automatically detects stored locations in the connected databank, which could also be used by an ArchHUD script.
 
-- **/arch-save-named**
+This would allow to e.g. export ArchHud saved locations as a list of ArchHud-typical commands to create sort of a backup or to be used on another ArchHud-piloted construct.
 
-Builds a list of chat commands for ArchHud to add locations for all named waypoints.
+For ArchHud this script only *reads* its data upon start and does not change locations in an ArchHud databank.
+
+### **/arch-save-named**
+
+For each loaded waypoint a ArchHud chat command is being put out to save the waypoint as a named location. The source of the waypoint(s) could be an ArchHud or a YFS databank.
+
+Example output:
+
+`/addlocation test 1 ::pos{0, 2, 35.3683, 103.9990, 286.4556}`
 
 ## General purpose
 
-- **/wp-export**
+### **/wp-export**
 
 Outputs list of all loaded waypoints to LUA chat (with name) and to an optionally linked screen. Sources for these waypoints can be both ArchHud's saved locations as well as YFS's, depending on what kind of databank is linked.
 
-- **/planetInfo** [id|'name']
+### **/planetInfo** [id|'name']
 
 Displays some basic info mainly from the Atlas about the current planet (no parameters), a given planet id (e.g. 2 for Alioth) or by name like Jago.
 
@@ -148,42 +156,42 @@ Is in Safe Zone: true
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ```
 
-- **/printAltitude**
+### **/printAltitude**
 
 Outputs to chat the construct's current altitude in meters.
 Note: this can be "above" ground depending on the construct size and buildbox center!
 
-- **/printPos**
+### **/printPos**
 
 Outputs to chat the current position as a local ::pos{} string, i.e. if close to or on a planet, it will include the planet's id in the ::pos string, like ::pos{0,2, ...} for Alioth.
 Note: this can be "above" ground depending on the construct size and buildbox center!
 
-- **/printWorldPos**
+### **/printWorldPos**
 
 Outputs to chat the current position in world coordinates, i.e. the ::pos string will start with "0,0," instead of a planet's id and can have both positive and negative values across the x,y,z axis.
 Note: this can be "above" ground depending on the construct size and buildbox center!
 
-- **/DumpPoints**
+### **/DumpPoints**
 
 A dev helper: outputs to chat all loaded waypoints in structured format.
 
-- **/DumpRoutes**
+### **/DumpRoutes**
 
 A dev helper: outputs to chat all routes existing in the YFS databank.
 
-- **/Routes**
+### **/routes**
 
 A dev helper: prints all available route names existing in the YFS databank.
 
 ## Special features
 
-- **/findCenter** 'routename'
+### **/findCenter** 'routename'
 
 Calculates the approximate center between all points of the given route. The result is output to the LUA chat and also set as a waypoint.
 
 For larger mining operations it can be of great help to set up a central "center" hub to use with maximum container link range and then go about your business of calibrations and/or collecting ore.
 
-- **/warpCost** -from 'name'|::pos{}|planets -to 'name'|::pos{}|planets [-mass *tons*] [-cargo *tons*] [-moons]
+### **/warpCost** -from 'name'|::pos{}|planets -to 'name'|::pos{}|planets [-mass *tons*] [-cargo *tons*] [-moons]
 
 Flexible warp cell calculator taking into account the current construct's mass and location.
 
@@ -228,47 +236,132 @@ Optional '-cargo x' with x the cargo mass in tons. If specified, a cell count fo
 
 ## YFS only
 
-- **/yfs-build-route-from-wp**
+### **DISCLAIMER, DISCLAIMER, DISCLAIMER!**
+
+**Do not run any command that adds/alters routes and/or waypoints whilst YFS is running to prevent any clashes between databank operations!**
+
+**If it is done still and altered waypoints are part of any route(s), YFS should be restarted to read the updated values (as named waypoints are stored separately from routes)!**
+
+### **/yfs-build-route-from-wp**
+
 Powerful route-building command based on existing, named "landed" waypoints.
 
-The idea for this command came from trying to quick-start a route for a new mining spot consisting of multiple mining sites (tiles) and the desire to use the least amount of commands/work to get a Bug set up with a convenient route.
+The idea for this command came from trying to quick-start a route for a new mining spot consisting of multiple mining sites (tiles/hexes) and the desire to use the least amount of commands/work to get a *Bug* (one of SVEA's available small VTOL ships with YFS) set up with a convenient route. There's still some work involved, but it's made easier!
 
-First we flew to each location, usually a tri-hex/tile corner, picked a good, flat landing location (if possible) and used YFS' commands like "**pos-save-current-as**" or "**pos-save-as**" to create a named waypoint for each, using a common "prefix" for all, like "Chr 1", "Chr 2" etc.
+#### Foreword about named waypoints
 
-Once we had these locations as waypoints in YFS, the below example was used:
+From experience, using *named waypoints* eases working with routes a lot, every time, hands down.
 
-`/yfs-build-route-from-wp -name 'Chromite' -altitude 450 -wpStartsWith 'Chr' -suffix 'F'`
+The names should be short, but unique, i.e. numbered, like "Chr 1", "Chr 2" etc. in the upcoming example below. Later on, within YFS' route editor they're then instantly recognisable. Since they're saved separately from routes, they're also usable across multiple routes. If you update a named waypoint, it becomes updated for any route it is part of.
 
-This command uses all existing waypoints, whose names start with "*Chr*", as landing locations and for each one adds an "at **F**light" waypoint above them at the specified altitude of 450 meters, thus the "F" as a suffix in the name (can be different, but should be short due to limited YFS screen space).
+The use in multiple routes can be helpful like having one route just for the mining locations ('*going in circles*') and a separate route just to go from the starting (or ending) route point to/from a central hub location (ore collection for pickups), that allows to visit all spots with maximum link container range.
 
-Be careful to select an altitude that is safe to traverse between all waypoints, better to add a safety margin of 20m than being too low and crash into some hill along the way. ;)
-For waypoint "**Chr 1**" a new waypoint "**Chr 1F**" would be added and so on.
+The alternative would be to use YFS' user interface itself (go to Edit, select route, Edit) and then click the "**Add Current**" option at each location.
+The same option exists for both the left-hand named waypoints list as well as the route editor itself on the right, but with stark differences.
 
-The route starts landed at "Chr 1", then moves up above it to 450m ("Chr 1F"), turns and flies to "Chr 2F" at 450 meters and finally lands at "Chr 2".
+The first one would auto-name the waypoint starting with "WP" and enumerate it, so it can be reused and is easier to recognise - as long as there's only 1 route 'cause then the numbering could become weird.
+The option below the route points would *just* do that: add a location to the route at the end of the list with some specific distance as its name. Not very recognisable, tbh.
 
-This way of "*landed -> takeoff vertically to "F" -> fly over to next waypoint's F -> land*" is then common between all waypoints. The "at flight" waypoints will be marked as "not selectable" and "not skippable" in the route itself, so only "Chr 1", "Chr 2" etc. are shown inside the route list by YFS.
+That way *works*, but any further editing of the route becomes laborious.
 
-*Pre-requisites:* there are multiple named waypoints in YFS that are either intended for one route *OR* can be identified by their name starting with a given string (like "*Chr*" in above example).
+One cannot just replace/update a route point with any default command, but would need to add another waypoint, move it to the right index and then remove the old one. And did we mention that the name "312.2m" doesn't ring a bell? ;)
 
-*Disclaimer:* due to the common altitude setting for all "at flight" waypoints, this works best for kind of flatlands with little to no difference in maximum terrain elevation between all sites.
+In comparison, any named waypoint can easily be replaced by a single command (see below YFS commands) by just using the same name again. Whenever YFS starts flying on a route, it will use that updated position of that waypoint.
 
-- **/yfs-add-altitude-wp** -altitude 450 [-suffix 'F']
+And of course, should the construct be used across multiple mining spots with e.g. different ores or purposes, the user chosen name should be instantly recognisable instead of "WP012" or "WP003" and figuring out, where they "belong" to.
 
-Adds waypoints for each existing WP at a specified altitude and name suffix. This is similar to the above command in goal and usage.
+#### How do we get things started?
 
-- **/wp-altitude-ceiling** 'Base 1' 'Base 2'
+First, outside of this script, it is helpful to use the ingame Map, zoom in to the max on your mining area and click the checkbox to show all Constructs (can also first filter by name if that helps). Take a screenshot of the whole area so that all locations are included and then possibly add text marks to each, like an enumeration, from starting to ending location.
 
-Determines the higher altitude of the 2 *named* waypoints, then updates the lower-altitude waypoint with that value.
+Basically, visualize your route upfront.
 
-- **/yfs-replace-wp** 'name'
+*Personal recommendation: try [**Greenshot**](https://getgreenshot.org/) (donation ware, no feature/runtime limitations), which allows easy screengrabs and has an editor to apply text marks as well as arrows etc.*
 
-Replaces a named waypoint with the current location. If this waypoint is part of any route, YFS should be restarted to read the updated value.
+Now, go visit each location in order of how the route is imagined to be travelled along later on. Out of habit, going clockwise starting at the North-most location on the Map is one way to go.
 
-- **/yfs-route-altitude** -route 'name' -ix 2 -endIx 3 -alt 330
+At every spot, usually a dual- or tri-hex corner, pick a good, flat-ish landing location and use the following YFS command in LUA chat (adapt name accordingly)
+
+**`/pos-save-current-as 'Chr 1'`**
+
+to have it create a new, uniquely-named waypoint 'Chr 1'.
+
+Alternatively, the below command could be used if an actual `::pos{}` was known:
+
+**`/pos-save-as -name 'Chr 2' -pos '::pos{0,0,x,y,z}'`**
+
+However, beware of the specified altitude in that ::pos{} may be bad luck if it was just taken from the ingame Map, which defaults to 0m (planet's sea level).
+
+Using the first command makes sure to pick the altitude relative to the construct's build box and correctly measures a landing position.
+Even an altitude taken manually via the "My location" on the Map might be lower than the construct's altitude value, thus causing YFS trying to move "into the ground" (down) more than physically possible - every centimeter counts (margins can help)! ;)
+
+For demonstration purposes, our route here is specifically about Chromite ore, thus the short prefix "Chr ".
+
+Once all the locations are saved as waypoints in YFS, the below example command can be used to create a named route with a selection of waypoints:
+
+**`/yfs-build-route-from-wp -name 'Chromite' -altitude 450 -wpStartsWith 'Chr' -suffix 'F'`**
+
+This command uses all existing waypoints, whose names start with "*Chr*", as landing locations and for each one adds an "at **F**light" waypoint directly above them at the specified altitude of 450 meters. We chose the "F" as a suffix in the name for "flight" as a personal preference. It can be different, but should be short due to limited YFS screen space in the route editor. As a result, for our waypoint "**Chr 1**" a new waypoint "**Chr 1F**" would be added and so on.
+
+Since *there can be only one* altitude with this command, be careful to measure one that is safe to traverse between all waypoints: better to add a safety margin of 20m than being salty and dead inside the next hill along the way. ;)
+
+The end result is a new route with all the above waypoints. If the route name is already taken, the script will show an error and not proceed!
+
+#### How does it fly?
+
+With our route, YFS starts at "Chr 1", landed on the ground.
+It then ascends up above it to 450m to reach "Chr 1F", turns and flies toward "Chr 2F" still at 450 meters and there finally descends vertically down to "Chr 2" and is landed again.
+
+This way of "*landed waypoint -> takeoff vertically to "F" -> fly over to next waypoint's F -> land again*" is then common between all waypoints.
+
+Within the route all the "at flight" waypoints will be marked as "not selectable" and "not skippable", so only "Chr 1", "Chr 2" etc. are shown on the "Waypoints" list on screen (outside of the route editor) by YFS.
+
+*Disclaimer:* due to the common altitude setting for all "at flight" waypoints, this works best *out of the box* for either flatlands or areas with little to no difference in maximum terrain elevation between all sites.
+
+If in doubt about flight altitudes across waypoints, don't panic, help is here with the below altitude-related commands! :)
+
+#### **/yfs-add-altitude-wp**
+
+Adds waypoints for each existing WP at a specified altitude and name suffix.
+
+This was the predecessor command to the above /yfs-build-route-from-wp command and a simple but not very luxurious way to add extra waypoints for flight altitudes. If not specified, the suffix will be defaulted to 'F'.
+
+Use this with caution as it will iterate over all named waypoints!
+
+Example: `/yfs-add-altitude-wp -altitude 450 -suffix 'F'`
+
+#### **/wp-altitude-ceiling**
+
+Determines the higher altitude of 2 *named* waypoints, then updates the lower-altitude waypoint with that value.
+
+If 'Base 1F' is at 305m and 'Base 2F' at 354m altitude, the command will raise the altitude for 'Base 1F' to 354m as that is the ceiling of both.
+
+Example: `/wp-altitude-ceiling 'Base 1F' 'Base 2F'`
+
+#### **/yfs-options-reset**
+
+Resets specific options for a range of waypoints of a given route.
+
+This sets finalSpeed to 30km/h, maxSpeed to 0 (unlimited), margin to 0.01m.
+Additionally it will remove the (currently) inaccessible option for alignment ('lockDir'), which would originate from the "Add + facing" option on the YFS route editor screen.
+
+The options for selectable and skippable are unchanged.
+
+If the -endIx parameter is left out, all waypoints starting from position -ix to the end will be processed. -ix and -endIx can have the same value to allow to change a single route point.
+
+Example: `/yfs-options-reset -route 'name' -ix 2 -endIx 3`
+
+#### **/yfs-replace-wp**
+
+Replaces a named waypoint with the current position of the construct. If no name is specified or no waypoint with the provided name can be found, an error message will be displaye.
+
+Example: `/yfs-replace-wp 'Chr 1'`
+
+#### **/yfs-route-altitude** -route 'name' -ix 2 -endIx 3 -alt 330
 
 Changes altitude for a range of waypoints (from ix to endIx) of a specific YFS route (identified by 'name') to a specified altitude "-alt" in meters.
 
-- **/yfs-route-nearest**
+#### **/yfs-route-nearest**
 
 Shows a list of route waypoints by distance from the current location.
 
@@ -291,7 +384,7 @@ Route-Idx / Name / Distance (m)
 [I] Nearest waypoint: 13: '' = 0.1341
 ```
 
-- **/yfs-route-to-named**
+#### **/yfs-route-to-named**
 
 Converts a route's *unnamed* waypoints to named waypoints for YFS.
 
@@ -304,7 +397,7 @@ Example: `/yfs-route-to-named 'Route 1'`
 |*-toScreen*          | output JSON of list to optional screen if linked|
 |*-toDB*              | only if this is given, the changed list will be written to DB to avoid miscalls|
 
-- **/yfs-save-named**
+#### **/yfs-save-named**
 
 Creates a list of YFS commands to recreate *all* named waypoints the script loaded.
 
@@ -319,7 +412,7 @@ pos-save-as 'Peta 10' -pos ::pos{0, 8, 57.4760, 24.8180, 637.0505}
 pos-save-as 'Peta 13' -pos ::pos{0, 8, 57.1549, 23.4400, 515.3481}
 ```
 
-- **/yfs-save-route**
+#### **/yfs-save-route**
 
 Builds a list of YFS commands to recreate a full route setup incl. named waypoints and their options, like set margins (m) and finalSpeed values (m/s).
 
@@ -345,7 +438,7 @@ route-set-pos-option -ix 3 -toggleSkippable -finalSpeed 11.111111111111
 route-save
 ```
 
-- **/yfs-wp-altitude**
+#### **/yfs-wp-altitude**
 
 Changes altitude of a named waypoint to the specified altitude (in meters).
 

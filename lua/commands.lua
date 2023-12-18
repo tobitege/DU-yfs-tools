@@ -110,8 +110,8 @@ function cmd.FindCenterCmd(text)
         if wppos and ((not onlySelectable) or (v.opt["selectable"] ~= false)) then
             P("Using "..wpName)
             pointlist[wpIdx] = PM.MapPosToWorldVec3(wppos)
-            wpIdx = wpIdx + 1
         end
+        wpIdx = wpIdx + 1
     end
     local center = GetCentralPoint(pointlist)
     if center then
@@ -520,6 +520,61 @@ function cmd.YfsReplaceWpCmd(text)
     return true
 end
 
+---@comment Resets waypoint options for a range of waypoints in a specified route
+function cmd.YfsOptionsResetCmd(text)
+    local routes = cmd.GetYFSRoutes()
+    if not routes then return end
+
+    -- 1 check parameters
+    local example = "\nExample:\n/yfs-options-reset -route 'name' -ix 2 -endIx 3\nWith -endIx being optional."
+    local parts  = SU.SplitQuoted(text)
+    local pName  = GetParamValue(parts, "-route", "s", true)
+    if not pName then return E(example) end
+    if not routes.v[pName] then
+        return E("[E] Route '"..pName.."' not found."..example)
+    end
+    if not routes.v[pName].points or #routes.v[pName].points == 0 then
+        return E("[E] Route '"..pName.."' empty.")
+    end
+
+    local pStart = GetParamValue(parts, "-ix", "i", true)
+    local pEnd   = GetParamValue(parts, "-endIx", "i")
+    if not pEnd then pEnd = #routes.v[pName].points end
+    local isError = not pName or not pStart or (pStart < 1) or (pEnd and pEnd < pStart)
+    if isError then
+        return E("[E] Wrong number of parameters / invalid values!"..example)
+    end
+    if not pEnd or pEnd < pStart then pEnd = pStart end
+
+    -- 2 process route waypoints and collect named waypoint names
+    -- /yfs-options-reset -route 'Peta' -ix 2 -endIx 3
+    P("[I] Processing route '"..pName.."'")
+    local changed = 0
+    local finalSpeed = 30 / 3.6 -- 30 km/h -> 8.333 m/s
+    for i,v in ipairs(routes.v[pName].points) do
+        if i >= pStart and i <= pEnd then
+            local wpName = v.waypointRef
+            if not wpName then
+                wpName = i -- unnamed WP, use index
+            end
+            changed = changed + 1
+            -- only reset specific attributes, so that selectable/skippable stays intact!
+            routes.v[pName].points[i].opt.finalSpeed = finalSpeed
+            routes.v[pName].points[i].opt.maxSpeed = 0
+            routes.v[pName].points[i].opt.margin = 0.1
+            routes.v[pName].points[i].opt.lockDir = nil
+            P("[I] Options reset for route waypoint: "..wpName)
+        end
+    end
+    if changed == 0 then
+        return E("[I] No waypoints in route changed.\n[*] Make sure that start (and end-index) are valid.")
+    end
+    -- 3 store route back to db
+    storeYFSRoutes(routes)
+    P("[I] Routes saved.")
+end
+
+---@comment Replaces altitude for a range of waypoints in a specified route
 function cmd.YfsRouteAltitudeCmd(text)
     local routes = cmd.GetYFSRoutes()
     if not routes then return end
@@ -542,6 +597,8 @@ function cmd.YfsRouteAltitudeCmd(text)
     local pStart = GetParamValue(parts, "-ix", "i", true)
     local pEnd   = GetParamValue(parts, "-endIx", "i")
     local pAlt   = GetParamValue(parts, "-alt", "n", true)
+    if not pEnd then pEnd = #routes.v[pName].points end
+
     local isError = not pName or not pStart or not pAlt or (pStart < 1) or (pEnd and pEnd < pStart) or (pAlt < -100) or (pAlt > 10000)
     if isError then
         return E("[E] Wrong number of parameters / invalid values!"..example)

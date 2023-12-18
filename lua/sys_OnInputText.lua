@@ -28,6 +28,7 @@ function inputTextFunc.Run(t)
     cmdList['yfs-replace-wp'] = 1
     cmdList['yfs-route-altitude'] = 1
     cmdList['yfs-route-nearest'] = 1
+    cmdList['yfs-options-reset'] = 1
     cmdList['yfs-route-to-named'] = 1
     cmdList['yfs-wp-altitude'] = 1
     cmdList['DumpRoutes'] = 1

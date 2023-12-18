@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.7.5
+
+- Added command */yfs-options-reset* to reset certain route-options for a range of waypoints in a given route
+- Fix: command */yfs-route-altitude* finally treats -endIx parameter as optional
+- Updated README again. Even more elaborate on /yfs-build-route-from-wp
+
 ## v1.7.4
 
 - Fix for /yfs-route-altitude not changing altitude in named waypoints due to typo
