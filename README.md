@@ -1,4 +1,4 @@
-# DU-yfs-tools 1.7.2
+# DU-yfs-tools 1.7.4
 
 ## Introduction
 
