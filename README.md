@@ -55,21 +55,53 @@ Upon start of the programming board it will auto-detect links and echo whether t
 
 It will then read all routes and named waypoints from the databank and await commands via the LUA chat. All commands start with a "/" as to not interfere with YFS commands.
 
-Type "/help" in LUA chat to get a command list displayed (in LUA chat as well as the connected screen).
+Type "**/help**" in LUA chat to get a command list displayed (in LUA chat as well as the connected screen).
 
 If a command cannot find needed parameters, it will say so in chat and most often provide a usage example.
+
+# LUA parameters
+
+- **onlyForRoute**
+
+Enter here a route name (in double-quotes!) to only load waypoints of that route for the waypointer module. If no route is specified, this should only contain 2 double-quotes, like this: ""
+
+- **onlySelectableWP**
+
+By default this option is checked so that only route waypoints, that are marked as selectable in YFS, will be loaded and displayed by the waypointer module. This option is only applied for a linked YFS databank.
+
+- **loadWaypoints**
+
+By default this option is checked to enable the loading of any waypoints from linked databanks during startup.
+
+- **outputFont**
+
+The default font is "FiraMono" for the waypointer module (name must be in double-quotes). This will influence the display of names and distances of each AR marker on screen.
+
+- **enableWaypointer**
+
+By default this option is checked, so that the built-in waypointer module will use AR destination markers for all loaded waypoints (see above options).
+
+- **wpRenderLimit**
+
+Only waypoints which are within this value in kilometers range of the construct will be displayed. During flight the distances to waypoints obviously change, so some may come into range and be displayed anew and others move out of range and vanish from display.
+
+The waypointer module can be active at the same time as other flight huds (YFS, ArchHud), but does have a little impact on performance (especially on older CPUs), more noticably with like more than 10 visible waypoints.
+
+If need be, try using the other options "onlyForRoute" and "wpRenderLimit" to reduce the amount of concurrently processed waypoints.
+
+Between updates the order of LUA parameters may change, but the order is of no importance.
 
 # Commands
 
 A variety of LUA chat commands allow to export data, create commands lists or change routes.
+
 Most commands are specific to YFS, but there are a couple of general purpose and ArchHUD related commands as well.
 
 It is highly recommended to NOT use commands whilst flying via any route in YFS!
 
-Commands are entered into LUA chat and all start with a forward slash (/) character in order to not collide with YFS' own commands.
-Additional parameters are usually prefixed with a dash (-).
+Commands are entered into LUA chat and all start with a forward slash (/) character in order to not collide with YFS' own commands. Additional parameters are usually prefixed with a dash (-).
 
-Any route or waypoint names should be enclosed in single quotes especially when they contain blanks in their names.
+Any route or waypoint name should be enclosed in single quotes especially when they may contain blanks/spaces.
 
 If a command is entered with missing parameters, the script will usually output an appropriate error message and provide an example.
 
@@ -138,6 +170,10 @@ A dev helper: outputs to chat all loaded waypoints in structured format.
 - **/DumpRoutes**
 
 A dev helper: outputs to chat all routes existing in the YFS databank.
+
+- **/Routes**
+
+A dev helper: prints all available route names existing in the YFS databank.
 
 ## Special features
 

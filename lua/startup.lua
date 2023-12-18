@@ -4,20 +4,20 @@ local onlyForRoute = "" --export: Load waypoints only for this route (enclosed i
 local onlySelectableWP = true --export: Check to only display custom route waypoints that are marked as selectable
 local loadWaypoints = true --export: Enable to load custom waypoints from databank
 local outputFont = "FiraMono" --export: Name of font used for screen output. Default: "FiraMono"
-local centerMaxDistance = 5000 --export: The furthest a point should be displayed on-screen in meters (1000..10000; default: 5000)
-local centerHelperCirclesEvery = 1000 --export: Show grid circles every X meters (100..2000; default: 1000)
+--local centerMaxDistance = 5000 --export: The furthest distance a point should be displayed on-screen in meters (1000..10000; default: 5000)
+--local centerHelperCirclesEvery = 1000 --export: Show grid circles every X meters (100..2000; default: 1000)
 
 onlyForRoute = onlyForRoute or ""
 OutputFont = outputFont or "FiraMono" -- used in libutils.lua
 
 -- for new centerpoint mod
-CenterMaxDistance = centerMaxDistance or 5000
-CenterMaxDistance = uclamp(centerMaxDistance, 1000, 10000)
-CenterHelperCirclesEvery = centerHelperCirclesEvery or 1000
-CenterHelperCirclesEvery = uclamp(centerHelperCirclesEvery, 100, 2000)
+--CenterMaxDistance = centerMaxDistance or 5000
+--CenterMaxDistance = uclamp(centerMaxDistance, 1000, 10000)
+--CenterHelperCirclesEvery = centerHelperCirclesEvery or 1000
+--CenterHelperCirclesEvery = uclamp(centerHelperCirclesEvery, 100, 2000)
 
 P("=========================================")
-P("YFS-Tools 1.7.2 (unofficial)")
+P("YFS-Tools 1.7.4 (unofficial)")
 P("created by tobitege (c) 2023")
 P("Thanks to Yoarii (SVEA) for YFS and LUA help!")
 P("YFS 1.4+ databank link required (Routes).")

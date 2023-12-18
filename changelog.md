@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.7.4
+
+- Fix for /yfs-route-altitude not changing altitude in named waypoints due to typo
+- Updated README with LUA parameters
+
 ## v1.7.3
 
 - Fix for interim bug in Atlas data loading (pos.lua) causing the warp cell calculation to be wrong

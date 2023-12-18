@@ -582,9 +582,9 @@ function cmd.YfsRouteAltitudeCmd(text)
     -- 4 process named waypoints list
     changed = 0
     for _,entry in ipairs(wpnames) do
-        if namedWP.v[entry] then
+        if namedWP and namedWP.v[entry] then
             changed = changed + 1
-            local newPos = PM.ReplaceAltitudeInPos(namedWP.v[entry].pos, altitude)
+            local newPos = PM.ReplaceAltitudeInPos(namedWP.v[entry].pos, pAlt)
             namedWP.v[entry].pos = newPos
             P("[I] Named Waypoint '"..entry.."' changed to:")
             P(newPos)
@@ -720,9 +720,6 @@ function cmd.YfsRouteToNamedCmd(text)
     local onlySelectable = GetIndex(params, "-onlySelectable") > 0
     local wpPrefix = GetParamValue(params, "-prefix", "s")
     if not wpPrefix then wpPrefix = "WP" end
-    -- local margin = nil
-    -- local pMargin = GetParamValue(params, "-margin", "number")
-    -- if pMargin and pMargin ~= 0.1 then margin = pMargin end
 
     -- 4 process route waypoints
     local wplist = cmd.GetYFSNamedWaypoints(true)

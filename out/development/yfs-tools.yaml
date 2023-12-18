@@ -1085,9 +1085,9 @@ handlers:
 
               changed = 0
           for _,entry in ipairs(wpnames) do
-              if namedWP.v[entry] then
+              if namedWP and namedWP.v[entry] then
                   changed = changed + 1
-                  local newPos = PM.ReplaceAltitudeInPos(namedWP.v[entry].pos, altitude)
+                  local newPos = PM.ReplaceAltitudeInPos(namedWP.v[entry].pos, pAlt)
                   namedWP.v[entry].pos = newPos
                   P("[I] Named Waypoint '"..entry.."' changed to:")
                   P(newPos)
@@ -1213,7 +1213,7 @@ handlers:
           local onlySelectable = GetIndex(params, "-onlySelectable") > 0
           local wpPrefix = GetParamValue(params, "-prefix", "s")
           if not wpPrefix then wpPrefix = "WP" end
-                  
+
               local wplist = cmd.GetYFSNamedWaypoints(true)
           if not wplist or not wplist.v then
               wplist = { v = { } }
@@ -2492,27 +2492,15 @@ handlers:
 
       local outputFont="FiraMono"--export: Name of font used for screen output. Default: "FiraMono"
 
-      local centerMaxDistance=5000--export: The furthest a point should be displayed on-screen in meters (1000..10000; default: 5000)
-
-      local centerHelperCirclesEvery=1000--export: Show grid circles every X meters (100..2000; default: 1000)
-
 
       onlyForRoute = onlyForRoute or ""
 
       OutputFont = outputFont or "FiraMono" 
 
-      CenterMaxDistance = centerMaxDistance or 5000
-
-      CenterMaxDistance = uclamp(centerMaxDistance, 1000, 10000)
-
-      CenterHelperCirclesEvery = centerHelperCirclesEvery or 1000
-
-      CenterHelperCirclesEvery = uclamp(centerHelperCirclesEvery, 100, 2000)
-
 
       P("=========================================")
 
-      P("YFS-Tools 1.7.2 (unofficial)")
+      P("YFS-Tools 1.7.4 (unofficial)")
 
       P("created by tobitege (c) 2023")
 
