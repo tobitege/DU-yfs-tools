@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.7.6
+
+- Fix for interim bug in */yfs-build-route-from-wp* if no -suffix was specified
+- Updated ingame /help commands list (added /yfs-options-reset)
+
 ## v1.7.5
 
 - Added command */yfs-options-reset* to reset certain route-options for a range of waypoints in a given route

@@ -337,7 +337,7 @@ function cmd.YfsBuildRouteFromWpCmd(text)
     if rdata.v[pName] ~= nil then
         return E("[E] Route "..pName.."already exists, aborting!")
     end
-    if not type(pSuf) == "string" or pSuf == "" then pSuf = "F" end
+    if type(pSuf) ~= "string" or pSuf == "" then pSuf = "F" end
     if strlen(pSuf) > 3 then
         return E("[E] -suffix accepts max. 3 characters"..example)
     end
@@ -947,7 +947,7 @@ end
 
 function cmd.XCmd()
     -- local s = "-name C -altitude 440 -marginL 0.5 -marginF 1 -finalSpeedF 10 -suffix 'F'"
-    -- P("X params: "..params)
+    -- P("X params: "..s)
     -- cmd.YfsBuildRouteFromWpCmd(s)
 end
 
