@@ -1032,7 +1032,7 @@ handlers:
           if strlen(pSuf) > 3 then
               return E("[E] -suffix accepts max. 3 characters"..example)
           end
-          if pAlt < -100 or pAlt > 20000 then
+          if pAlt < -600 or pAlt > 20000 then
               return E("[E] -altitude value out of range (-100 .. 20000)"..example)
           end
 
