@@ -174,7 +174,7 @@ function cmd.WpSaveNamedCmd(text, isYfs)
     for _,wp in ipairs(WM:getSorted()) do
         local pos = wp:AsString()
         if isYfs then
-            pos = "pos-save-as '" .. wp:getName() .. "' -pos " .. pos
+            pos = "pos-save-as '" .. wp:getName() .. "' -pos '" .. pos .. "'"
         else
             pos = "/addlocation " .. wp:getName() .. " " .. pos
         end
@@ -422,7 +422,7 @@ function cmd.YfsSaveRouteCmd(text)
     if not route or not IsTable(route.points) or #route.points == 0 then
         return E("[E] Route '"..routename.."' not found or empty")
     end
-    local output1, output2 = "create-route '"..routename.."'\r\n", ""
+    local output1, output2 = "route-create '"..routename.."'\r\n", ""
 
     local wpdata = cmd.GetYFSNamedWaypoints()
 
@@ -442,7 +442,7 @@ function cmd.YfsSaveRouteCmd(text)
 
         if GetIndex(wpNames, wpName) < 0 then
             wpNames[#wpNames + 1] = wpName
-            local tmp = "pos-save-as '"..wpName.."' -pos "..wppos
+            local tmp = "pos-save-as '"..wpName.."' -pos '"..wppos.."'"
             output1 = output1 .. tmp .. "\n"
         end
         if (not onlySelectable) or (v.opt["selectable"] ~= false) then

@@ -1,4 +1,4 @@
-# DU-yfs-tools 1.7.5
+# DU-yfs-tools 1.7.7
 
 ## Introduction
 
@@ -431,7 +431,7 @@ Example: `/yfs-save-route 'Peta' -onlySelectable -withOptions -prefix 'P'`
 *Sample output (shortened to 3 entries):*
 
 ```lua
-create-route 'Peta'
+route-create 'Peta'
 pos-save-as 'P 001' -pos ::pos{0,8,58.4133,20.6821,543.3269}
 pos-save-as 'P 002' -pos ::pos{0,8,58.4129,20.6825,750.0000}
 pos-save-as 'P 003' -pos ::pos{0,8,58.0159,21.0598,750.0000}

@@ -17,7 +17,7 @@ OutputFont = outputFont or "FiraMono" -- used in libutils.lua
 --CenterHelperCirclesEvery = uclamp(centerHelperCirclesEvery, 100, 2000)
 
 P("=========================================")
-P("YFS-Tools 1.7.6 (unofficial)")
+P("YFS-Tools 1.7.7 (unofficial)")
 P("created by tobitege (c) 2023")
 P("Thanks to Yoarii (SVEA) for YFS and LUA help!")
 P("YFS 1.4+ databank link required (Routes).")

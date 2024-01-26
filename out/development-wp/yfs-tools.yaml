@@ -65,10 +65,6 @@ handlers:
     code: >-
       package.preload['YFS-Tools:globals.lua']=(function()
 
-      ---@diagnostic disable: lowercase-global
-
-      -- Initialize globals and constants
-
       Config = { core = nil, databanks = {}, screens = {} }
 
       DetectedArch = 0
@@ -101,13 +97,9 @@ handlers:
 
       projector = nil
 
-      clicked = false -- for waypointer
+      clicked = false 
 
-
-      WP_EG_ENABLED = false -- Waypointer by EasternGamer
-
-      WP_WOLF_ENABLED = false -- Waypointer AR by Wolfe Labs
-
+      WP_EG_ENABLED = false WP_WOLF_ENABLED = false 
 
       CNID = construct.getId()
 
@@ -121,35 +113,17 @@ handlers:
       local strmatch, strlen, tonum = string.match, string.len, tonumber
 
 
-      ---@comment Returns s being trimmed of any whitespace from both start and end.
-
-      ---@param s string
-
-      ---@return string
-
       function SU.Trim(s)
           if strlen(s) == 0 then return "" end
           return SU.Ltrim(SU.Rtrim(s))
       end
 
 
-      ---@comment Returns s being trimmed of any whitespace from the start.
-
-      ---@param s string
-
-      ---@return string
-
       function SU.Ltrim(s)
           local res, _ = string.gsub(s, "^%s+", "")
           return res
       end
 
-
-      ---@comment Returns s being trimmed of any whitespace from the end.
-
-      ---@param s string
-
-      ---@return string
 
       function SU.Rtrim(s)
           local res, _ = string.gsub(s, "%s+$", "")
@@ -163,35 +137,17 @@ handlers:
       end
 
 
-      ---@param s string
-
-      ---@param prefix string
-
-      ---@return boolean
-
       function SU.StartsWith(s, prefix)
           if not s or not prefix then return false end
           return string.sub(s, 1, #prefix) == prefix
       end
 
 
-      ---@param s string
-
-      ---@param suffix string
-
-      ---@return boolean
-
       function SU.EndsWith(s, suffix)
           if not s or not suffix then return false end
           return string.sub(s, -#suffix) == suffix
       end
 
-
-      ---@param s string
-
-      ---@param suffix string
-
-      ---@return string
 
       function SU.RtrimChar(s,char)
           if not s or not char then return s end
@@ -201,14 +157,6 @@ handlers:
           return s
       end
 
-
-      ---Splits the string into parts, honoring " and ' as quote chars to make multi-word arguments
-
-      -- SplitQuoted() credits to Yoarii (SVEA)
-
-      ---@param s string
-
-      ---@return string[]
 
       function SU.SplitQuoted(s)
           local function isQuote(c) return c == '"' or c == "'" end
@@ -222,24 +170,20 @@ handlers:
           end
 
           local inQuote = false
-          local parts = {} ---@type string[]
-          if type(s) ~= "string" or s == "" then
+          local parts = {}     if type(s) ~= "string" or s == "" then
               return parts
           end
 
           local current = ""
           for c in string.gmatch(s, ".") do
               if isSpace(c) and not inQuote then
-                  -- End of non-quoted part
-                  add(parts, current)
+                              add(parts, current)
                   current = ""
               elseif isQuote(c) then
-                  if inQuote then -- End of quote
-                      add(parts, current)
+                  if inQuote then                 add(parts, current)
                       current = ""
                       inQuote = false
-                  else -- End current, start quoted
-                      add(parts, current)
+                  else                 add(parts, current)
                       current = ""
                       inQuote = true
                   end
@@ -248,22 +192,11 @@ handlers:
               end
           end
 
-          -- Add whatever is at the end of the string.
-          add(parts, current)
+              add(parts, current)
 
           return parts
       end
 
-
-      ---@comment Returns trueValue if cond is true, otherwise falseValue. nil's will be checked and returned as empty strings.
-
-      ---@param cond boolean cond should evaluate to true or false
-
-      ---@param trueValue any
-
-      ---@param falseValue any
-
-      ---@return string
 
       function SU.If(cond, trueValue, falseValue)
           if cond then
@@ -273,20 +206,10 @@ handlers:
       end
 
 
-      ---@comment Returns true if char is a printable character
-
-      ---@param char string single character
-
-      ---@return boolean
-
       function SU.isPrintable(char)
           return strmatch(char, "[%g%s]") ~= nil
       end
 
-
-      ---@comment Returns true if char is a printable character
-
-      ---@return any Returns the ready string. In case of invalid separator, the original string is returned.
 
       function SU.SplitAndCapitalize(inputString, delimiter)
           if not inputString or not SU.isPrintable(delimiter) then
@@ -309,8 +232,6 @@ handlers:
 
       package.preload['YFS-Tools:../util/out.lua']=(function()
 
-      --- functions with chat output
-
       local o = {}
 
 
@@ -325,10 +246,6 @@ handlers:
       end
 
 
-      ---@param mass number mass in kg
-
-      ---@return string prettyfied mass for display
-
       function o.PrettyMass(mass)
           if mass > 1000000 then
               return Round(mass / 1000000,2).." KT"
@@ -339,8 +256,6 @@ handlers:
           return Round(mass,2).." kg"
       end
 
-
-      ---@param s string|any
 
       function o.PrintLines(s)
           if not s then return end
@@ -389,8 +304,7 @@ handlers:
 
 
       function o.DumpVar(data)
-          -- cache of tables already printed, to avoid infinite recursive loops
-          local tablecache = {}
+              local tablecache = {}
           local buffer = ""
           local padder = "    "
           local function _dumpvar(d, depth)
@@ -398,9 +312,7 @@ handlers:
               local str = tostring(d)
               if (t == "table") then
                   if (tablecache[str]) then
-                      -- table already dumped before, so we dont
-                      -- dump it again, just mention it
-                      buffer = buffer.."<"..str..">\n"
+                                                      buffer = buffer.."<"..str..">\n"
                   else
                       tablecache[str] = (tablecache[str] or 0) + 1
                       buffer = buffer.."("..str..") {\n"
@@ -428,8 +340,6 @@ handlers:
       end)
 
       package.preload['YFS-Tools:../util/Dtbk.lua']=(function()
-
-      -- Dtbk by Jeronimo
 
       Dtbk = {}
 
@@ -473,7 +383,6 @@ handlers:
       function Dtbk.ResetAll(self)
           self.DB.clear()
       end
-
 
       end)
 
@@ -523,16 +432,6 @@ handlers:
       end
 
 
-      ---@param srcTable any
-
-      ---@param paramName string
-
-      ---@param reqType string|nil
-
-      ---@param reqMsg boolean|nil
-
-      ---@return any
-
       function GetParamValue(srcTable, paramName, reqType, reqMsg)
           local err = "[E] Parameter value missing for "..paramName
           if srcTable == nil or not IsTable(srcTable) then
@@ -569,9 +468,7 @@ handlers:
           local a = {}
           for n in pairs(t) do table.insert(a, n) end
           table.sort(a, f)
-          local i = 0 -- iterator variable
-          local iter = function () -- iterator function
-              i = i + 1
+          local i = 0     local iter = function ()         i = i + 1
               if a[i] == nil then
                   return nil
               else
@@ -603,11 +500,7 @@ handlers:
       function ScreenOutput(output, chatFooter)
           local chat = "Point at screen, CTRL+L, then copy text!"
           if #Config.screens >  0 then
-              -- local pre = "local rslib = require('rslib')\n"..
-              -- "local text = [["..output.."]]\n"..
-              -- "local config = { fontSize = 20 }\n"..
-              -- "rslib.drawQuickText(text, config)\n"
-              local font = OutputFont or "FiraMono"
+                                              local font = OutputFont or "FiraMono"
               local pre = "local text = [[\n"..output.."\n]]\n"..
       [[
 
@@ -627,14 +520,7 @@ handlers:
           addText(layer, font, str, 20, line*(fontSize+4))
           line = line + 1
       end ]]
-
-      --setNextFillColor(layer, 1, 0, 0, 1)
-
-      --addBox(layer, rx/4, ry/4, rx/2, ry/2)
-
-      --addText(layer, font, text, rx/1, ry/1)
-              --Config.screens[1].setHTML(pre)
-              Config.screens[1].setRenderScript(pre)
+                      Config.screens[1].setRenderScript(pre)
               if chatFooter and chatFooter:len() then
                   chat = chatFooter.."\n"..chat
               end
@@ -649,14 +535,8 @@ handlers:
 
       package.preload['YFS-Tools:commands.lua']=(function()
 
-      --TODO: refactor commands to use WM instead of databank data
-
       local cmd = {}
 
-
-      -- requires libutils, globals PM, SU, YFSDB etc.
-
-      -- WaypointInfo only used for WarpCostCmd()
 
 
       local strmatch, sformat, strlen = string.match, string.format, string.len
@@ -664,28 +544,6 @@ handlers:
       local tonum, uclamp, mabs, max, floor, ceil = tonumber, utils.clamp, math.abs, math.max, math.floor, math.ceil
 
 
-      -- Local functions
-
-
-      ---@comment Adds for each existing waypoint listed in "wpnames" an extra "Flight" waypoint
-
-      --- at the given altitude with the given name suffix.
-
-      --- Already existing waypoints with the suffix'ed name will have their altitude changed!
-
-      --- Returns a list of "connected" waypoints, e.g.
-
-      --- 1 landed -> 1 flight -> 2 flight -> 2 landed -> 2 flight -> 3 flight -> 3 landed  etc.
-
-      --- as 2nd result; 1st result is the updated full waypoints list.
-
-      ---@param wpdata table
-
-      ---@param wpnames table
-
-      ---@param altitude number
-
-      ---@param suffix string
 
       local function yfsAddAltitudeWaypoints(wpdata, wpnames, altitude, suffix)
           local cnt = 0
@@ -744,10 +602,6 @@ handlers:
       end
 
 
-      -- Class functions
-
-
-      ---@comment with WM: output name and position for all waypoints
 
       function cmd.FindCenterCmd(text)
           if not WM or not WM:hasPoints() then
@@ -769,8 +623,7 @@ handlers:
 
           local wpdata = cmd.GetYFSNamedWaypoints()
 
-          -- iterate route points and add to calculator
-          local pointlist = {}
+              local pointlist = {}
           local wpIdx = 1
           for _,v in ipairs(route.points) do
               local wppos = ""
@@ -848,8 +701,6 @@ handlers:
       end
 
 
-      ---@comment with WM: create commands to recreate waypoints in either YFS or ArchHud format
-
       function cmd.WpSaveNamedCmd(text, isYfs)
           if not WM or not WM:hasPoints() then
               return E("[E] No waypoints to export.")
@@ -858,7 +709,7 @@ handlers:
           for _,wp in ipairs(WM:getSorted()) do
               local pos = wp:AsString()
               if isYfs then
-                  pos = "pos-save-as '" .. wp:getName() .. "' -pos " .. pos
+                  pos = "pos-save-as '" .. wp:getName() .. "' -pos '" .. pos .. "'"
               else
                   pos = "/addlocation " .. wp:getName() .. " " .. pos
               end
@@ -873,8 +724,6 @@ handlers:
           cmd.WpSaveNamedCmd(text, false)
       end
 
-
-      ---@comment with WM: output name and position for all waypoints
 
       function cmd.WpExportCmd(text)
           if not WM or not WM:hasPoints() then
@@ -895,8 +744,7 @@ handlers:
           local wpnames = cmd.GetYFSNamedWaypoints()
           if not wpnames then return end
 
-          -- 0 parse params to find a) name and b) new altitude value
-          local parts = SU.SplitQuoted(text)
+              local parts = SU.SplitQuoted(text)
           if #parts ~= 2 then
               P("[E] Parameter(s) missing: 'name 1' 'name 2'")
               return E("Example: /wp-altitude-ceiling 'Base 1' 'Base 2'")
@@ -904,8 +752,7 @@ handlers:
           local wpName1 = parts[1]
           local wpName2 = parts[2]
 
-          -- 1 find the 2 named waypoints per params
-          local wp1found, wp2found = true, true
+              local wp1found, wp2found = true, true
           if wpnames.v[wpName1] == nil or wpnames.v[wpName1] == "" then
               P("[E] Waypoint '".. wpName1 .."' not found.")
               wp1found = false
@@ -919,8 +766,7 @@ handlers:
               return E("[E] Parameters invalid (same names).")
           end
 
-          -- 3 get waypoint's altitudes and update the lower one
-          local alt1 = PM.GetAltitudeFromPos(wpnames.v[wpName1].pos)
+              local alt1 = PM.GetAltitudeFromPos(wpnames.v[wpName1].pos)
           local alt2 = PM.GetAltitudeFromPos(wpnames.v[wpName2].pos)
           if alt1 == alt2 then
               P("[I] Waypoints had same altitude, no changes applied.")
@@ -939,14 +785,12 @@ handlers:
           P("[I] Waypoint '"..target.."' changed to:")
           P(newPos)
 
-          -- 4 json.encode data and write back to DB
-          storeYFSNamedWaypoints(wpnames)
+              storeYFSNamedWaypoints(wpnames)
           return true
       end
 
 
-      function cmd.GetStoredLocations(points) -- for ArchHud only
-          if not points or not IsTable(points) then return end
+      function cmd.GetStoredLocations(points)     if not points or not IsTable(points) then return end
           for _,p in ipairs(points) do
               if p.name and p.position and p.position.x and p.position.y and p.position.z then
                   P("[I] Location '".. p.name .."' found.")
@@ -976,8 +820,7 @@ handlers:
               return E("[E] -altitude value out of range (-100 .. 20000)"..example)
           end
 
-          -- need a sorted list of names, can't use wpdata as that is being modified
-          local wplist = {}
+              local wplist = {}
           for k in PairsByKeys(wpdata.v) do
               if not pStart or k:find(pStart) > 0 then
                   table.insert(wplist, k)
@@ -999,8 +842,7 @@ handlers:
 
           local rdata = cmd.GetYFSRoutes()
           if not rdata or not IsTable(rdata.v) or TableLen(rdata.v) == 0 then
-              -- Initializing routes
-              rdata = { v = {}, t = "table" }
+                      rdata = { v = {}, t = "table" }
           else
           end
 
@@ -1020,12 +862,7 @@ handlers:
           local pMarginF = GetParamValue(args, "-marginF", "n")
           local pMaxSpeed = GetParamValue(args, "-maxSpeed", "n")
           local pFinalSpeedF = GetParamValue(args, "-finalSpeedF", "n")
-          -- some sanity checks, review later
-          pMarginL = uclamp(pMarginL or 0.1, 0.1, 100) -- landed position margin
-          pMarginF = uclamp(pMarginF or 0.1, 0.1, 100) -- flight position margin
-          pMaxSpeed = uclamp(pMaxSpeed or 0, 0, 1200) -- max speed at flight
-          pFinalSpeedF = uclamp(pFinalSpeedF or 0, 0, 1200) -- speed reaching the wp
-          if rdata.v[pName] ~= nil then
+              pMarginL = uclamp(pMarginL or 0.1, 0.1, 100)     pMarginF = uclamp(pMarginF or 0.1, 0.1, 100)     pMaxSpeed = uclamp(pMaxSpeed or 0, 0, 1200)     pFinalSpeedF = uclamp(pFinalSpeedF or 0, 0, 1200)     if rdata.v[pName] ~= nil then
               return E("[E] Route "..pName.."already exists, aborting!")
           end
           if type(pSuf) ~= "string" or pSuf == "" then pSuf = "F" end
@@ -1036,53 +873,40 @@ handlers:
               return E("[E] -altitude value out of range (-100 .. 20000)"..example)
           end
 
-          -- need a sorted list of names, can't use wpdata as that is being modified *live*
-          -- names could be filtered by pStart
-          local wplist = {}
+                  local wplist = {}
           for k in PairsByKeys(wpdata.v) do
               if not pStart or k:find(pStart) > 0 then
                   table.insert(wplist, k)
               end
           end
 
-          -- lets add new "flight" waypoints and get updated tables back
-          local wpdata, wplistNew = yfsAddAltitudeWaypoints(wpdata, wplist, pAlt, pSuf)
+              local wpdata, wplistNew = yfsAddAltitudeWaypoints(wpdata, wplist, pAlt, pSuf)
           if wpdata == nil or wplistNew == nil then
               return E("[I] No waypoints processed: no changes made.")
           end
 
-          -- add new route
-          rdata.v[pName] = { points = {} }
+              rdata.v[pName] = { points = {} }
 
-          -- assume that wplistNew now contains all required wp names in order
-          -- so these can be added to the route
-          local cnt = 0
+                  local cnt = 0
           for _,k in ipairs(wplistNew) do
               local wp = wpdata.v[k]
               if wp ~= nil then
-                  -- add wp to route
-                  cnt = cnt + 1
+                              cnt = cnt + 1
                   local rOpt = { margin = 0.1, maxSpeed = 0 }
                   local rp = { opt = rOpt, pos = wp.pos, waypointRef = k }
-                  -- for "flight" waypoints:
-                  if GetIndex(wplist, k) < 1 then
-                      -- set final approaching speed for landing waypoints if specified
-                      if pFinalSpeedF and pFinalSpeedF > 0 and GetIndex(wplist, k) < 1 then
+                              if GetIndex(wplist, k) < 1 then
+                                      if pFinalSpeedF and pFinalSpeedF > 0 and GetIndex(wplist, k) < 1 then
                           rp.opt.finalSpeed = pFinalSpeedF
                       end
-                      -- set max speed for flight waypoints if specified
-                      if pMaxSpeed and pMaxSpeed > 0 then
+                                      if pMaxSpeed and pMaxSpeed > 0 then
                           rp.opt.maxSpeed = pMaxSpeed
                       end
-                      -- set margin for flight waypoints if specified
-                      if pMarginF and pMarginF > 0.1 then
+                                      if pMarginF and pMarginF > 0.1 then
                           rp.opt.margin = pMarginF
                       end
                       rp.opt.selectable = false
                       rp.opt.skippable = false
-                  else -- for Landed waypoints:
-                      -- set margin for landed waypoints if specified
-                      if pMarginL and pMarginL > 0.1 then
+                  else                                 if pMarginL and pMarginL > 0.1 then
                           rp.opt.margin = pMarginL
                       end
                       rp.opt.selectable = true
@@ -1114,15 +938,12 @@ handlers:
           if not route or not IsTable(route.points) or #route.points == 0 then
               return E("[E] Route '"..routename.."' not found or empty")
           end
-          local output1, output2 = "create-route '"..routename.."'\r\n", ""
+          local output1, output2 = "route-create '"..routename.."'\r\n", ""
 
           local wpdata = cmd.GetYFSNamedWaypoints()
 
-          -- iterate points, build one commands output for wp creation and one for
-          -- adding each with options (optionally) to the route
-          local wpIdx = 1
-          local wpNames = {} -- to avoid duplicates
-          for _,v in ipairs(route.points) do
+                  local wpIdx = 1
+          local wpNames = {}     for _,v in ipairs(route.points) do
               local wppos = ""
               local wpName = wpPrefix.." "..sformat("%03d", wpIdx)
               if v.waypointRef and wpdata then
@@ -1134,22 +955,19 @@ handlers:
 
               if GetIndex(wpNames, wpName) < 0 then
                   wpNames[#wpNames + 1] = wpName
-                  local tmp = "pos-save-as '"..wpName.."' -pos "..wppos
+                  local tmp = "pos-save-as '"..wpName.."' -pos '"..wppos.."'"
                   output1 = output1 .. tmp .. "\n"
               end
               if (not onlySelectable) or (v.opt["selectable"] ~= false) then
                   local tmp = "route-add-named-pos '"..wpName.."'"
                   if withOptions then
-                      -- named-waypoint level options
-                      -- Note: "lockdir" option is presently not transferrable!
-                      if v.opt["maxSpeed"] and v.opt["maxSpeed"] ~= 0 then
+                                                      if v.opt["maxSpeed"] and v.opt["maxSpeed"] ~= 0 then
                           tmp = tmp.." -maxspeed "..v.opt["maxSpeed"]
                       end
                       if v.opt["margin"] and v.opt["margin"] ~= 0.1 then
                           tmp = tmp.." -margin "..v.opt["margin"]
                       end
-                      -- route-level options require a 2nd command
-                      local routeLvlOptions = false
+                                      local routeLvlOptions = false
                       local routeOptStr = ""
                       if v.opt["skippable"] == true then
                           routeLvlOptions = true
@@ -1177,8 +995,6 @@ handlers:
       end
 
 
-      ---@comment Replaces a given YFS waypoint (by -name) with current pos (default) or -pos ::pos{...}
-
       function cmd.YfsReplaceWpCmd(text)
           local wpnames = cmd.GetYFSNamedWaypoints()
           if not wpnames then return end
@@ -1198,8 +1014,7 @@ handlers:
           local newPos = PM.GetCurrentPosString()
           local pPos = GetParamValue(params, "-pos", "s")
           if pPos then
-              ---@diagnostic disable-next-line: cast-local-type
-              local tmp = PM.SplitPos(pPos)
+                      local tmp = PM.SplitPos(pPos)
               if not tmp then
                   return E("[E] Invalid ::pos{} specified!")
               end
@@ -1215,14 +1030,11 @@ handlers:
       end
 
 
-      ---@comment Resets waypoint options for a range of waypoints in a specified route
-
       function cmd.YfsOptionsResetCmd(text)
           local routes = cmd.GetYFSRoutes()
           if not routes then return end
 
-          -- 1 check parameters
-          local example = "\nExample:\n/yfs-options-reset -route 'name' -ix 2 -endIx 3\nWith -endIx being optional."
+              local example = "\nExample:\n/yfs-options-reset -route 'name' -ix 2 -endIx 3\nWith -endIx being optional."
           local parts  = SU.SplitQuoted(text)
           local pName  = GetParamValue(parts, "-route", "s", true)
           if not pName then return E(example) end
@@ -1242,20 +1054,15 @@ handlers:
           end
           if not pEnd or pEnd < pStart then pEnd = pStart end
 
-          -- 2 process route waypoints and collect named waypoint names
-          -- /yfs-options-reset -route 'Peta' -ix 2 -endIx 3
-          P("[I] Processing route '"..pName.."'")
+                  P("[I] Processing route '"..pName.."'")
           local changed = 0
-          local finalSpeed = 30 / 3.6 -- 30 km/h -> 8.333 m/s
-          for i,v in ipairs(routes.v[pName].points) do
+          local finalSpeed = 30 / 3.6     for i,v in ipairs(routes.v[pName].points) do
               if i >= pStart and i <= pEnd then
                   local wpName = v.waypointRef
                   if not wpName then
-                      wpName = i -- unnamed WP, use index
-                  end
+                      wpName = i             end
                   changed = changed + 1
-                  -- only reset specific attributes, so that selectable/skippable stays intact!
-                  routes.v[pName].points[i].opt.finalSpeed = finalSpeed
+                              routes.v[pName].points[i].opt.finalSpeed = finalSpeed
                   routes.v[pName].points[i].opt.maxSpeed = 0
                   routes.v[pName].points[i].opt.margin = 0.1
                   routes.v[pName].points[i].opt.lockDir = nil
@@ -1265,23 +1072,18 @@ handlers:
           if changed == 0 then
               return E("[I] No waypoints in route changed.\n[*] Make sure that start (and end-index) are valid.")
           end
-          -- 3 store route back to db
-          storeYFSRoutes(routes)
+              storeYFSRoutes(routes)
           P("[I] Routes saved.")
       end
 
-
-      ---@comment Replaces altitude for a range of waypoints in a specified route
 
       function cmd.YfsRouteAltitudeCmd(text)
           local routes = cmd.GetYFSRoutes()
           if not routes then return end
 
           local namedWP = cmd.GetYFSNamedWaypoints()
-          --if not namedWP then return end
-
-          -- 1 check parameters
-          local example = "\nExample:\n/yfs-route-altitude -route 'name' -ix 2 -endIx 3 -alt 330\nThe -endIx is optional."
+          
+              local example = "\nExample:\n/yfs-route-altitude -route 'name' -ix 2 -endIx 3 -alt 330\nThe -endIx is optional."
           local parts  = SU.SplitQuoted(text)
           local pName  = GetParamValue(parts, "-route", "s", true)
           if not pName then return end
@@ -1303,9 +1105,7 @@ handlers:
           end
           if not pEnd or pEnd < pStart then pEnd = pStart end
 
-          -- 2 process route waypoints and collect named waypoint names
-          -- /yfs-route-altitude -route 'Peta' -ix 2 -endIx 3 -alt 750
-          P("[I] Processing route '"..pName.."'")
+                  P("[I] Processing route '"..pName.."'")
           local changed = 0
           local wpnames = {}
           for i,v in ipairs(routes.v[pName].points) do
@@ -1318,8 +1118,7 @@ handlers:
                           table.insert(wpnames, wpName)
                       end
                       newPos = PM.ReplaceAltitudeInPos(wp.pos, pAlt)
-                  else -- unnamed WP
-                      wpName = i
+                  else                 wpName = i
                       newPos = PM.ReplaceAltitudeInPos(v.pos, pAlt)
                   end
                   changed = changed + 1
@@ -1330,12 +1129,10 @@ handlers:
           if changed == 0 then
               return E("[I] No waypoints in route changed.\n[*] Make sure that start (and end-index) are valid.")
           end
-          -- 3 store routes back to db
-          storeYFSRoutes(routes)
+              storeYFSRoutes(routes)
           P("[I] Routes saved.")
 
-          -- 4 process named waypoints list
-          changed = 0
+              changed = 0
           for _,entry in ipairs(wpnames) do
               if namedWP and namedWP.v[entry] then
                   changed = changed + 1
@@ -1347,8 +1144,7 @@ handlers:
                   P("[E] '"..entry.."' not found!")
               end
           end
-          -- 5 write back to DB
-          if changed > 0 then
+              if changed > 0 then
               storeYFSNamedWaypoints(namedWP)
               P("[I] Named waypoints saved.")
           end
@@ -1356,32 +1152,27 @@ handlers:
 
 
       function cmd.YfsWpAltitudeCmd(text)
-          -- 1 read named waypoints from DB
-          local wpnames = cmd.GetYFSNamedWaypoints()
+              local wpnames = cmd.GetYFSNamedWaypoints()
           if not wpnames then return E("[E] No named waypoints.") end
 
-          -- 2 parse params to find a) name and b) new altitude value
-          local parts = SU.SplitQuoted(text)
+              local parts = SU.SplitQuoted(text)
           if #parts ~= 2 then
               return E("[E] Wrong number of parameters!\nExample: /yfs-wp-altitude 'Base 1' 324.12")
           end
           local pName = parts[1] or ""
 
-          -- 3 find named waypoint
-          if not pName or not parts[2] or not wpnames.v[pName] or wpnames.v[pName] == "" then
+              if not pName or not parts[2] or not wpnames.v[pName] or wpnames.v[pName] == "" then
                return E("[E] Waypoint '".. pName .."' not found")
           end
 
-          -- 4 alter waypoint's altitude
-          local pAlt = tonum(parts[2] or 0)
+              local pAlt = tonum(parts[2] or 0)
           local newPos = PM.ReplaceAltitudeInPos(wpnames.v[pName].pos, pAlt)
           wpnames.v[pName].pos = newPos
           P("[I] Waypoint '"..pName.."' changed to:")
           P(newPos)
           P("[I] Note: routes' waypoints are updated on route activation, i.e. exporting route data before activation may still show old value!")
 
-          -- 4 write back to DB
-          storeYFSNamedWaypoints(wpnames)
+              storeYFSNamedWaypoints(wpnames)
           return true
       end
 
@@ -1389,26 +1180,22 @@ handlers:
       function cmd.YfsRouteNearestCmd(text)
           local routes = cmd.GetYFSRoutes()
           if not routes then return end
-          -- 1 process params
-          local params = SU.SplitQuoted(text)
+              local params = SU.SplitQuoted(text)
           if #params == 0 or #params > 2 then
               P("[E] Wrong parameter count\n[I] Example: /yfs-route-nearest 'Route 1'")
               P("\nOptional parameter:\n")
               P("-onlySelectable -> only show closest, selectable waypoints in route")
               return false
           end
-          -- 2 find the route
-          local routeName = params[1]
+              local routeName = params[1]
           local route = routes.v[routeName]
           if not route or not IsTable(route.points) then
               return E("[E] Route '" .. routeName .."' not found or empty")
           end
           P("[I] Route '"..routeName.."' found.")
-          -- 3 check optional parameters
-          local onlySelectable = GetIndex(params, "-onlySelectable") > 0
+              local onlySelectable = GetIndex(params, "-onlySelectable") > 0
 
-          -- 4 process route waypoints
-          local wplist = cmd.GetYFSNamedWaypoints(true)
+              local wplist = cmd.GetYFSNamedWaypoints(true)
           local idx = 0
           local closestDist = 999999999
           local sDist, sNearest = "", ""
@@ -1454,8 +1241,7 @@ handlers:
       function cmd.YfsRouteToNamedCmd(text)
           local routes = cmd.GetYFSRoutes()
           if not routes then return end
-          -- 1 process params
-          local params = SU.SplitQuoted(text)
+              local params = SU.SplitQuoted(text)
           if #params == 0 or #params > 6 then
               P("[E] Wrong parameter count\n[I] Example: /yfs-route-to-named 'Route 1'\nOptional parameters:\n")
               P("-onlySelectable -> only write waypoints marked as selectable in route")
@@ -1465,27 +1251,23 @@ handlers:
               P("Important: command aborts if ANY waypoint's name starts with given prefix to avoid errors!")
               return false
           end
-          -- 2 find the route
-          local routeName = params[1]
+              local routeName = params[1]
           local route = routes.v[routeName]
           if not route or not IsTable(route.points) then
               return E("[E] Route '" .. routeName .."' not found or empty")
           end
           P("[I] Route '"..routeName.."' found.")
-          -- 3 check optional parameters
-          local toDB = GetIndex(params, "-toDB") > 0
+              local toDB = GetIndex(params, "-toDB") > 0
           local toScreen = GetIndex(params, "-toScreen") > 0
           local onlySelectable = GetIndex(params, "-onlySelectable") > 0
           local wpPrefix = GetParamValue(params, "-prefix", "s")
           if not wpPrefix then wpPrefix = "WP" end
 
-          -- 4 process route waypoints
-          local wplist = cmd.GetYFSNamedWaypoints(true)
+              local wplist = cmd.GetYFSNamedWaypoints(true)
           if not wplist or not wplist.v then
               wplist = { v = { } }
           else
-              -- if any WP with same prefix already exists, abort!
-              for k,_ in pairs(wplist.v) do
+                      for k,_ in pairs(wplist.v) do
                   if string.find(k, wpPrefix) == 1 then
                       return E("[!] Waypoints with same prefix already exist!\n[!] Command aborted.")
                   end
@@ -1497,15 +1279,13 @@ handlers:
                   idx = idx + 1
                   local wpname = wpPrefix .. " " .. sformat("%02d", idx)
                   local wp = { pos = v.pos, opt = v.opt}
-                  --if margin then wp.opt.margin = margin end
-                  wplist.v[wpname] = wp
+                              wplist.v[wpname] = wp
                   P(wpname .."  " .. v.pos)
               end
           end
           if not idx then return E("[I] No changes to waypoints done") end
 
-          -- 5 write waypoints back to DB, if at least 1 point was added
-          if toDB then
+              if toDB then
               storeYFSNamedWaypoints(wplist)
               P("[I] Waypoint changes saved to databank!")
           else
@@ -1554,8 +1334,7 @@ handlers:
 
 
       function cmd.PosDataCmd()
-          --P("GetCameraCmd() called")
-          P("getCameraHorizontalFov: "..system.getCameraHorizontalFov())
+              P("getCameraHorizontalFov: "..system.getCameraHorizontalFov())
           P("getCameraVerticalFov: "..system.getCameraVerticalFov())
 
           P("getCameraPos: "..PM.Vec3String(system.getCameraPos()))
@@ -1605,8 +1384,6 @@ handlers:
       end
 
 
-      -- *** Dev/Testing functions ***
-
 
       function cmd.YfsTestDataCmd(param)
           if not (param == "TESTING") then return end
@@ -1626,9 +1403,7 @@ handlers:
 
           YFSDB:remove(YFS_ROUTES)
           local r = { }
-          -- r["Test"] = { points = { } }
-          -- r["Test"].points[1] = { pos = "::pos{0,7,-20.8094,-153.7308,366.1022}", waypointRef = "Chr 01" }
-          storeYFSRoutes({ v = r, t = type(r) })
+                  storeYFSRoutes({ v = r, t = type(r) })
 
           P("[*] YFS test data saved!")
           cmd.DumpPointsCmd()
@@ -1642,11 +1417,7 @@ handlers:
 
 
       function cmd.XCmd()
-          -- local s = "-name C -altitude 440 -marginL 0.5 -marginF 1 -finalSpeedF 10 -suffix 'F'"
-          -- P("X params: "..s)
-          -- cmd.YfsBuildRouteFromWpCmd(s)
-      end
-
+                  end
 
       return cmd
 
@@ -1690,17 +1461,11 @@ handlers:
 
       package.preload['YFS-Tools:warpcost.lua']=(function()
 
-      -- requires SU, PM
-
       local strmatch, sformat, strlen = string.match, string.format, string.len
 
       local tonum, uclamp, mabs, max, floor, ceil = tonumber, utils.clamp, math.abs, math.max, math.floor, math.ceil
 
 
-
-      ---@comment Calculates # of warp cells for distance and mass
-
-      ---@param text string List of space-separated params
 
       function CalcWarpCost(text)
           local example = "\nExample 1:\n/warpCost -from Madis -to Alioth -mass 534"..
@@ -1721,21 +1486,18 @@ handlers:
               local v, allPlanets, offs = {}, false, 0
               local par = GetParamValue(args, pName, "s")
               if not par or (par == "") or (par == "here") then
-                  v = PM.WorldPosVec3() -- current position
-                  if onPlanet and pOn then
+                  v = PM.WorldPosVec3()             if onPlanet and pOn then
                       offs = 2 * pOn.radius
                       par = pOn.name[1]
                       v = vec3(pOn.center)
                   else
-                      offs = 12 -- min. 12 km warp distance
-                      par = PM.Vec3ToPosString(v)
+                      offs = 12                 par = PM.Vec3ToPosString(v)
                   end
               elseif par == "planets" then
                   allPlanets = true
               elseif par > "" then
                   if SU.StartsWith(par, "::pos{") then
-                      offs = 12 -- min. 12 km warp distance
-                      v = PM.MapPosToWorldVec3(par)
+                      offs = 12                 v = PM.MapPosToWorldVec3(par)
                   else
                       local p = PM.PlanetByName(par)
                       if p then
@@ -1751,13 +1513,10 @@ handlers:
           if #args < 1 then return E("[E] Parameter(s) missing!"..example) end
           local pMoons = GetIndex(args, "-moons") > 0
 
-          -- for current location, check if we are "on" a planet (within atmo-radius),
-          -- and set an offset of 2*radius from center as "warp barrier"
-          local offset = 0
+                  local offset = 0
           pOn = PM.GetClosestPlanet(PM.WorldPosVec3())
           if pOn then
-              offset = 2 * pOn.radius -- warp exclusion distance from center
-              onPlanet = PM.Altitude() < offset
+              offset = 2 * pOn.radius         onPlanet = PM.Altitude() < offset
               if onPlanet then
                   s2 = "Current"
               else
@@ -1768,13 +1527,9 @@ handlers:
               s = s.."\n[I] No planet nearby!"
           end
 
-          ---@diagnostic disable-next-line: missing-parameter
-          local maxMass = 50000
-          ---@diagnostic disable-next-line: missing-parameter
-          local tons = getCMass(CNID) / 1000 -- CNID in globals.lua!
-
-          -- check -cargo param and value
-          local pCargo, bCargo = 0, false
+              local maxMass = 50000
+              local tons = getCMass(CNID) / 1000 
+              local pCargo, bCargo = 0, false
           if GetIndex(args, "-cargo") > 0 then
               local tmpCargo = GetParamValue(args, "-cargo", "n")
               tmpCargo = tmpCargo or 0
@@ -1797,8 +1552,7 @@ handlers:
           if bCargo then
               s = s.."  ~*~  Cargo: "..Out.PrettyMass(pCargo*1000)
           end
-          if tons < 100 then -- warp drive alone is 75 tons!
-              return E(s.."\n[E] Impossibly low mass for a warp ship! ;)")
+          if tons < 100 then         return E(s.."\n[E] Impossibly low mass for a warp ship! ;)")
           elseif tons > maxMass then
               return E(s.."\n[E] I don't accept you're warping that heavy! ;)")
           end
@@ -1826,8 +1580,7 @@ handlers:
               if to > "" then out = out .. to end
               out = out.. " ("..Out.PrettyDistance(distance)..")"
 
-              -- min 1 SU, max 500 SU (1 SU = 200000 m)
-              if distance < 200000 then
+                      if distance < 200000 then
                   return out.." -> too short!"
               elseif distance > 100000000 then
                   return out.." -> too far!"
@@ -1841,8 +1594,7 @@ handlers:
               return out
           end
 
-          -- Single source and destination
-          if not locFrom.isP and not locTo.isP then
+              if not locFrom.isP and not locTo.isP then
               local distance = mabs(vec3(locFrom.v - locTo.v):len()) - locFrom.offset - locTo.offset
               local res = process(locFrom.parm, locTo.parm, distance, tons, pCargo)
               if type(res) == "string" then
@@ -1855,8 +1607,7 @@ handlers:
               return
           end
 
-          -- Planets processing
-          local v1, v2 = nil, nil
+              local v1, v2 = nil, nil
           s2 = " (Distance) / Cells"..SU.If(bCargo, " / Return w/o cargo")
           if locFrom.isP then
               s = s.."\nTo: "..locTo.parm.."\nFrom"..s2
@@ -1888,7 +1639,6 @@ handlers:
           ScreenOutput(s)
       end
 
-
       end)
 
       package.preload['YFS-Tools:../util/wpoint.lua']=(function()
@@ -1896,18 +1646,8 @@ handlers:
       local tonum, strlen, strmatch = tonumber, string.len, string.match
 
 
-      ---@comment Simple Waypoint class to store a name with a location.
-
-      --- No location conversions or changes are done in this class!
-
-      --- The set method is flexible, though, in what it accepts as source for a location.
-
-      --- @class Waypoint
-
       Waypoint = { mapPos = {}, name = "", parent = nil }
 
-
-      -- Waypoint methods
 
       Waypoint.new = function(parent)
           local obj = setmetatable(
@@ -1919,10 +1659,6 @@ handlers:
       end
 
 
-      ---@comment Returns the waypoint as { systemId, id, latitude, longitude, altitude }
-
-      ---@return table
-
       Waypoint.get = function(self)
           return self.mapPos
       end
@@ -1933,8 +1669,6 @@ handlers:
           return '::pos{' .. num .. ',' .. num .. ',' ..  num .. ',' .. num ..  ',' .. num .. '}'
       end
 
-
-      ---@comment Sets a waypoint to the given map position (::pos{}, vec3 or table with 3 or 5 pos data)
 
       Waypoint.set = function(self, newMapPos)
           if type(newMapPos) == "string" and strlen(newMapPos) < 16 then
@@ -1976,10 +1710,6 @@ handlers:
       end
 
 
-      ---@comment Set the name for the waypoint. Can be empty.
-
-      ---@param self table
-
       Waypoint.setName = function(self, newName)
           if newName == nil then self.name = "" return end
           if type(newName) == "string" and newName:gmatch("^%a[%w_- ]*$") then
@@ -1991,23 +1721,15 @@ handlers:
       end
 
 
-      ---@comment Returns the name for the waypoint. Can be empty.
-
       Waypoint.getName = function(self)
           return self.name
       end
 
 
-      ---@comment Returns just the altitude value (number).
-
       Waypoint.getAltitude = function(self)
           return self.mapPos.altitude
       end
 
-
-      ---@comments Returns ::pos{} string of the waypoint
-
-      ---@return string
 
       Waypoint.AsString = function(self)
           return string.format("::pos{%d, %d, %.4f, %.4f, %.4f}",
@@ -2026,27 +1748,13 @@ handlers:
 
 
 
-      ---@class WaypointMgr
-
       WaypointMgr = { name = "", waypoints = {} }
 
 
-      --- comment Add a waypoint object to the list at position 'index'
-
-      --- @param self table
-
-      --- @param waypoint any
-
-      --- @param index any
-
-      --- @return nil
-
       WaypointMgr.add = function(self, waypoint, index)
           if waypoint.__Waypoint and waypoint.__Waypoint() then
-              -- If the waypoint has no name, skip duplicate check
-              if waypoint.name and waypoint.name ~= "" then
-                  -- Check if a waypoint with the same name already exists
-                  for _,v in ipairs(self.waypoints) do
+                      if waypoint.name and waypoint.name ~= "" then
+                              for _,v in ipairs(self.waypoints) do
                       if v.name == waypoint.name then
                           return nil
                       end
@@ -2054,8 +1762,7 @@ handlers:
               end
               local wplus1 = 1 + #self.waypoints
               if index then
-                  -- Check if the specified index is within the valid range
-                  if index < 1 or index > wplus1 then
+                              if index < 1 or index > wplus1 then
                       print("[E] Invalid index. Must be in the range 1 to " .. wplus1)
                       return nil
                   end
@@ -2073,10 +1780,6 @@ handlers:
       end
 
 
-      ---@comment List of waypoints' data as table.
-
-      ---@return table (systemId, planetId, latitude, longitude, altitude)
-
       WaypointMgr.getWaypointsData = function(self)
           local res = {}
           for k,v in ipairs(self.waypoints) do
@@ -2086,45 +1789,29 @@ handlers:
       end
 
 
-      ---@comment List of all waypoints as Waypoint objects.
-
-      ---@return table Array of all Waypoint instances
-
       WaypointMgr.getWaypointsInst = function(self)
           return self.waypoints
       end
 
-
-      ---@comment Returns the count of all waypoints
-
-      ---@return integer Count of all waypoints
 
       WaypointMgr.getCount = function(self)
           return #self.waypoints
       end
 
 
-      ---@comment Returns array of all waypoint instances sorted by their name
-
-      ---@return table Array
-
       WaypointMgr.getSorted = function(self)
           local sortedPoints = {}
 
-          -- Copy waypoints to a new table for sorting
-          for _,v in pairs(self.waypoints) do
+              for _,v in pairs(self.waypoints) do
               table.insert(sortedPoints, v)
           end
 
-          -- Sort the copied table by waypoint names
-          table.sort(sortedPoints, function(a, b)
+              table.sort(sortedPoints, function(a, b)
               return a.name < b.name
           end)
           return sortedPoints
       end
 
-
-      ---@comment Moves waypoint at given index up by one, but 1 as minimum
 
       WaypointMgr.moveUp = function(self, index)
           local waypointsCount = #self.waypoints
@@ -2135,8 +1822,6 @@ handlers:
       end
 
 
-      ---@comment Moves waypoint at given index down by one, but to end index as maximum
-
       WaypointMgr.moveDown = function(self, index)
           local waypointsCount = #self.waypoints
 
@@ -2146,33 +1831,18 @@ handlers:
       end
 
 
-      ---@comment Removes only the first waypoint with the given name and returns that waypoint instance, otherwise nil
-
-      ---@return any Either removed waypoint instance or nil if not found
-
       WaypointMgr.removeByName = function(self, waypointName)
           for i, waypoint in ipairs(self.waypoints) do
               if waypoint.name == waypointName then
                   local removedWaypoint = table.remove(self.waypoints, i)
-                  return removedWaypoint  -- Return the removed waypoint
-              end
+                  return removedWaypoint          end
           end
-          return nil  -- Return nil if not found
-      end
-
-
-      ---@comment Returns true if at least one waypoint exist, else false
-
-      ---@return boolean
+          return nil  end
 
       WaypointMgr.hasPoints = function(self, param)
           return #self.waypoints > 0
       end
 
-
-      ---@comment Checks if a waypoint exists in 3 different ways: name, waypoint instance or same data
-
-      ---@return any If not found, returns nil, otherwise the found waypoint instance
 
       WaypointMgr.exists = function(self, param)
           for _, v in ipairs(self.waypoints) do
@@ -2183,8 +1853,7 @@ handlers:
                       return v
                   end
               elseif type(param) == "table" and #param == 5 then
-                  -- Check if a waypoint with the same nums exists
-                  if v.mapPos.systemId  == tonum(param[1]) and
+                              if v.mapPos.systemId  == tonum(param[1]) and
                      v.mapPos.id        == tonum(param[2]) and
                      v.mapPos.latitude  == tonum(param[3]) and
                      v.mapPos.longitude == tonum(param[4]) and
@@ -2213,23 +1882,9 @@ handlers:
 
       return WaypointMgr
 
-
       end)
 
       package.preload['YFS-Tools:../util/stl.lua']=(function()
-
-      --[[ Wolfe Labs Smart Template Library (STL)
-
-      https://github.com/wolfe-labs/SmartTemplateLibrary
-
-      (C) 2022 - Wolfe Labs ]]
-
-
-      --- Helper function that generates a clean print statement of a certain string
-
-      ---@param str string The string we need to show
-
-      ---@return string
 
       local function mkPrint(str)
 
@@ -2237,12 +1892,6 @@ handlers:
 
       end
 
-
-      --- Helper function that merges tables
-
-      ---@vararg table
-
-      ---@return table
 
       local function tMerge(...)
 
@@ -2261,14 +1910,6 @@ handlers:
       end
 
 
-      --- Retrieves a certain line from a string
-
-      ---@param str string The source string
-
-      ---@param ln number The line number
-
-      ---@return string|nil
-
       local function getLine(str, ln)
 
       local _ = 0
@@ -2285,12 +1926,6 @@ handlers:
       end
 
 
-      --- Trims a string
-
-      ---@param str string The string being trimmed
-
-      ---@return string
-
       local function trim(str)
 
       return str:gsub("^%s*(.-)%s*$", "%1")
@@ -2298,11 +1933,7 @@ handlers:
       end
 
 
-      ---@class Template
-
       local Template = {
-
-      --- Globals available for every template by default
 
       globals = {
           math = math,
@@ -2315,8 +1946,6 @@ handlers:
       }
 
 
-      -- Makes our template directly callable
-
       function Template.__call(self, ...)
 
       return Template.render(self, ({...})[1])
@@ -2324,68 +1953,36 @@ handlers:
       end
 
 
-      --- Renders our template
-
-      ---@param vars table The variables to be used when rendering the template
-
-      ---@return string
-
       function Template:render(vars)
-
-      -- Safety check, vars MUST be a table or nil
 
       if type(vars or {}) ~= 'table' then
           error('Template parameters must be a table, got ' .. type(vars))
       end
 
 
-      --- This is our return buffer
-
       local _ = {}
 
-
-      -- Creates our environment
 
       local env = tMerge(Template.globals, self.globals or {}, vars or {}, {
           print = function (str) table.insert(_, tostring(str or '')) end,
       })
 
 
-      -- Invokes our template
-
       self.callable(env)
 
-
-      -- General trimming
 
       local result = table.concat(_, ''):gsub('%s+', ' ')
 
 
-      -- Trims result
-
       result = result:sub(result:find('[^%s]') or 1):gsub('%s*$', '')
 
-
-      -- Done
 
       return result
 
       end
 
 
-      --- Creates a new template
-
-      ---@param source string The code for your template
-
-      ---@param globals table|nil Global variables to be used on on the template
-
-      ---@param buildErrorHandler function|nil A function to handle build errors, if none is found throws an error
-
-      ---@return Template
-
       function Template.new(source, globals, buildErrorHandler)
-
-      -- Creates our instance
 
       local self = {
           source = source,
@@ -2393,75 +1990,51 @@ handlers:
       }
 
 
-      -- Yield function (mostly for games who limit executions per frame)
-
       local yield = (coroutine and coroutine.isyieldable() and coroutine.yield) or function () end
 
 
-      -- Parses direct printing of variables, we'll convert a {{var}} into {% print(var) %}
-
       source = source:gsub('{{(.-)}}', '{%% print(%1) %%}')
 
-
-      -- Ensures {% if %} ... {% else %} ... {% end %} stays on same line
 
       source = source:gsub('\n%s*{%%', '{%%')
 
       source = source:gsub('%%}\n', '%%}')
 
 
-      --- This variable stores all our Lua "pieces"
-
       local tPieces = {}
 
 
-      -- Parses actual Lua inside {% lua %} tags
-
       while #source > 0 do
-          --- The start index of Lua tag
-          local iLuaStart = source:find('{%%')
+              local iLuaStart = source:find('{%%')
 
-          --- The end index of Lua tag
-          local iLuaEnd = source:find('%%}')
+              local iLuaEnd = source:find('%%}')
 
-          -- Checks if we have a match
-          if iLuaStart then
-          -- Errors when not closing a tag
-          if not iLuaEnd then
+              if iLuaStart then
+              if not iLuaEnd then
               error('Template error, missing Lua closing tag near: ' .. source:sub(0, 16))
           end
 
-          --- The current text before Lua tag
-          local currentText = source:sub(1, iLuaStart - 1)
+              local currentText = source:sub(1, iLuaStart - 1)
           if #currentText then
               table.insert(tPieces, mkPrint(currentText))
           end
 
-          --- Our Lua tag content
-          local luaTagContent = source:sub(iLuaStart, iLuaEnd + 1):match('{%%(.-)%%}') or ''
+              local luaTagContent = source:sub(iLuaStart, iLuaEnd + 1):match('{%%(.-)%%}') or ''
           table.insert(tPieces, luaTagContent)
 
-          -- Removes parsed content
-          source = source:sub(iLuaEnd + 2)
+              source = source:sub(iLuaEnd + 2)
           else
-          -- Adds remaining Lua as a single print statement
-          table.insert(tPieces, mkPrint(source))
+              table.insert(tPieces, mkPrint(source))
 
-          -- Marks content as parsed
-          source = ''
+              source = ''
           end
 
-          -- Yields loading
-          yield()
+              yield()
       end
 
 
-      -- Builds the Lua function
-
       self.code = table.concat(tPieces, '\n')
 
-
-      -- Builds our function and caches it, this is our template now
 
       local lua = string.format('return function (_) _ENV = _; _ = _ENV[_]\n%s\nend', self.code)
 
@@ -2471,8 +2044,6 @@ handlers:
           _ = _()
       end
 
-
-      -- Checks for any errors
 
       if err then
           local _, ln, msg = err:match('^(.-):(%d+):(.+)')
@@ -2493,22 +2064,16 @@ handlers:
           error(('Failed compiling template!\nError: %s\nLine: %d\nNear: %s\nCode: %s'):format(ex.message, ex.line, ex.near, ex.nearLua))
           end
 
-          -- Retuns an invalid instance
-          return nil
+              return nil
       else
-          -- If everything passed, assigns our callable to our compiled function
-          self.callable = _
+              self.callable = _
       end
 
-
-      -- Initializes our instance
 
       return setmetatable(self, Template)
 
       end
 
-
-      -- By default, returns the constructor of our class
 
       return Template.new
 
@@ -2516,58 +2081,34 @@ handlers:
 
       package.preload['YFS-Tools:../util/wolfeCentralpoint.lua']=(function()
 
-      -- Requires vec3
-
-      -- Author: Matt / Wolfe Labs (@wolf_br), commissioned by tobitege (@tobitege)
-
-
       local msqrt = math.sqrt
 
-
-      ---@comment Gets the central point for an ARRAY(!) of waypoints; nil if invalid params or empty array.
-
-      ---@param waypoints table with array of waypoints
-
-      ---@param useCentroid boolean|nil optional; default: nil (or false)
-
-      ---@return vec3|nil The vec3 of the center location (or nil)
 
       function GetCentralPoint(waypoints, useCentroid)
           if type(waypoints) ~= "table" or #waypoints == 0 then return nil end
           if #waypoints == 1 then
-            -- If we only have a single point, return it
-              return waypoints[1]
+                    return waypoints[1]
           elseif #waypoints == 2 then
-              -- For two points, we only need an average, no problem either
-              return (vec3(waypoints[1]) + vec3(waypoints[2])) / 2
+                      return (vec3(waypoints[1]) + vec3(waypoints[2])) / 2
           end
 
-          -- Base weight for averaging
-          local base_weight = 1 / #waypoints
+              local base_weight = 1 / #waypoints
 
-          -- Calculates the centroid position
-          local centroid = vec3(0, 0, 0)
+              local centroid = vec3(0, 0, 0)
           for _, waypoint in pairs(waypoints) do
               centroid = centroid + vec3(waypoint) * base_weight
           end
 
-          -- Use the centroid as the center, unless the option says otherwise
-          local center = centroid
+              local center = centroid
 
-          -- Note to self: in the lines below math.sqrt(2) has been used to improve the center location.
-          -- This number seems to have worked best as an exponent for the distances, but I'm not sure why.
-          -- This is probably worth investigating at some point.
-
-          -- If we aren't using the centroid, we'll use it along with the distance of all other points to estimate a new center
-          if not useCentroid then
-              -- Calculates the average distances for the centroid
-              local avg_distance = 0
+                  
+              if not useCentroid then
+                      local avg_distance = 0
               for _, waypoint in pairs(waypoints) do
                   avg_distance = avg_distance + base_weight * (vec3(waypoint) - center):len() ^ msqrt(2)
               end
 
-              -- Now we try to get closer to center
-              local center_accumulator = vec3(0, 0, 0)
+                      local center_accumulator = vec3(0, 0, 0)
               for _, waypoint in pairs(waypoints) do
                   local point = vec3(waypoint)
                   local distance = (point - center):len() ^ msqrt(2)
@@ -2575,8 +2116,7 @@ handlers:
                   center_accumulator = center_accumulator + point * base_weight * weight
               end
 
-              -- Sets new value for the center
-              center = center_accumulator
+                      center = center_accumulator
           end
 
           return center
@@ -2586,58 +2126,30 @@ handlers:
 
       package.preload['YFS-Tools:libmain.lua']=(function()
 
-      -- require used classes and instantiate important ones
-
-      SU = require('YFS-Tools:../util/SU.lua') -- string utils
-
-      Out = require('YFS-Tools:../util/out.lua') -- output utils
-
-      P = Out.PrintLines
+      SU = require('YFS-Tools:../util/SU.lua') Out = require('YFS-Tools:../util/out.lua') P = Out.PrintLines
 
       E = Out.Error
 
 
-      require('YFS-Tools:../util/Dtbk.lua') -- databank
+      require('YFS-Tools:../util/Dtbk.lua') 
 
+      require('YFS-Tools:libutils.lua') Cmd = require('YFS-Tools:commands.lua') Help = require('YFS-Tools:help.lua') 
 
-      require('YFS-Tools:libutils.lua') -- helper functions
+      require('YFS-Tools:warpcost.lua') 
 
-      Cmd = require('YFS-Tools:commands.lua') -- all YFS Tools commands
-
-      Help = require('YFS-Tools:help.lua') -- help utils
-
-
-      require('YFS-Tools:warpcost.lua') -- warp calculator function
-
-
-      require('YFS-Tools:../util/wpoint.lua') -- waypoint class
-
-      WM = require('YFS-Tools:../util/wpointmgr.lua').new("MAIN") -- instantiate MAIN waypoint manager
-
+      require('YFS-Tools:../util/wpoint.lua') WM = require('YFS-Tools:../util/wpointmgr.lua').new("MAIN") 
 
       WaypointInfo = require('atlas')
 
 
-      STL = require('YFS-Tools:../util/stl.lua') -- determine central point among array of waypoints
-
-      require('YFS-Tools:../util/wolfeCentralpoint.lua') -- determine central point among array of waypoints
-
-      -- if not INGAME then
-
-      --     WolfeCenterPointRS = 'vec2 = vec2 or require(\'cpml.vec2\')\nvec3 = vec3 or require(\'cpml.vec3\')\n\n--------------------------------------\n-- Configuration\n--------------------------------------\n\n-- Pulls upstream config\nlocal config = data.config or {}\n\n-- How large each dot is\nlocal dot_size = 2\n\n-- How many meters from center to screen edge\nlocal screen_radius = config.screen_radius or 3000\n\n-- The grid circles\nlocal grid_size = config.grid_size or 500\n\n-- Colors to be used\nlocal colors = {\n  background = { 0.1, 0.1, 0.1 },\n  overlay = { 0, 0, 0, 0.5 },\n  guides = {\n    main = { 0, 0.5, 1.5, 0.2 },\n    secondary = { 0, 0.5, 1.5, 0.15 },\n  },\n  center = { 0, 2, 1 },\n  points = { 0, 2, 2 },\n  messages = { 0.6, 0.6, 0.6 },\n}\n\n-- Spacing\nlocal spacing = { 8, 8 }\n\n-- Font to be used\nlocal fonts = {\n  title = loadFont(\'Oxanium\', 30),\n  main = loadFont(\'Oxanium\', 24),\n  sub = loadFont(\'Oxanium\', 15),\n}\n\n--------------------------------------\n-- Helpers\n--------------------------------------\n\nlocal screen_width, screen_height = getResolution()\nlocal cursor = vec2(getCursor())\n\n-- How close to detect hover\nlocal proximity_distance = 0.02 * screen_height\n\n-- Helper function to convert color tables\nlocal function rgba(color)\n  return color[1], color[2], color[3], color[4] or 1\nend\n\n-- Draws a small dot\nlocal function draw_dot(layer, x, y, color, hover_handler, click_handler)\n  setNextFillColor(layer, rgba(color))\n  addCircle(layer, x, y, dot_size)\n\n  local is_hovering = (vec2(x, y) - cursor):len() <= proximity_distance\n\n  if hover_handler and is_hovering then\n    hover_handler()\n  end\n\n  if click_handler and is_hovering and getCursorReleased() then\n    click_handler()\n  end\nend\n\n-- Draws a circle\nlocal function draw_circle(layer, x, y, radius, color)\n  setNextStrokeWidth(layer, 1)\n  setNextStrokeColor(layer, rgba(color))\n  setNextFillColor(layer, rgba({ 0, 0, 0, 0 }))\n  addCircle(layer, x, y, radius)\nend\n\n-- Draws line\nlocal function draw_line(layer, x1, y1, x2, y2, color)\n  setNextStrokeColor(layer, rgba(color))\n  addLine(layer, x1, y1, x2, y2)\nend\n\n-- Draws an overlay\nlocal function draw_overlay(layer)\n  setNextFillColor(layer, rgba(colors.overlay))\n  addBox(layer, 0, 0, screen_width, screen_height)\nend\n\n-- Draws info box\nlocal function draw_info_box(layer, x, y, title, rows, color)\n  draw_line(layer, x, y, x + 150, y, color)\n\n  if title then\n    setNextFillColor(layer, rgba(color))\n    setNextTextAlign(layer, AlignH_Left, AlignV_Bottom)\n    addText(layer, fonts.sub, tostring(title), x + spacing[1], y - spacing[1])\n  end\n\n  local next_x = x + spacing[1]\n  local next_y = y + spacing[2]\n  for _, row in pairs(rows) do\n    local text = row\n    local font = fonts.main\n    if \'table\' == type(row) then\n      font = fonts[row[1]]\n      text = row[2]\n    end\n    local font_size = getFontSize(font)\n\n    setNextFillColor(layer, rgba(color))\n    setNextTextAlign(layer, AlignH_Left, AlignV_Top)\n    addText(layer, font, tostring(text), next_x, next_y)\n    next_y = next_y + font_size\n  end\nend\n\n-- Draws cursor\nlocal function draw_cursor(layer)\n  local cursor_size = 16\n  local x, y = cursor:unpack()\n\n  if x and y and x + y > 0 then\n    setNextShadow(layer, 0.25 * cursor_size, 0, 0, 0, 1)\n    setNextFillColor(layer, 1, 1, 1, 1)\n    addQuad(\n      layer,\n      x, y,\n      x + cursor_size, y + 0.5 * cursor_size,\n      x + 0.5 * cursor_size, y + 0.5 * cursor_size,\n      x + 0.5 * cursor_size, y + cursor_size\n    )\n  end\nend\n\n--------------------------------------\n-- Main render logic\n--------------------------------------\n\nsetBackgroundColor(rgba(colors.background))\n\n-- Pre-calculate center of screen\nlocal screen_center_x, screen_center_y = 0.5 * screen_width, 0.5 * screen_height\n\n-- Check if we have data\nif not data.is_activated then\n  -- Offline mode\n  local layer = createLayer()\n\n  setNextTextAlign(layer, AlignH_Center, AlignV_Bottom)\n  setNextFillColor(layer, rgba(colors.messages))\n  addText(layer, fonts.title, \'SCRIPT OFFLINE\', screen_center_x, screen_center_y - 0.5 * spacing[2])\n\n  setNextTextAlign(layer, AlignH_Center, AlignV_Top)\n  setNextFillColor(layer, rgba(colors.messages))\n  addText(layer, fonts.sub, \'activate programming board to start\', screen_center_x, screen_center_y + 0.5 * spacing[2])\nelseif not data.waypoints then\n  -- Waiting on input\n  local layer = createLayer()\n\n  setNextTextAlign(layer, AlignH_Center, AlignV_Bottom)\n  setNextFillColor(layer, rgba(colors.messages))\n  addText(layer, fonts.title, \'AWAITING INPUT\', screen_center_x, screen_center_y - 0.5 * spacing[2])\n\n  setNextTextAlign(layer, AlignH_Center, AlignV_Top)\n  setNextFillColor(layer, rgba(colors.messages))\n  addText(layer, fonts.sub, \'input your first coordinate in the Lua chat to start\', screen_center_x, screen_center_y + 0.5 * spacing[2])\nelse\n  -- Normal operation\n  local center_body, center_world = data.center.body, vec3(data.center.world)\n\n  -- Intializes render script\n  local layer_background, layer_data, layer_overlay, layer_info, layer_cursor = createLayer(), createLayer(), createLayer(), createLayer(), createLayer()\n\n  -- Cursor\n  draw_cursor(layer_cursor)\n\n  -- Half screen size\n  local screen_radius_pixels = screen_center_y\n\n  -- Renders guides\n  for radius = grid_size, screen_radius, grid_size do\n    local pixel_radius = screen_radius_pixels * radius / screen_radius\n    local color = colors.guides.secondary\n    if radius % 1000 == 0 then\n      color = colors.guides.main\n    end\n\n    draw_circle(layer_background, screen_center_x, screen_center_y, pixel_radius, color)\n\n    setNextFillColor(layer_background, rgba(color))\n    setNextTextAlign(layer_background, AlignH_Center, AlignV_Top)\n    addText(layer_background, fonts.sub, radius .. \'m\', screen_center_x, screen_center_y + pixel_radius + 0.5 * spacing[2])\n  end\n\n  -- Renders center dot\n  draw_dot(layer_data, screen_center_x, screen_center_y, colors.center, function()\n    draw_circle(layer_info, screen_center_x, screen_center_y, proximity_distance, colors.center)\n    draw_overlay(layer_overlay)\n    draw_info_box(layer_info, screen_center_x + proximity_distance, screen_center_y, nil, {\n      \'center point\',\n      { \'sub\', \'click to set waypoint\' },\n    }, colors.center)\n  end, function()\n    -- Sets waypoint on click\n    setOutput((\'{%s,%s,%s}\'):format(center_world:unpack()))\n  end)\n\n  -- Renders waypoints\n  for _, waypoint in pairs(data.waypoints or {}) do\n    local lat, lng = waypoint.body.lat - center_body.lat, waypoint.body.lng - center_body.lng\n\n    local offset = vec2(lng, lat * -1)\n    local distance = (vec3(waypoint.world) - center_world):len()\n\n    -- Don\'t render anything outside screen\n    if distance <= screen_radius then\n      -- Calculates pixel position\n      local pixel = vec2(0.5 * screen_width, 0.5 * screen_height) + offset:normalize() * screen_radius_pixels * distance / screen_radius\n\n      -- Draws point on "map"\n      draw_dot(layer_data, pixel.x, pixel.y, colors.points, function()\n        -- Draws extra info on hover\n        draw_circle(layer_info, pixel.x, pixel.y, proximity_distance, colors.points)\n        draw_overlay(layer_overlay)\n        draw_info_box(layer_info, pixel.x + proximity_distance, pixel.y, waypoint.label, {\n          (\'%.2fm\'):format(distance),\n          { \'sub\', \'click to set waypoint\' },\n        }, colors.points)\n      end, function()\n        -- Sets waypoint on click\n        setOutput((\'{%s,%s,%s}\'):format(vec3(waypoint.world):unpack()))\n      end)\n    end\n  end\n\n  requestAnimationFrame(1)\nend'
-
-      -- end
+      STL = require('YFS-Tools:../util/stl.lua') require('YFS-Tools:../util/wolfeCentralpoint.lua') --     WolfeCenterPointRS = 'vec2 = vec2 or require(\'cpml.vec2\')\nvec3 = vec3 or require(\'cpml.vec3\')\n\n--------------------------------------\n-- Configuration\n--------------------------------------\n\n-- Pulls upstream config\nlocal config = data.config or {}\n\n-- How large each dot is\nlocal dot_size = 2\n\n-- How many meters from center to screen edge\nlocal screen_radius = config.screen_radius or 3000\n\n-- The grid circles\nlocal grid_size = config.grid_size or 500\n\n-- Colors to be used\nlocal colors = {\n  background = { 0.1, 0.1, 0.1 },\n  overlay = { 0, 0, 0, 0.5 },\n  guides = {\n    main = { 0, 0.5, 1.5, 0.2 },\n    secondary = { 0, 0.5, 1.5, 0.15 },\n  },\n  center = { 0, 2, 1 },\n  points = { 0, 2, 2 },\n  messages = { 0.6, 0.6, 0.6 },\n}\n\n-- Spacing\nlocal spacing = { 8, 8 }\n\n-- Font to be used\nlocal fonts = {\n  title = loadFont(\'Oxanium\', 30),\n  main = loadFont(\'Oxanium\', 24),\n  sub = loadFont(\'Oxanium\', 15),\n}\n\n--------------------------------------\n-- Helpers\n--------------------------------------\n\nlocal screen_width, screen_height = getResolution()\nlocal cursor = vec2(getCursor())\n\n-- How close to detect hover\nlocal proximity_distance = 0.02 * screen_height\n\n-- Helper function to convert color tables\nlocal function rgba(color)\n  return color[1], color[2], color[3], color[4] or 1\nend\n\n-- Draws a small dot\nlocal function draw_dot(layer, x, y, color, hover_handler, click_handler)\n  setNextFillColor(layer, rgba(color))\n  addCircle(layer, x, y, dot_size)\n\n  local is_hovering = (vec2(x, y) - cursor):len() <= proximity_distance\n\n  if hover_handler and is_hovering then\n    hover_handler()\n  end\n\n  if click_handler and is_hovering and getCursorReleased() then\n    click_handler()\n  end\nend\n\n-- Draws a circle\nlocal function draw_circle(layer, x, y, radius, color)\n  setNextStrokeWidth(layer, 1)\n  setNextStrokeColor(layer, rgba(color))\n  setNextFillColor(layer, rgba({ 0, 0, 0, 0 }))\n  addCircle(layer, x, y, radius)\nend\n\n-- Draws line\nlocal function draw_line(layer, x1, y1, x2, y2, color)\n  setNextStrokeColor(layer, rgba(color))\n  addLine(layer, x1, y1, x2, y2)\nend\n\n-- Draws an overlay\nlocal function draw_overlay(layer)\n  setNextFillColor(layer, rgba(colors.overlay))\n  addBox(layer, 0, 0, screen_width, screen_height)\nend\n\n-- Draws info box\nlocal function draw_info_box(layer, x, y, title, rows, color)\n  draw_line(layer, x, y, x + 150, y, color)\n\n  if title then\n    setNextFillColor(layer, rgba(color))\n    setNextTextAlign(layer, AlignH_Left, AlignV_Bottom)\n    addText(layer, fonts.sub, tostring(title), x + spacing[1], y - spacing[1])\n  end\n\n  local next_x = x + spacing[1]\n  local next_y = y + spacing[2]\n  for _, row in pairs(rows) do\n    local text = row\n    local font = fonts.main\n    if \'table\' == type(row) then\n      font = fonts[row[1]]\n      text = row[2]\n    end\n    local font_size = getFontSize(font)\n\n    setNextFillColor(layer, rgba(color))\n    setNextTextAlign(layer, AlignH_Left, AlignV_Top)\n    addText(layer, font, tostring(text), next_x, next_y)\n    next_y = next_y + font_size\n  end\nend\n\n-- Draws cursor\nlocal function draw_cursor(layer)\n  local cursor_size = 16\n  local x, y = cursor:unpack()\n\n  if x and y and x + y > 0 then\n    setNextShadow(layer, 0.25 * cursor_size, 0, 0, 0, 1)\n    setNextFillColor(layer, 1, 1, 1, 1)\n    addQuad(\n      layer,\n      x, y,\n      x + cursor_size, y + 0.5 * cursor_size,\n      x + 0.5 * cursor_size, y + 0.5 * cursor_size,\n      x + 0.5 * cursor_size, y + cursor_size\n    )\n  end\nend\n\n--------------------------------------\n-- Main render logic\n--------------------------------------\n\nsetBackgroundColor(rgba(colors.background))\n\n-- Pre-calculate center of screen\nlocal screen_center_x, screen_center_y = 0.5 * screen_width, 0.5 * screen_height\n\n-- Check if we have data\nif not data.is_activated then\n  -- Offline mode\n  local layer = createLayer()\n\n  setNextTextAlign(layer, AlignH_Center, AlignV_Bottom)\n  setNextFillColor(layer, rgba(colors.messages))\n  addText(layer, fonts.title, \'SCRIPT OFFLINE\', screen_center_x, screen_center_y - 0.5 * spacing[2])\n\n  setNextTextAlign(layer, AlignH_Center, AlignV_Top)\n  setNextFillColor(layer, rgba(colors.messages))\n  addText(layer, fonts.sub, \'activate programming board to start\', screen_center_x, screen_center_y + 0.5 * spacing[2])\nelseif not data.waypoints then\n  -- Waiting on input\n  local layer = createLayer()\n\n  setNextTextAlign(layer, AlignH_Center, AlignV_Bottom)\n  setNextFillColor(layer, rgba(colors.messages))\n  addText(layer, fonts.title, \'AWAITING INPUT\', screen_center_x, screen_center_y - 0.5 * spacing[2])\n\n  setNextTextAlign(layer, AlignH_Center, AlignV_Top)\n  setNextFillColor(layer, rgba(colors.messages))\n  addText(layer, fonts.sub, \'input your first coordinate in the Lua chat to start\', screen_center_x, screen_center_y + 0.5 * spacing[2])\nelse\n  -- Normal operation\n  local center_body, center_world = data.center.body, vec3(data.center.world)\n\n  -- Intializes render script\n  local layer_background, layer_data, layer_overlay, layer_info, layer_cursor = createLayer(), createLayer(), createLayer(), createLayer(), createLayer()\n\n  -- Cursor\n  draw_cursor(layer_cursor)\n\n  -- Half screen size\n  local screen_radius_pixels = screen_center_y\n\n  -- Renders guides\n  for radius = grid_size, screen_radius, grid_size do\n    local pixel_radius = screen_radius_pixels * radius / screen_radius\n    local color = colors.guides.secondary\n    if radius % 1000 == 0 then\n      color = colors.guides.main\n    end\n\n    draw_circle(layer_background, screen_center_x, screen_center_y, pixel_radius, color)\n\n    setNextFillColor(layer_background, rgba(color))\n    setNextTextAlign(layer_background, AlignH_Center, AlignV_Top)\n    addText(layer_background, fonts.sub, radius .. \'m\', screen_center_x, screen_center_y + pixel_radius + 0.5 * spacing[2])\n  end\n\n  -- Renders center dot\n  draw_dot(layer_data, screen_center_x, screen_center_y, colors.center, function()\n    draw_circle(layer_info, screen_center_x, screen_center_y, proximity_distance, colors.center)\n    draw_overlay(layer_overlay)\n    draw_info_box(layer_info, screen_center_x + proximity_distance, screen_center_y, nil, {\n      \'center point\',\n      { \'sub\', \'click to set waypoint\' },\n    }, colors.center)\n  end, function()\n    -- Sets waypoint on click\n    setOutput((\'{%s,%s,%s}\'):format(center_world:unpack()))\n  end)\n\n  -- Renders waypoints\n  for _, waypoint in pairs(data.waypoints or {}) do\n    local lat, lng = waypoint.body.lat - center_body.lat, waypoint.body.lng - center_body.lng\n\n    local offset = vec2(lng, lat * -1)\n    local distance = (vec3(waypoint.world) - center_world):len()\n\n    -- Don\'t render anything outside screen\n    if distance <= screen_radius then\n      -- Calculates pixel position\n      local pixel = vec2(0.5 * screen_width, 0.5 * screen_height) + offset:normalize() * screen_radius_pixels * distance / screen_radius\n\n      -- Draws point on "map"\n      draw_dot(layer_data, pixel.x, pixel.y, colors.points, function()\n        -- Draws extra info on hover\n        draw_circle(layer_info, pixel.x, pixel.y, proximity_distance, colors.points)\n        draw_overlay(layer_overlay)\n        draw_info_box(layer_info, pixel.x + proximity_distance, pixel.y, waypoint.label, {\n          (\'%.2fm\'):format(distance),\n          { \'sub\', \'click to set waypoint\' },\n        }, colors.points)\n      end, function()\n        -- Sets waypoint on click\n        setOutput((\'{%s,%s,%s}\'):format(vec3(waypoint.world):unpack()))\n      end)\n    end\n  end\n\n  requestAnimationFrame(1)\nend'
 
 
-      WolfAR = nil -- customized Wolf Labs' AR waypointing
+      WolfAR = nil
 
       end)
 
       package.preload['YFS-Tools:../util/pos.lua']=(function()
-
-      --- Class related to positions/coordinates like local/world conversion etc.
-
-      --- requires global WaypointInfo table (= atlas), vec3 library; classes SU, Out
 
       local max, min, mcos, macos, mdeg, msin, mabs, mrad, matan, ceil, floor, mpi = math.max, math.min, math.cos, math.acos, math.deg, math.sin, math.abs, math.rad, math.atan, math.ceil, math.floor, math.pi
 
@@ -2651,21 +2163,16 @@ handlers:
       o.__index = o
 
       function o.New(pCore, pConstruct, pWM)
-          -- Private attribute
-          local s = {
+              local s = {
               core = pCore,
               construct = pConstruct,
               Alioth1G = 9.891,
               waypointNames = {},
               waypointCount = 0,
               planetNames = {},
-              p = {}, -- Planet object
-              pIdx = 0, -- Atlas planet index
-              wm = pWM -- Waypoint Manager instance
-          }
+              p = {},         pIdx = 0,         wm = pWM     }
 
-          local function float_eq(a, b) -- float equation
-              if a == 0 then
+          local function float_eq(a, b)         if a == 0 then
                   return mabs(b) < 1e-09
               elseif b == 0 then
                   return mabs(a) < 1e-09
@@ -2674,39 +2181,30 @@ handlers:
               end
           end
 
-          ---@return boolean
-          local function constructPresent()
+              local function constructPresent()
               return s.construct ~= nil
           end
 
-          ---@return boolean
-          local function corePresent()
+              local function corePresent()
               return s.core ~= nil
           end
 
-          -- Public functions
-
-          ---@return number amount of warp cells
-          function o.ComputeCells(distance, tons)
+          
+              function o.ComputeCells(distance, tons)
               return ceil(max(floor(tons*floor(((distance/1000)/200))*0.00024), 1))
           end
 
-          ---@return string
-          function o.GetPosPattern()
+              function o.GetPosPattern()
               local num = ' *([+-]?%d+%.?%d*e?[+-]?%d*)'
               return '::pos{' .. num .. ',' .. num .. ',' ..  num .. ',' .. num ..  ',' .. num .. '}'
           end
 
-          ---@return number # of entries in WaypointInfo/Atlas
-          function o.GetWaypointCount()
+              function o.GetWaypointCount()
               return s.wm:getCount()
           end
 
-          ---@param posStr string ::pos{} string
-          ---@return table|nil returns a MapPos table of the coords or nil if invalid string
-          function o.SplitPos(posStr)
-              -- min. length is 16: "::pos{0,1,2,3,4}"
-              if type(posStr) ~= "string" then
+                  function o.SplitPos(posStr)
+                      if type(posStr) ~= "string" then
                   P("[E] Invalid position: "..type(posStr))
                   return nil
               end
@@ -2722,17 +2220,13 @@ handlers:
                        altitude  = tonum(alt) }
           end
 
-          ---@param posString string The ::pos{} string in local coords!
-          ---@return number Altitude in meters (if a local pos -> relative to sea level)
-          function o.GetAltitudeFromPos(posString)
+                  function o.GetAltitudeFromPos(posString)
               local p = o.SplitPos(posStr)
               if p and p.altitude then return p.altitude end
               return 0
           end
 
-          ---@param posStr string The ::pos{} string
-          ---@return integer Id of planet in Atlas, e.g. 2 for Alioth; 0 for Space!
-          function o.GetPlanetFromPos(posStr)
+                  function o.GetPlanetFromPos(posStr)
               local p = o.SplitPos(posStr)
               if p and p.id and p.id > 0 then return p.id end
               return 0
@@ -2768,9 +2262,7 @@ handlers:
               return o.MapPos2String(o.WorldToMapPos(v))
           end
 
-          ---@comment Formats a MapPos table to a ::pos{} string
-          ---@return string
-          function o.MapPos2String(mapPos)
+                  function o.MapPos2String(mapPos)
               if type(mapPos) ~= "table" then return "" end
               return '::pos{' .. (mapPos.systemId or 0).. ',' .. (mapPos.id or 0) .. ',' ..
                      sformat("%.4f", (mapPos.latitude or 0)) .. ',' ..
@@ -2778,9 +2270,7 @@ handlers:
                      sformat("%.4f", (mapPos.altitude or 0)) .. '}'
           end
 
-          ---@comment Formats a vec3 world-pos table to a ::pos{} string (planet id 0!)
-          ---@return string
-          function o.Vec3ToPosString(v3)
+                  function o.Vec3ToPosString(v3)
               if type(v3) ~= "table" then return "" end
               return '::pos{0,0,' ..
                      sformat("%.4f", (v3.x or 0)) .. ',' ..
@@ -2788,9 +2278,7 @@ handlers:
                      sformat("%.4f", (v3.z or 0)) .. '}'
           end
 
-          ---@comment Formats a vec3 world-pos table to a ::pos{} string (planet id 0!)
-          ---@return string
-          function o.Vec3String(v3)
+                  function o.Vec3String(v3)
               if type(v3) ~= "table" then return "" end
               v3 = vec3(v3)
               return sformat("%.4f", (v3.x or 0)) .. ', ' ..
@@ -2798,12 +2286,8 @@ handlers:
                      sformat("%.4f", (v3.z or 0))
           end
 
-          ---@param posStr string ::pos{} string for change
-          ---@param newAltitude number? new altitude value
-          ---@return string
-          function o.ReplaceAltitudeInPos(posStr, newAltitude)
-              --TODO: move this to Waypoint class; allow class as param
-              local p = o.SplitPos(posStr)
+                      function o.ReplaceAltitudeInPos(posStr, newAltitude)
+                      local p = o.SplitPos(posStr)
               if not p or not p.altitude or not newAltitude then
                   return posStr
               end
@@ -2811,50 +2295,33 @@ handlers:
               return o.MapPos2String(p)
           end
 
-          ---@comment Returns current planet id if in game, otherwise 2
-          ---@return number
-          function o.PlanetId()
+                  function o.PlanetId()
               if not corePresent() then return 0 end
               if not INGAME then
-                  return 2 -- Alioth
-              end
+                  return 2         end
               return s.core.getCurrentPlanetId()
           end
 
-          ---@comment If code is run outside of game, a fixed vec3 will be returned for testing!
-          ---@return any Vec3 position of construct (or nil)
-          function o.WorldPosVec3()
+                  function o.WorldPosVec3()
               if not INGAME then
                   return { x = -25140.37011013, y = 100812.26194182, z = -52412.710373821}
               end
               if constructPresent() then
-                  ---@diagnostic disable-next-line: missing-parameter
-                  return vec3(construct.getWorldPosition())
+                              return vec3(construct.getWorldPosition())
               end
               if corePresent() then
-                  ---@diagnostic disable-next-line: missing-parameter
-                  return vec3(core.getWorldPosition())
+                              return vec3(core.getWorldPosition())
               end
               return nil
           end
 
-          ---@comment If close to planet, returns the current altitude
-          ---@return number Altitude in meters; 0 if not close to a planet!
-          function o.Altitude()
+                  function o.Altitude()
               local p = o.GetAtlasPlanet(o.PlanetId())
               if not p or not p.center then return 0 end
               return (o.WorldPosVec3() - vec3(p.center)):len() - (p.radius or 0)
           end
 
-          ---@comment Returns distance between
-          --- a) current construct position and the one passed in
-          ---   posStr (distTo not specified) in ::pos{0,x,...} format!
-          --- OR
-          --- b) both params specified, each separate coords.
-          ---@param posStr string ::pos() string to measure FROM
-          ---@param distTo nil optional ::pos() to measure TO; if empty -> current position
-          ---@return number
-          function o.GetDistance(posStr, distToStr)
+                                          function o.GetDistance(posStr, distToStr)
               local curPos = o.WorldPosVec3()
               if type(distToStr) == "string" then
                   curPos = o.MapPosToWorldVec3(distToStr)
@@ -2866,11 +2333,8 @@ handlers:
               return dist
           end
 
-          ---@comment experimental/unused; credit to Jeronimo
-          ---@return number,number,number with x,y,z
-          function o.World2local(x,y,z)
-              --if not o.construct then return 0,0,0 end
-              local cWOUP = s.construct.getWorldOrientationUp()
+                  function o.World2local(x,y,z)
+                      local cWOUP = s.construct.getWorldOrientationUp()
               local cWOF = s.construct.getWorldOrientationForward()
               local cWOR = s.construct.getWorldOrientationRight()
               local cWOUPx, cWOUPy, cWOUPz = cWOUP[1], cWOUP[2], cWOUP[3]
@@ -2885,30 +2349,17 @@ handlers:
               return v[1],v[2],v[3]
           end
 
-          ---@comment Converts a latitude, longitude, altitude pair into a world X, Y, Z
-          --- Source: https://gis.stackexchange.com/a/4148
-          ---@param celestial_body table
-          ---@param latitude number
-          ---@param longitude number
-          ---@param altitude number
-          ---@return vec3|nil
-          function o.WorldPosFromBody(celestial_body, latitude, longitude, altitude)
+                                      function o.WorldPosFromBody(celestial_body, latitude, longitude, altitude)
               if type(celestial_body) ~= "table" then return nil end
               local radius = altitude + (celestial_body.radius or 0)
               local phi, theta = mrad(latitude), mrad(longitude)
               local pcos = mcos(phi)
               local offset = vec3(pcos * mcos(theta), pcos * msin(theta), msin(phi))
-              -- Adds planet center and offset
-              return vec3(celestial_body.center) + offset * radius
+                      return vec3(celestial_body.center) + offset * radius
           end
 
-          ---@comment Gets a mappos from a world position
-          ---@param celestial_body table
-          ---@param position vec3
-          ---@return table
-          function o.BodyPosFromWorldPos(body, position)
-              -- We need to extract the "local" coordinate (offset from planet center) here and then normalize it to do math with it
-              local offset = position - vec3(body.center)
+                          function o.BodyPosFromWorldPos(body, position)
+                      local offset = position - vec3(body.center)
               local offset_normalized = offset:normalize()
 
               return {
@@ -2920,9 +2371,7 @@ handlers:
               }
           end
 
-          ---@param v table the vec3() position to convert
-          ---@return any MapPos table or nil
-          function o.WorldToMapPos(v)
+                  function o.WorldToMapPos(v)
               local body = o.GetClosestPlanet(v)
               if not body or not body.center or not body.radius then
                   return { systemId = 0, id = 0, latitude = v.x, longitude = v.y, altitude = v.z }
@@ -2940,20 +2389,14 @@ handlers:
               return nil
           end
 
-          ---comment Converts ::pos{} string into a vec3
-          ---@param posStr string ::pos{} string
-          ---@return vec3|nil
-          function o.MapPosToWorldVec3(posStr)
+                      function o.MapPosToWorldVec3(posStr)
               local p = o.SplitPos(posStr)
               if not p or not p.systemId then return nil end
-              if (p.systemId == 0 and p.id == 0) then -- already WorldPos
-                  return vec3(p.latitude, p.longitude, p.altitude)
+              if (p.systemId == 0 and p.id == 0) then             return vec3(p.latitude, p.longitude, p.altitude)
               end
               if not WaypointInfo[p.systemId] then return nil end
               local planet = WaypointInfo[p.systemId][p.id]
-              --credits to Saga for lat/lon calc
-              -- constants.deg2rad
-              local lat = 0.0174532925199 * max(min(p.latitude, 90), -90)
+                              local lat = 0.0174532925199 * max(min(p.latitude, 90), -90)
               local lon = 0.0174532925199 * (p.longitude % 360)
               local xproj = mcos(lat)
               local planetxyz = vec3(xproj*mcos(lon), xproj*msin(lon), msin(lat))
@@ -2965,10 +2408,8 @@ handlers:
               if type(id) == "string" and id:len() == 0 then
                   id = o.GetClosestPlanetId(o.WorldPosVec3())
               end
-              if type(id) == "string" and s.planetNames[id:lower()] then -- id as planet name
-                  pid = tonum(s.planetNames[id:lower()])
-              elseif type(id) == "string" and tonum(id) > 0 then -- id as planet id
-                  pid = tonum(id)
+              if type(id) == "string" and s.planetNames[id:lower()] then             pid = tonum(s.planetNames[id:lower()])
+              elseif type(id) == "string" and tonum(id) > 0 then             pid = tonum(id)
               end
               if pid == nil then
                   return E("[E] No valid planet name or id specified!")
@@ -3005,28 +2446,18 @@ handlers:
               P"~~~~~~~~~~~~~~~~~~~~~~~~~~~"
           end
 
-          ---@comment Adds a named waypoint to the internal list.
-          --- Source position string can be local or world position.
-          --- World position will be converted to local and ::pos{}
-          --- changed accordingly - IF a closest body was in range.
-          ---@param posString string Local or world ::pos{} string
-          ---@param wpName string Name of the newly named waypoint
-          ---@return boolean true if added else false
-          function o.CreateWaypoint(posString, wpName)
+                                      function o.CreateWaypoint(posString, wpName)
               if not s.wm or not wpName or wpName == '' or s.waypointNames[wpName] then
                   return false
               end
 
-              -- convert between local and world pos if needed
-              local p = o.SplitPos(posString)
+                      local p = o.SplitPos(posString)
               if not p or not p.systemId then return false end
 
-              -- if world pos, try to determine planet
-              if p.id == 0 then
+                      if p.id == 0 then
                   local w = o.WorldToMapPos(vec3{ p.latitude, p.longitude, p.altitude })
                   if w and w.id and w.id > 0 then
-                      -- update pos with converted values
-                      p.latitude  = w.latitude
+                                      p.latitude  = w.latitude
                       p.longitude = w.longitude
                       p.altitude  = w.altitude
                       p.id        = w.id
@@ -3035,15 +2466,13 @@ handlers:
                   end
               end
 
-              -- add waypoint to waypoint manager
-              local wp = Waypoint:new(s.wm):setName(wpName):set(posString)
+                      local wp = Waypoint:new(s.wm):setName(wpName):set(posString)
               if not wp or wp == {} then return false end
               if s.wm:exists(wp) then return false end
               return s.wm:add(wp)
           end
 
-          ---@comment Simple test for coord conversion
-          function o.ConversionTest()
+              function o.ConversionTest()
               local p1 = "::pos{0,2,35.5118,104.0375,285.3076}"
               local w1 = o.MapPosToWorldVec3(p1)
               P("HQ local to world:\n"..p1.." =")
@@ -3069,14 +2498,12 @@ handlers:
               s.planetNames = {}
               for i, v in pairs(WaypointInfo[0]) do
                   s.planetNames[v.name[1]:lower()] = i
-                  -- remove junk
-                  WaypointInfo[0][i].biosphere = nil
+                              WaypointInfo[0][i].biosphere = nil
                   WaypointInfo[0][i].classification = nil
                   WaypointInfo[0][i].description = nil
                   WaypointInfo[0][i].habitability = nil
                   WaypointInfo[0][i].ores = nil
-                  -- new props
-                  WaypointInfo[0][i].centerV3 = vec3(WaypointInfo[0][i].center)
+                              WaypointInfo[0][i].centerV3 = vec3(WaypointInfo[0][i].center)
                   if v.hasAtmosphere then
                       local res = v.atmosphereRadius - v.radius
                       WaypointInfo[0][i].atmoAltitude = res
@@ -3096,8 +2523,7 @@ handlers:
 
           init()
           return setmetatable(s, o)
-      end -- .New
-
+      end 
 
       return o
 
@@ -3116,30 +2542,15 @@ handlers:
 
       local outputFont="FiraMono"--export: Name of font used for screen output. Default: "FiraMono"
 
-      --local centerMaxDistance=5000--export: The furthest distance a point should be displayed on-screen in meters (1000..10000; default: 5000)
-
-      --local centerHelperCirclesEvery=1000--export: Show grid circles every X meters (100..2000; default: 1000)
-
 
       onlyForRoute = onlyForRoute or ""
 
-      OutputFont = outputFont or "FiraMono" -- used in libutils.lua
-
-
-      -- for new centerpoint mod
-
-      --CenterMaxDistance = centerMaxDistance or 5000
-
-      --CenterMaxDistance = uclamp(centerMaxDistance, 1000, 10000)
-
-      --CenterHelperCirclesEvery = centerHelperCirclesEvery or 1000
-
-      --CenterHelperCirclesEvery = uclamp(centerHelperCirclesEvery, 100, 2000)
+      OutputFont = outputFont or "FiraMono" 
 
 
       P("=========================================")
 
-      P("YFS-Tools 1.7.6 (unofficial)")
+      P("YFS-Tools 1.7.7 (unofficial)")
 
       P("created by tobitege (c) 2023")
 
@@ -3173,8 +2584,7 @@ handlers:
       if INGAME then
           status, err, _ = xpcall(function()
               Config.core = library.getCoreUnit()
-              Config.databanks = library.getLinksByClass('DataBank', true) -- true is important!
-              Config.screens = library.getLinksByClass('Screen', true)
+              Config.databanks = library.getLinksByClass('DataBank', true)         Config.screens = library.getLinksByClass('Screen', true)
           end, Traceback)
           if not status then
               P("Error in Link Detection:\n" .. err)
@@ -3182,8 +2592,7 @@ handlers:
               return
           end
       else
-          -- this requires du-mocks!
-          Config.core = unit.core
+              Config.core = unit.core
           Config.databanks =  { unit.databank }
           Config.screens =  { unit.screen }
       end
@@ -3196,8 +2605,7 @@ handlers:
       end
 
 
-      PM = require('YFS-Tools:../util/pos.lua').New(Config.core, construct, WM) -- Positions and waypoint management
-
+      PM = require('YFS-Tools:../util/pos.lua').New(Config.core, construct, WM) 
 
       if #Config.databanks > 0 then
           local plural = ""
@@ -3215,15 +2623,11 @@ handlers:
       end
 
 
-      -- optionally load waypoints from databank (ArchHUD or YFS)
-
       if loadWaypoints ~= true or #Config.databanks == 0 then
           P("[I] Waypoints loading is off.")
           return
       end
 
-
-      -- for local debugging, see mockaround file for demo data!
 
       if not INGAME then
           onlyForRoute = "Garni"
@@ -3233,9 +2637,7 @@ handlers:
       local prevCount = 0
 
       for ix=1, #Config.databanks, 1 do
-          ---@diagnostic disable-next-line: assign-type-mismatch
-          local db = Config.databanks[ix] ---@type table DataBank
-          P("===== Checking db '"..db.getName().."' =====")
+              local db = Config.databanks[ix]     P("===== Checking db '"..db.getName().."' =====")
           if db.hasKey(ARCH_SAVED_LOCATIONS) then
               P('ArchHud databank detected.')
               DetectedArch = ix
@@ -3279,9 +2681,6 @@ handlers:
       end)
 
       package.preload['YFS-Tools:sys_onInputText.lua']=(function()
-
-      -- requires utils, global instances Cmd, SU
-
 
       local inputTextFunc = {}
 
@@ -3327,13 +2726,10 @@ handlers:
               if SU.StartsWith(t, "/"..k) then
                   local params = t:sub(k:len()+2) or ""
                   params = SU.Trim(params)
-                  if k == 'help' then -- special case
-                      k = "PrintHelp"
+                  if k == 'help' then                 k = "PrintHelp"
                   end
-                  -- map command to function name, which must end with "Cmd"!
-                  local fn = SU.SplitAndCapitalize(k,'-').."Cmd"
-                  -- default use global Cmd class, unless a value is specified other than 1
-                  local cmdName = SU.If(type(func) == "string", func, "Cmd")
+                              local fn = SU.SplitAndCapitalize(k,'-').."Cmd"
+                              local cmdName = SU.If(type(func) == "string", func, "Cmd")
                   P("Executing /"..k..SU.If(params ~= "", " with: "..params))
                   if not _G[cmdName] then
                       return E("[FATAL ERROR] "..cmdName.." not found!")
@@ -3358,11 +2754,6 @@ handlers:
 
       package.preload['YFS-Tools:../util/wolfeARlib.lua']=(function()
 
-      -- wolfeARlib.lua
-
-      -- Requires stl.lua, global WaypointInfo (Atlas data!)
-
-
       local uclamp = utils.clamp
 
 
@@ -3373,37 +2764,14 @@ handlers:
           renderLimitKm = 5
       }
 
-      -- 'Montserrat' is better with 0.8
+      local fontSize = 1.2 local font = 'Oxanium' -- 'Refrigerator'
 
-      -- 'Refrigerator' is better with 1.2
-
-      local fontSize = 1.2 -- em's, not pixels :P
-
-      local font = 'Oxanium' -- 'Refrigerator'
-
-      local colorBlue = { 130, 224, 255 } -- blue #66CCFF
-
-      local colorLime = { 50, 205, 50 }   -- lime #32CD32
-
-      local colorOrange = { 256, 128, 0 } -- orange #ff8000
-
-
-      --- Distance to "infinity", used when projecting AR directions, set to 100su
-
-      ---@type number
+      local colorBlue = { 130, 224, 255 } local colorLime = { 50, 205, 50 }   local colorOrange = { 256, 128, 0 } 
 
       local infinityDistance = 100 * 200000
 
-      ---@type number
-
       local referenceGravity1g = nil
 
-
-      --- Gets the appropriate HUD color
-
-      ---@param forcePvPZone boolean
-
-      ---@return table<number,number>
 
       local function getHudColor(distance)
           if distance and distance > 2250 then
@@ -3413,22 +2781,12 @@ handlers:
       end
 
 
-      --- Gets the appropriate HUD color in RGB notation
-
-      ---@param alpha number
-
-      ---@param forcePvPZone boolean
-
-      ---@return string
-
       local function getHudColorRgb(alpha, distance)
           local color = getHudColor(distance)
           color[4] = alpha or 1
           return ('rgba(%s, %s, %s, %s)'):format(color[1], color[2], color[3], color[4])
       end
 
-
-      --- Converts a coordinate from local to world space
 
       local function convertLocalToWorldCoordinates(coordinate)
           return vec3(construct.getWorldPosition())
@@ -3438,20 +2796,10 @@ handlers:
       end
 
 
-      --- Gets the current forward direction in world space
-
-      ---@return vec3
-
       local function getCurrentPointedAt()
           return convertLocalToWorldCoordinates(vec3(0, infinityDistance, 0))
       end
 
-
-      --- Converts a distance amount into meters, kilometers or su
-
-      ---@param distance number
-
-      ---@return string
 
       local function getDistanceAsString(distance)
           if distance > 100000 then
@@ -3464,12 +2812,6 @@ handlers:
           return ('%.2f m'):format(distance)
       end
 
-
-      --- Gets the distance to a certain point in space
-
-      ---@param point vec3
-
-      ---@return number
 
       local function getDistanceToPoint(point)
           return (vec3(construct.getWorldPosition()) - point):len()
@@ -3485,57 +2827,25 @@ handlers:
       end
 
 
-      --- Rounds a value to desired precision
-
-      ---@param value number
-
-      ---@param precision number
-
-      ---@return string
-
       local function getRoundedValue(value, precision)
           return ('%.' .. (precision or 0) .. 'f'):format(value)
       end
 
-
-      --- Gets closest celestial body to world position (in m/s²)
-
-      ---@param altitude number
-
-      ---@param celestialBody table
 
       local function getGravitationalForceAtAltitude(altitude, celestialBody)
           return celestialBody.GM / (celestialBody.radius + altitude) ^ 2
       end
 
 
-      --- Gets closest celestial body to world position (in Gs)
-
-      ---@param altitude number
-
-      ---@param celestialBody table
-
       local function getGravitationalForceAtAltitudeInGs(altitude, celestialBody)
           return getGravitationalForceAtAltitude(altitude, celestialBody) / referenceGravity1g
       end
 
 
-      --- Gets the altitude where a celestial body has certain gravitational force (in m/s²)
-
-      ---@param intensity number
-
-      ---@param celestialBody table
-
       local function getAltitudeAtGravitationalForce(intensity, celestialBody)
           return math.sqrt(celestialBody.GM / intensity) - celestialBody.radius
       end
 
-
-      --- Gets closest celestial body to world position
-
-      ---@param position vec3
-
-      ---@param allowInfiniteRange boolean
 
       local function getClosestCelestialBody(position, allowInfiniteRange)
           local closestBody = nil
@@ -3553,30 +2863,13 @@ handlers:
       end
 
 
-      --- Gets a celestial body relative position from a world position
-
-      ---@param position vec3
-
-      ---@param celestialBody table
-
-      ---@return table
-
       local function getCelestialBodyPosition(position, celestialBody)
           return position - vec3(celestialBody.center.x, celestialBody.center.y, celestialBody.center.z)
       end
 
 
-      --- Gets a lat, lon, alt position from a world position
-
-      ---@param position vec3
-
-      ---@param celestialBody table
-
-      ---@return table
-
       local function getLatLonAltFromWorldPosition(position, celestialBody)
-          -- We need to extract the "local" coordinate (offset from planet center) here and then normalize it to do math with it
-          local offset = getCelestialBodyPosition(position, celestialBody)
+              local offset = getCelestialBodyPosition(position, celestialBody)
           local offsetNormalized = offset:normalize()
           return {
               lat = 90 - (math.acos(offsetNormalized.z) * 180 / math.pi),
@@ -3586,28 +2879,16 @@ handlers:
       end
 
 
-      --- Gets the distance to a certain point in space
-
-      --- Code adapted from: https://community.esri.com/t5/coordinate-reference-systems-blog/distance-on-a-sphere-the-haversine-formula/ba-p/902128
-
-      ---@param point vec3
-
-      ---@param celestialBody table
-
-      ---@return number
-
       local function getDistanceAroundCelestialBody(point, celestialBody)
           local currentCoordinates = getLatLonAltFromWorldPosition(vec3(construct.getWorldPosition()), celestialBody)
           local targetCoordinates = getLatLonAltFromWorldPosition(point, celestialBody)
           local flyingAltitude = math.max(currentCoordinates.alt, celestialBody.maxStaticAltitude or 1000)
 
-          -- Helper function to convert degrees to radians
-          local function rad(deg)
+              local function rad(deg)
               return deg * math.pi / 180
           end
 
-          --local phi1, phi2 = rad(currentCoordinates.lat), rad(targetCoordinates.lat)
-          local phi2 = rad(targetCoordinates.lat)
+              local phi2 = rad(targetCoordinates.lat)
           local deltaPhi, deltaLambda = rad(currentCoordinates.lat - targetCoordinates.lat), rad(currentCoordinates.lon - targetCoordinates.lon)
 
           local a = math.sin(deltaPhi / 2) ^ 2 + math.cos(phi2) * math.cos(phi2) * math.sin(deltaLambda / 2) ^ 2
@@ -3621,15 +2902,13 @@ handlers:
           local UI = {}
           local Shapes = {}
 
-          --- Draws the hexagon, showing the current destiantion point in space
-          Shapes.Hexagon = STL([[
+              Shapes.Hexagon = STL([[
           <svg style="width: {{ size or 1 }}em; height: {{ size or 1 }}em;" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M24.25 1.56699L24 1.42265L23.75 1.56699L4.69745 12.567L4.44745 12.7113V13V35V35.2887L4.69745 35.433L23.75 46.433L24 46.5774L24.25 46.433L43.3026 35.433L43.5526 35.2887V35V13V12.7113L43.3026 12.567L24.25 1.56699ZM9.44745 32.4019V15.5981L24 7.19615L38.5526 15.5981V32.4019L24 40.8038L9.44745 32.4019Z" fill="{{ color }}" stroke="{{ stroke }}"/>
           </svg>
           ]])
 
-          --- Draws the crosshair, showing current forward direction
-          Shapes.Crosshair = STL([[
+              Shapes.Crosshair = STL([[
           <svg style="width: {{ size or 1 }}em; height: {{ size or 1 }}em;" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M23.6465 37.8683L24.0001 38.2218L24.3536 37.8683L26.3536 35.8684L26.5 35.7219V35.5148V26.5H35.5148H35.7219L35.8684 26.3536L37.8684 24.3536L38.2219 24L37.8684 23.6465L35.8684 21.6465L35.7219 21.5H35.5148H26.5V12.4852V12.2781L26.3536 12.1317L24.3536 10.1317L24.0001 9.77818L23.6465 10.1317L21.6465 12.1318L21.5 12.2782V12.4854V21.5H12.4854H12.2782L12.1318 21.6465L10.1318 23.6465L9.77824 24L10.1318 24.3536L12.1318 26.3536L12.2782 26.5H12.4854H21.5V35.5147V35.7218L21.6465 35.8682L23.6465 37.8683Z" fill="{{ color }}" stroke="{{ stroke }}"/>
           </svg>
@@ -3655,28 +2934,22 @@ handlers:
               renderLimit = wolfie.renderLimitKm
           }
 
-          --- Draws text
-          -- text-shadow: 0px 0px 0.125em {{ stroke or Colors.Shadow }}, 0px 0px 0.250em #000, 0px 0px 0.500em #000;">
-          renderGlobals.Label = STL([[<span style="font-size: {{ size or ']]..fontSize..[[' }}em; font-family: {{ font or ']]..font..[[' }};
+                  renderGlobals.Label = STL([[<span style="font-size: {{ size or ']]..fontSize..[[' }}em; font-family: {{ font or ']]..font..[[' }};
               font-weight: {{ weight or 'normal' }}; color: {{ color or GetHudColor() }};
               text-shadow: 2px 2px 0.125em {{ stroke or Colors.Shadow }}, -2px -2px 0.50em #000, 2px -2px 0.50em #000;">
           {{ text }}
           </span>
           ]], renderGlobals)
 
-          --- Creates an element that is always centered at a certain coordinate
-          UI.PositionCenteredAt = STL('position: absolute; top: {{ Percentage(y, 5) }}; left: {{ Percentage(x, 5) }}; margin-top: -{{ (height or 1) / 2 }}em; margin-left: -{{ (width or 1) / 2 }}em;'
+              UI.PositionCenteredAt = STL('position: absolute; top: {{ Percentage(y, 5) }}; left: {{ Percentage(x, 5) }}; margin-top: -{{ (height or 1) / 2 }}em; margin-left: -{{ (width or 1) / 2 }}em;'
           , renderGlobals)
 
-          --- Renders a full destination marker (hexagon + info)
-          UI.DestinationMarker = STL([[
+              UI.DestinationMarker = STL([[
           {%
           local screen = WorldCoordinate(position)
           local distance = DistanceTo(position)
 
-          -- When on same celestial body, we need to take into account going around it
-          -- We use math.max here so we can also take the vertical displacement into account
-          if Exists(currentCelestialBody) and Exists(destinationCelestialBody) and currentCelestialBody.info.id == destinationCelestialBody.info.id then
+                  if Exists(currentCelestialBody) and Exists(destinationCelestialBody) and currentCelestialBody.info.id == destinationCelestialBody.info.id then
               distance = math.max(distance, DistanceAroundCelestialBody(position, destinationCelestialBody.info))
           end
           local distKm = distance / 1000
@@ -3707,17 +2980,14 @@ handlers:
           {% end %}
           ]], renderGlobals)
 
-          --- Renders a crosshair shape
-          UI.Crosshair = STL([[
+              UI.Crosshair = STL([[
           <div style="{{ UI.PositionCenteredAt({ x = x, y = y, width = 1.5, height = 1.5 }) }}">
               {{ Shapes.Crosshair({ color = GetHudColor(), stroke = Colors.Shadow, size = 1.5 }) }}
           </div>
           ]], renderGlobals)
 
-          renderGlobals.currentPointingAt = getCurrentPointedAt() -- current direction forward
-
-          --- rAR contains rendered, AR-related items
-          local rAR = [[<div class="wlhud-ar-elements">
+          renderGlobals.currentPointingAt = getCurrentPointedAt() 
+              local rAR = [[<div class="wlhud-ar-elements">
           {%
           if currentPointingAt then
               currentPointingAtOnScreen = WorldCoordinate(currentPointingAt)
@@ -3739,8 +3009,7 @@ handlers:
           end
           if type(destList) == "table" then
               for _,dest in pairs(destList) do
-                  -- Is destination on same celestial body
-                  local isDestinationOnSameCelestialBody = false
+                              local isDestinationOnSameCelestialBody = false
                   if currentCelestialBody and dest.bodyInfo and currentCelestialBody.id == dest.bodyInfo.info.id then
                       isDestinationOnSameCelestialBody = true
                   end
@@ -3766,23 +3035,15 @@ handlers:
       end
 
 
-      -- Pass a core unit
-
       function wolfie.setCore(pCore)
           core = pCore
       end
 
 
-      -- Limit in km to display waypoints (0 = unlimited; max. 1mil)
-
       function wolfie.setRenderLimit(renderLimit)
           renderLimit = renderLimit or 0
           renderLimit = tonumber(renderLimit)
-          wolfie.renderLimitKm = uclamp(renderLimit, 0, 1000000) -- 0 = unlimited; max 500 SU
-      end
-
-
-      -- Pass a list of waypoints (vec3) with their names in (name/vec3 pairs)
+          wolfie.renderLimitKm = uclamp(renderLimit, 0, 1000000) end
 
       function wolfie.AddWaypoint(destName, vector)
           if not destName or type(vector) ~= "table" then return end
@@ -3803,8 +3064,6 @@ handlers:
       end
 
 
-      -- Main render function returning the generated SVG
-
       function wolfie.onRenderFrame()
           return wolfie.render(wolfie.destList)
       end
@@ -3815,11 +3074,6 @@ handlers:
       end)
 
       package.preload['YFS-Tools:../util/wolfeAR_start.lua']=(function()
-
-      -- Feed waypoints to script based on "userclass.lua" by Wolf Labs (@wolfe_br)
-
-      -- tobitege: customisations to only run AR waypointing (outside of ArchHud)
-
 
       local enableWaypointer=true--export: Enable waypoint AR display. Default: checked.
 
@@ -3994,16 +3248,10 @@ handlers:
       signature: onStart()
       args: []
     code: >-
-      
-
-      -- Important for local debugging:
-
       package.path = "lua/?.lua;util/wpointer/?.lua;"..package.path
 
       require('YFS-Tools:globals.lua')
 
-
-      -- DU-LuaC checks for true are last, so that local debugging sees true!
 
       WP_EG_ENABLED = false
 
@@ -4045,10 +3293,6 @@ handlers:
 
 
 
-      -- Wolfe Labs' waypointer mod (customized)
-
-      -- *****************************************
-
       if WP_WOLF_ENABLED and Config.core then
           WolfAR = require('YFS-Tools:../util/wolfeARlib.lua')
           require('YFS-Tools:../util/wolfeAR_start.lua')
@@ -4061,16 +3305,13 @@ handlers:
           end
       end
 
-      -- *****************************************
-
 
       if not WP_EG_ENABLED and not WP_WOLF_ENABLED then
           P('[I] Waypointer module disabled.')
       else
           P('[I] Waypointer module enabled.')
 
-          unit.setTimer("update", 1/120) -- The timer to update the screen
-          system.showScreen(1)
+          unit.setTimer("update", 1/120)     system.showScreen(1)
       end
 
 

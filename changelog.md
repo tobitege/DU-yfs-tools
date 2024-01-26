@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.7.7
+
+- Fix in /yfs-save-route to correctly use "route-create", not "create-route" in command generation
+
 ## v1.7.6
 
 - Fix for interim bug in */yfs-build-route-from-wp* if no -suffix was specified
